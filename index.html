@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="pt-BR" class="scroll-smooth">
 <head>
-    <link rel="icon" type="image/x-icon" href="https://cdn-icons-png.flaticon.com/512/3010/3010989.png">
+<link rel="icon" type="image/x-icon" href="https://cdn-icons-png.flaticon.com/512/3010/3010989.png">
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Bianca & Joel: A Série - 4ª temporada</title>
@@ -44,32 +44,32 @@
         input[type=range]::-webkit-slider-thumb { -webkit-appearance: none; height: 12px; width: 12px; border-radius: 50%; background: #fff; cursor: pointer; margin-top: -4px; }
         input[type=range]::-webkit-slider-runnable-track { width: 100%; height: 4px; cursor: pointer; background: #4b5563; border-radius: 2px; }
         .profile-card { transition: all 0.3s ease; }
-        .profile-card:hover { transform: scale(1.05); }
+        .profile-card:hover { transform: scale(1.1); }
         .profile-card:hover .profile-name { opacity: 1; }
         .date-input { background: rgba(255,255,255,0.1); border: 2px solid rgba(255,255,255,0.2); }
         .date-input:focus { border-color: #e11d48; outline: none; }
     </style>
 </head>
-<body class="bg-neutral-950 text-white antialiased pb-32 sm:pb-24">
+<body class="bg-neutral-950 text-white antialiased pb-24">
 
     <!-- ==================== TELA DE PERFIS NETFLIX STYLE ==================== -->
     <div id="profileScreen" class="fixed inset-0 z-[100] bg-neutral-950 flex flex-col items-center justify-center">
-        <div class="text-center mb-8 md:mb-12 px-4">
-            <h1 class="font-serif text-3xl md:text-6xl font-bold text-white mb-4">Quem está assistindo?</h1>
+        <div class="text-center mb-12">
+            <h1 class="font-serif text-4xl md:text-6xl font-bold text-white mb-4">Quem está assistindo?</h1>
         </div>
         
         <div class="flex flex-wrap justify-center gap-6 md:gap-10 px-4" id="profilesContainer">
             <!-- Perfis serão gerados dinamicamente -->
         </div>
         
-        <button onclick="manageProfiles()" class="mt-12 md:mt-16 px-6 py-2 border border-white/30 rounded text-white/70 hover:text-white hover:border-white transition">
+        <button onclick="manageProfiles()" class="mt-16 px-6 py-2 border border-white/30 rounded text-white/70 hover:text-white hover:border-white transition">
             Gerenciar perfis
         </button>
     </div>
 
     <!-- ==================== MODAL DE DATA DE NAMORO ==================== -->
     <div id="dateModal" class="fixed inset-0 z-[110] bg-black/95 backdrop-blur-xl hidden flex items-center justify-center p-4">
-        <div class="bg-neutral-900 border border-white/10 rounded-2xl p-6 md:p-8 max-w-md w-full text-center space-y-6">
+        <div class="bg-neutral-900 border border-white/10 rounded-2xl p-8 max-w-md w-full text-center space-y-6">
             <div class="w-20 h-20 rounded-full overflow-hidden mx-auto border-4 border-brand-500">
                 <img id="modalProfileImage" src="" class="w-full h-full object-cover" alt="Profile">
             </div>
@@ -82,7 +82,7 @@
             <div class="space-y-2">
                 <label class="block text-sm text-neutral-400">Data de início do namoro</label>
                 <input type="text" id="dateInput" placeholder="DD/MM/AA" class="date-input w-full px-4 py-3 rounded-lg text-center text-xl font-mono tracking-wider" maxlength="8">
-                <p class="text-xs text-neutral-500">Formato: 29/05/21</p>
+                <p class="text-xs text-neutral-500">Formato: 01/01/20</p>
             </div>
             
             <div id="dateError" class="text-red-500 text-sm hidden animate-shake">
@@ -102,8 +102,8 @@
 
     <!-- OVERLAY DE INÍCIO (aparece após login) -->
     <div id="startOverlay" class="fixed inset-0 z-[9999] bg-black/95 backdrop-blur-xl flex flex-col items-center justify-center transition-opacity duration-700 hidden">
-        <div class="text-center space-y-6 animate-float px-4">
-            <h1 class="font-serif text-4xl md:text-7xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-brand-500 to-netflix text-glow">Bianca & Joel</h1>
+        <div class="text-center space-y-6 animate-float">
+            <h1 class="font-serif text-5xl md:text-7xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-brand-500 to-netflix text-glow">Bianca & Joel</h1>
             <p class="text-neutral-400 text-lg md:text-xl max-w-md mx-auto">4 anos de uma história que merece ser assistida em alta definição.</p>
             <button onclick="startExperience()" class="group relative px-8 py-4 bg-brand-600 hover:bg-brand-500 text-white font-semibold rounded-full transition-all duration-300 hover:scale-105 hover:shadow-[0_0_30px_rgba(225,29,72,0.6)] flex items-center gap-3 mx-auto">
                 <i class="ph-fill ph-play text-xl"></i> <span>Carregar nossa História</span>
@@ -111,42 +111,37 @@
         </div>
     </div>
 
-    <!-- ==================== PLAYER DE RÁDIO FIXO (RESPONSIVO) ==================== -->
+    <!-- ==================== PLAYER DE RÁDIO FIXO ==================== -->
     <div id="radioPlayer" class="fixed bottom-0 left-0 right-0 glass z-40 transition-transform duration-500 ease-in-out translate-y-full opacity-0">
-        <div class="max-w-7xl mx-auto px-4 py-3 flex flex-col sm:flex-row items-center gap-3 sm:gap-4">
-            
-            <!-- Info e Capa -->
-            <div class="flex items-center gap-3 w-full sm:w-auto sm:flex-1">
-                <img id="radioCover" src="https://drive.google.com/uc?export=view&id=1t_dAKnRP2iStAQCsLEukWaIyzTqXs358" class="w-12 h-12 sm:w-14 sm:h-14 rounded-md object-cover shadow-lg animate-pulse-slow flex-shrink-0" alt="Capa">
-                <div class="flex flex-col min-w-0 flex-1">
-                    <div id="radioTitle" class="text-sm font-semibold text-white truncate">Carregando...</div>
-                    <div class="text-xs text-neutral-400 truncate">Bianca & Joel Radio</div>
+        <div class="max-w-7xl mx-auto px-4 py-3 flex items-center justify-between gap-4">
+            <div class="flex items-center gap-4 min-w-[200px] flex-1">
+                <img id="radioCover" src="https://lh3.googleusercontent.com/d/1t_dAKnRP2iStAQCsLEukWaIyzTqXs358" class="w-14 h-14 rounded-md object-cover shadow-lg animate-pulse-slow" alt="Capa">
+                <div class="hidden sm:block">
+                    <div id="radioTitle" class="text-sm font-semibold text-white truncate max-w-[200px]">Carregando...</div>
+                    <div class="text-xs text-neutral-400">Bianca & Joel Radio</div>
                 </div>
             </div>
 
-            <!-- Controles Principais -->
-            <div class="flex flex-col items-center w-full sm:w-auto sm:flex-1 sm:max-w-xl">
-                <div class="flex items-center gap-4 sm:gap-5 mb-1">
-                    <button onclick="radioShuffle()" class="text-neutral-400 hover:text-white transition hidden sm:block" title="Aleatório"><i class="ph ph-shuffle text-xl"></i></button>
-                    <button onclick="radioPrevious()" class="text-white hover:text-brand-500 transition p-2 active:scale-90" title="Anterior"><i class="ph-fill ph-skip-back text-2xl"></i></button>
-                    <button onclick="radioTogglePlay()" id="radioPlayPause" class="w-12 h-12 bg-white text-black rounded-full flex items-center justify-center hover:scale-110 active:scale-95 transition shadow-lg" title="Play/Pause">
-                        <i class="ph-fill ph-play text-2xl"></i>
+            <div class="flex flex-col items-center flex-1 max-w-xl">
+                <div class="flex items-center gap-5 mb-1">
+                    <button onclick="radioShuffle()" class="text-neutral-400 hover:text-white transition" title="Aleatório"><i class="ph ph-shuffle text-xl"></i></button>
+                    <button onclick="radioPrevious()" class="text-white hover:text-brand-500 transition" title="Anterior"><i class="ph-fill ph-skip-back text-2xl"></i></button>
+                    <button onclick="radioTogglePlay()" id="radioPlayPause" class="w-10 h-10 bg-white text-black rounded-full flex items-center justify-center hover:scale-110 transition shadow-lg" title="Play/Pause">
+                        <i class="ph-fill ph-play text-xl"></i>
                     </button>
-                    <button onclick="radioNext()" class="text-white hover:text-brand-500 transition p-2 active:scale-90" title="Próxima"><i class="ph-fill ph-skip-forward text-2xl"></i></button>
-                    <button onclick="radioRepeat()" class="text-neutral-400 hover:text-white transition hidden sm:block" title="Repetir"><i class="ph ph-repeat text-xl"></i></button>
+                    <button onclick="radioNext()" class="text-white hover:text-brand-500 transition" title="Próxima"><i class="ph-fill ph-skip-forward text-2xl"></i></button>
+                    <button onclick="radioRepeat()" class="text-neutral-400 hover:text-white transition" title="Repetir"><i class="ph ph-repeat text-xl"></i></button>
                 </div>
-                <!-- Barra de progresso (Compacta no mobile) -->
-                <div class="w-full flex items-center gap-2 text-[10px] sm:text-xs text-neutral-400 font-mono mt-1 sm:mt-0">
+                <div class="w-full flex items-center gap-3 text-xs text-neutral-400 font-mono">
                     <span id="radioCurrentTime">0:00</span>
-                    <div class="flex-1 h-1.5 bg-neutral-700 rounded-full cursor-pointer group relative" onclick="seekRadio(event)">
+                    <div class="flex-1 h-1 bg-neutral-700 rounded-full cursor-pointer group relative" onclick="seekRadio(event)">
                         <div id="radioProgressFilled" class="h-full bg-brand-500 rounded-full w-0 group-hover:bg-brand-400 transition-all"></div>
                     </div>
                     <span id="radioDuration">0:00</span>
                 </div>
             </div>
 
-            <!-- Volume (Apenas Desktop) -->
-            <div class="hidden sm:flex items-center gap-3 flex-1 justify-end min-w-[150px]">
+            <div class="flex items-center gap-3 flex-1 justify-end min-w-[150px]">
                 <button onclick="toggleRadioMute()" id="radioMuteBtn" class="text-neutral-400 hover:text-white transition"><i class="ph-fill ph-speaker-high text-xl"></i></button>
                 <input type="range" id="radioVolumeSlider" min="0" max="1" step="0.01" value="0.15" oninput="changeRadioVolume(this.value)" class="w-24 accent-brand-500">
             </div>
@@ -157,17 +152,20 @@
     <div id="detailScreen" class="hidden">
         <!-- HERO COM VÍDEO DE FUNDO -->
         <div class="relative h-[65vh] md:h-[80vh] w-full flex items-center overflow-hidden">
+            <!--  VÍDEO DE FUNDO -->
             <video id="heroVideo" class="absolute inset-0 w-full h-full object-cover" autoplay muted loop playsinline preload="auto">
                 <source src="https://www.dropbox.com/scl/fi/lyeb08frpvhe7wh0tmvjb/BIANCA-E-JOEL.mp4?rlkey=0quqj5iqxy9b00n7ud4t49rbl&st=0swum96f&dl=1" type="video/mp4">
             </video>
             
+            <!-- Overlays para garantir legibilidade do texto -->
             <div class="absolute inset-0 bg-gradient-to-r from-black/90 via-black/50 to-transparent z-10"></div>
             <div class="absolute inset-0 bg-gradient-to-t from-neutral-950 via-transparent to-transparent z-10"></div>
 
+            <!-- Conteúdo do Hero -->
             <div class="relative z-20 max-w-7xl mx-auto px-6 md:px-12 w-full">
-                <div class="flex-1 max-w-2xl space-y-4 md:space-y-6">
+                <div class="flex-1 max-w-2xl space-y-6">
                     <div class="inline-block px-3 py-1 bg-brand-600/20 border border-brand-500/30 rounded-full text-brand-400 text-xs font-bold tracking-wider uppercase backdrop-blur-sm">4 Anos Juntos!</div>
-                    <h1 class="font-serif text-4xl md:text-7xl font-bold leading-tight text-white drop-shadow-lg">Nossa História</h1>
+                    <h1 class="font-serif text-5xl md:text-7xl font-bold leading-tight text-white drop-shadow-lg">Nossa História</h1>
                     <div class="flex flex-wrap items-center gap-3 text-sm text-neutral-200">
                         <span class="text-green-400 font-bold">98% Match</span>
                         <span>2022</span>
@@ -175,9 +173,9 @@
                         <span>4 Temporadas</span>
                         <span class="bg-neutral-800/80 px-2 py-0.5 rounded text-xs font-semibold border border-neutral-700">HD</span>
                     </div>
-                    <p class="text-base md:text-lg text-neutral-200 leading-relaxed drop-shadow-md">Quatro anos de risadas, aventuras, cumplicidade e um amor que só cresce. Acompanhe a história de Bianca e Joel, um casal que prova que o final feliz é apenas o começo de uma nova e incrível temporada.</p>
+                    <p class="text-lg text-neutral-200 leading-relaxed drop-shadow-md">Quatro anos de risadas, aventuras, cumplicidade e um amor que só cresce. Acompanhe a história de Bianca e Joel, um casal que prova que o final feliz é apenas o começo de uma nova e incrível temporada.</p>
                     <div class="flex items-center gap-4 pt-2">
-                        <button onclick="openPlayer(0)" class="flex items-center gap-2 px-6 md:px-8 py-3 bg-white text-black font-bold rounded-md hover:bg-neutral-200 transition transform hover:scale-105 shadow-lg">
+                        <button onclick="openPlayer(0)" class="flex items-center gap-2 px-8 py-3 bg-white text-black font-bold rounded-md hover:bg-neutral-200 transition transform hover:scale-105 shadow-lg">
                             <i class="ph-fill ph-play text-xl"></i> Assistir Especial
                         </button>
                     </div>
@@ -186,19 +184,19 @@
         </div>
 
         <!-- Seção de Vídeos -->
-        <div class="max-w-7xl mx-auto px-6 md:px-12 py-8 md:py-12 space-y-3">
+        <div class="max-w-7xl mx-auto px-6 md:px-12 py-12 space-y-3">
             <h2 class="text-xl md:text-2xl font-semibold flex items-center gap-2"><i class="ph-fill ph-film-strip text-brand-500"></i> Nossos Vídeos</h2>
-            <div class="flex gap-4 overflow-x-auto pb-4 scrollbar-hide" id="videosRow"></div>
+            <div class="flex gap-4 overflow-x-auto pb-4" id="videosRow"></div>
         </div>
 
         <!-- Nossos Momentos (Dinâmico) -->
         <div class="max-w-7xl mx-auto px-6 md:px-12 py-8 space-y-3">
             <h2 class="text-xl md:text-2xl font-semibold flex items-center gap-2"><i class="ph-fill ph-heart text-brand-500"></i> Nossos Momentos</h2>
-            <div class="flex gap-4 overflow-x-auto pb-4 scrollbar-hide" id="highlightsRow"></div>
+            <div class="flex gap-4 overflow-x-auto pb-4" id="highlightsRow"></div>
         </div>
 
         <!-- Galeria Completa (Dinâmica) -->
-        <div class="max-w-7xl mx-auto px-6 md:px-12 py-8 md:py-12">
+        <div class="max-w-7xl mx-auto px-6 md:px-12 py-12">
             <h2 class="text-xl md:text-2xl font-semibold mb-6 flex items-center gap-2"><i class="ph-fill ph-images text-brand-500"></i> Galeria Completa</h2>
             <div class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-3" id="galleryGrid"></div>
         </div>
@@ -206,29 +204,29 @@
 
     <!-- ==================== LIGHTBOX ==================== -->
     <div id="lightbox" class="fixed inset-0 z-[60] bg-black/95 backdrop-blur-md hidden items-center justify-center p-4">
-        <button onclick="closeLightbox()" class="absolute top-4 right-4 md:top-6 md:right-6 text-white/70 hover:text-white hover:scale-110 transition z-50 p-2"><i class="ph ph-x text-3xl md:text-4xl"></i></button>
-        <button onclick="navigateLightbox(-1)" class="absolute left-2 md:left-8 top-1/2 -translate-y-1/2 w-10 h-10 md:w-12 md:h-12 rounded-full bg-white/10 hover:bg-brand-600 flex items-center justify-center transition backdrop-blur"><i class="ph ph-caret-left text-2xl"></i></button>
-        <img id="lightboxImg" src="" class="max-w-full max-h-[80vh] object-contain rounded-lg shadow-2xl">
-        <button onclick="navigateLightbox(1)" class="absolute right-2 md:right-8 top-1/2 -translate-y-1/2 w-10 h-10 md:w-12 md:h-12 rounded-full bg-white/10 hover:bg-brand-600 flex items-center justify-center transition backdrop-blur"><i class="ph ph-caret-right text-2xl"></i></button>
-        <div id="lightboxCounter" class="absolute bottom-4 md:bottom-6 left-1/2 -translate-x-1/2 text-neutral-400 text-sm font-mono"></div>
+        <button onclick="closeLightbox()" class="absolute top-6 right-6 text-white/70 hover:text-white hover:scale-110 transition z-50"><i class="ph ph-x text-4xl"></i></button>
+        <button onclick="navigateLightbox(-1)" class="absolute left-4 md:left-8 top-1/2 -translate-y-1/2 w-12 h-12 rounded-full bg-white/10 hover:bg-brand-600 flex items-center justify-center transition backdrop-blur"><i class="ph ph-caret-left text-2xl"></i></button>
+        <img id="lightboxImg" src="" class="max-w-full max-h-[85vh] object-contain rounded-lg shadow-2xl">
+        <button onclick="navigateLightbox(1)" class="absolute right-4 md:right-8 top-1/2 -translate-y-1/2 w-12 h-12 rounded-full bg-white/10 hover:bg-brand-600 flex items-center justify-center transition backdrop-blur"><i class="ph ph-caret-right text-2xl"></i></button>
+        <div id="lightboxCounter" class="absolute bottom-6 left-1/2 -translate-x-1/2 text-neutral-400 text-sm font-mono"></div>
     </div>
 
     <!-- ==================== PLAYER DE VÍDEO ==================== -->
     <div id="playerScreen" class="fixed inset-0 z-50 bg-black hidden">
         <div class="relative w-full h-full group">
             <video id="mainVideo" class="w-full h-full object-contain" playsinline></video>
-            <div id="playerOverlay" class="absolute inset-0 bg-gradient-to-t from-black/90 via-transparent to-black/60 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex flex-col justify-between p-4 md:p-10">
+            <div id="playerOverlay" class="absolute inset-0 bg-gradient-to-t from-black/90 via-transparent to-black/60 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex flex-col justify-between p-6 md:p-10">
                 <div class="flex justify-between items-center">
                     <button onclick="closePlayer()" class="text-white hover:text-brand-500 transition flex items-center gap-2"><i class="ph ph-arrow-left text-2xl"></i><span class="font-medium hidden md:inline">Voltar</span></button>
-                    <h3 id="videoTitle" class="text-white font-medium text-center flex-1 truncate px-4">Especial: 4 Anos</h3>
+                    <h3 id="videoTitle" class="text-white font-medium text-center flex-1">Especial: 4 Anos</h3>
                     <button class="text-white hover:text-brand-500 transition"><i class="ph ph-heart text-2xl"></i></button>
                 </div>
-                <div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 flex items-center gap-6 md:gap-8">
-                    <button onclick="skipTime(-10)" class="text-white/80 hover:text-white hover:scale-110 transition"><i class="ph ph-rewind text-3xl md:text-4xl"></i></button>
-                    <button onclick="togglePlay()" class="w-16 h-16 md:w-20 md:h-20 rounded-full bg-white/20 backdrop-blur-md border border-white/30 flex items-center justify-center hover:bg-brand-600 hover:border-brand-600 transition transform hover:scale-110">
-                        <i class="ph-fill ph-play text-3xl md:text-4xl text-white" id="playIcon"></i>
+                <div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 flex items-center gap-8">
+                    <button onclick="skipTime(-10)" class="text-white/80 hover:text-white hover:scale-110 transition"><i class="ph ph-rewind text-4xl"></i></button>
+                    <button onclick="togglePlay()" class="w-20 h-20 rounded-full bg-white/20 backdrop-blur-md border border-white/30 flex items-center justify-center hover:bg-brand-600 hover:border-brand-600 transition transform hover:scale-110">
+                        <i class="ph-fill ph-play text-4xl text-white" id="playIcon"></i>
                     </button>
-                    <button onclick="skipTime(10)" class="text-white/80 hover:text-white hover:scale-110 transition"><i class="ph ph-fast-forward text-3xl md:text-4xl"></i></button>
+                    <button onclick="skipTime(10)" class="text-white/80 hover:text-white hover:scale-110 transition"><i class="ph ph-fast-forward text-4xl"></i></button>
                 </div>
                 <div class="space-y-4">
                     <div class="flex items-center gap-3 text-sm font-mono text-neutral-300">
@@ -266,7 +264,9 @@
         let isRadioPlaying = false;
         let allImageUrls = [];
         let selectedProfile = null;
+        let currentProfileIndex = 0;
 
+        // Perfis pré-definidos com nomes
         const profileNames = ["Bianca", "Joel", "Nós Dois"];
 
         const radioPlaylist = [
@@ -279,46 +279,29 @@
         let radioRepeatMode = false;
         const titleCache = new Map();
 
-        // Função auxiliar global para converter links do Google Drive em links diretos de imagem
-        const getDirectImageUrl = (url) => {
-            if (!url) return 'https://via.placeholder.com/150/881337/ffffff?text=Foto';
-            const match = String(url).match(/\/d\/([a-zA-Z0-9_-]+)|\?id=([a-zA-Z0-9_-]+)/);
-            if (match) {
-                return `https://drive.google.com/uc?export=view&id=${match[1] || match[2]}`;
-            }
-            return url;
-        };
-
         // Criar perfis dinamicamente
         function createProfiles() {
             const container = document.getElementById('profilesContainer');
             container.innerHTML = '';
             
-            // Fallback com o formato CORRETO de visualização direta do Google Drive
-            const fallbackImages = [
-                'https://drive.usercontent.google.com/download?id=1GJcU8Fu_tqwb1-68896IJ_4Rs8FSzYkb&export=view' ,
-                'https://drive.usercontent.google.com/download?id=1dMLM_D2YIjS7O45CiMMeaDLRxLApUlF_&export=view' ,
-                'https://drive.usercontent.google.com/download?id=14M0PMADvzbh4p7T6JeQj-RzAm1S0e9o-&export=view' ,
-            ];
-
-            // Garante que as URLs usadas sejam convertidas para o formato direto
-            const profileImages = allImageUrls.length >= 3 ? 
+            // Usar as primeiras imagens do catálogo para os perfis
+           const profileImages = allImageUrls.length >= 3 ? 
                 allImageUrls.slice(0, 3) :
-                fallbackImages;
+                [
+                  'https://lh3.googleusercontent.com/d/1GJcU8Fu_tqwb1-68896IJ_4Rs8FSzYkb',
+                  'https://lh3.googleusercontent.com/d/1dMLM_D2YIjS7O45CiMMeaDLRxLApUlF_',
+                  'https://lh3.googleusercontent.com/d/14M0PMADvzbh4p7T6JeQj-RzAm1S0e9o-'
+                ];
 
+            
             profileNames.forEach((name, index) => {
                 const imgSrc = profileImages[index] || profileImages[0];
                 const div = document.createElement('div');
                 div.className = 'profile-card flex flex-col items-center gap-3 cursor-pointer group';
                 div.onclick = () => selectProfile(index, name, imgSrc);
                 div.innerHTML = `
-                    <div class="w-24 h-24 md:w-32 md:h-32 rounded-md overflow-hidden border-2 border-transparent group-hover:border-white transition-all duration-300 bg-neutral-800">
-                        <img 
-                            src="${imgSrc}" 
-                            alt="${name}" 
-                            class="w-full h-full object-cover"
-                            onerror="this.src='https://via.placeholder.com/150/881337/ffffff?text=${name.charAt(0)}'"
-                        >
+                    <div class="w-24 h-24 md:w-32 md:h-32 rounded-md overflow-hidden border-2 border-transparent group-hover:border-white transition-all duration-300">
+                        <img src="${imgSrc}" alt="${name}" class="w-full h-full object-cover">
                     </div>
                     <span class="profile-name text-sm md:text-base text-neutral-400 group-hover:text-white transition-opacity duration-300 opacity-70">${name}</span>
                 `;
@@ -348,9 +331,11 @@
             const errorDiv = document.getElementById('dateError');
             
             if (input === CORRECT_DATE || input === CORRECT_DATE_ALT) {
+                // Data correta - prosseguir
                 closeDateModal();
                 showStartOverlay();
             } else {
+                // Data incorreta - mostrar erro
                 errorDiv.classList.remove('hidden');
                 document.getElementById('dateInput').classList.add('border-red-500');
                 setTimeout(() => {
@@ -403,22 +388,14 @@
             try {
                 const response = await fetch('/ft.json');
                 if (!response.ok) throw new Error('Falha na rede');
-                const rawUrls = await response.json();
-                
-                // Converte todas as URLs para o formato direto do Google Drive
-                allImageUrls = rawUrls.map(getDirectImageUrl);
+                allImageUrls = await response.json();
                 console.log(`✅ ${allImageUrls.length} fotos carregadas com sucesso do JSON!`);
                 createProfiles();
                 populateHighlights();
                 populateGallery();
             } catch (error) {
                 console.error('Erro ao carregar fotos:', error);
-                // Fallback com 3 imagens no formato correto para garantir que os perfis funcionem
-                allImageUrls = [
-                    "https://drive.google.com/uc?export=view&id=1t_dAKnRP2iStAQCsLEukWaIyzTqXs358",
-                    "https://drive.google.com/uc?export=view&id=1GJcU8Fu_tqwb1-68896IJ_4Rs8FSzYkb",
-                    "https://drive.google.com/uc?export=view&id=1dMLM_D2YIjS7O45CiMMeaDLRxLApUlF_"
-                ];
+                allImageUrls = ["https://lh3.googleusercontent.com/d/1t_dAKnRP2iStAQCsLEukWaIyzTqXs358"];
                 createProfiles();
                 populateHighlights();
                 populateGallery();
@@ -434,7 +411,7 @@
                 const div = document.createElement('div');
                 div.className = 'flex-shrink-0 w-64 h-36 rounded-md overflow-hidden cursor-pointer hover:scale-105 hover:shadow-xl hover:shadow-brand-900/30 transition-all duration-300 relative group';
                 div.onclick = () => openLightbox(i);
-                div.innerHTML = `<img src="${allImageUrls[i]}" class="w-full h-full object-cover group-hover:brightness-110 transition" loading="lazy">`;
+                div.innerHTML = `<img src="${allImageUrls[i]}" class="w-full h-full object-cover group-hover:brightness-110 transition">`;
                 container.appendChild(div);
             }
         }
@@ -476,7 +453,7 @@
             
             radioAudio.play().then(() => {
                 isRadioPlaying = true;
-                document.getElementById('radioPlayPause').innerHTML = '<i class="ph-fill ph-pause text-2xl"></i>';
+                document.getElementById('radioPlayPause').innerHTML = '<i class="ph-fill ph-pause text-xl"></i>';
             }).catch(e => console.log("Aguardando interação:", e));
 
             document.getElementById('detailScreen').classList.remove('hidden');
@@ -511,11 +488,11 @@
             if (radioAudio.paused) {
                 radioAudio.play();
                 isRadioPlaying = true;
-                document.getElementById('radioPlayPause').innerHTML = '<i class="ph-fill ph-pause text-2xl"></i>';
+                document.getElementById('radioPlayPause').innerHTML = '<i class="ph-fill ph-pause text-xl"></i>';
             } else {
                 radioAudio.pause();
                 isRadioPlaying = false;
-                document.getElementById('radioPlayPause').innerHTML = '<i class="ph-fill ph-play text-2xl"></i>';
+                document.getElementById('radioPlayPause').innerHTML = '<i class="ph-fill ph-play text-xl"></i>';
             }
         }
 
@@ -528,7 +505,7 @@
             updateRadioInfo();
             radioAudio.play().then(() => {
                 isRadioPlaying = true;
-                document.getElementById('radioPlayPause').innerHTML = '<i class="ph-fill ph-pause text-2xl"></i>';
+                document.getElementById('radioPlayPause').innerHTML = '<i class="ph-fill ph-pause text-xl"></i>';
             }).catch(e => console.log("Erro ao tocar próxima:", e));
         }
 
@@ -594,7 +571,7 @@
         const videosList = [
             {
                 title: "Especial: 4 Anos de Nós ❤️",
-                thumbnail: "https://drive.google.com/uc?export=view&id=1t_dAKnRP2iStAQCsLEukWaIyzTqXs358",
+                thumbnail: "https://lh3.googleusercontent.com/d/1t_dAKnRP2iStAQCsLEukWaIyzTqXs358",
                 url: "https://www.dropbox.com/scl/fi/lyeb08frpvhe7wh0tmvjb/BIANCA-E-JOEL.mp4?rlkey=0quqj5iqxy9b00n7ud4t49rbl&st=0swum96f&dl=1"
             },
             {
@@ -656,7 +633,7 @@
                 div.className = 'flex-shrink-0 w-64 h-36 rounded-md overflow-hidden cursor-pointer hover:scale-105 hover:shadow-xl hover:shadow-brand-900/30 transition-all duration-300 relative group';
                 div.onclick = () => openPlayer(index);
                 div.innerHTML = `
-                    <img src="${video.thumbnail}" class="w-full h-full object-cover group-hover:brightness-110 transition" loading="lazy">
+                    <img src="${video.thumbnail}" class="w-full h-full object-cover group-hover:brightness-110 transition">
                     <div class="absolute inset-0 flex items-center justify-center bg-black/30 group-hover:bg-black/10 transition">
                         <div class="w-12 h-12 rounded-full bg-white/90 flex items-center justify-center shadow-lg group-hover:scale-110 transition">
                             <i class="ph-fill ph-play text-black text-xl ml-1"></i>
@@ -683,7 +660,7 @@
             document.getElementById('radioPlayer').classList.add('translate-y-full', 'opacity-0');
             
             mainVideo.play().then(() => {
-                document.getElementById('playIcon').className = 'ph-fill ph-pause text-3xl md:text-4xl text-white';
+                document.getElementById('playIcon').className = 'ph-fill ph-pause text-4xl text-white';
             }).catch(e => console.log("Erro ao tocar vídeo:", e));
         }
 
@@ -698,10 +675,10 @@
         function togglePlay() {
             if (mainVideo.paused) {
                 mainVideo.play();
-                document.getElementById('playIcon').className = 'ph-fill ph-pause text-3xl md:text-4xl text-white';
+                document.getElementById('playIcon').className = 'ph-fill ph-pause text-4xl text-white';
             } else {
                 mainVideo.pause();
-                document.getElementById('playIcon').className = 'ph-fill ph-play text-3xl md:text-4xl text-white';
+                document.getElementById('playIcon').className = 'ph-fill ph-play text-4xl text-white';
             }
         }
 
