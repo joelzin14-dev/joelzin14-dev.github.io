@@ -9,7 +9,7 @@
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
     
-    <!-- HLS.js para reprodução de M3U8 -->
+    <!-- HLS.js para reprodução de streams M3U8 -->
     <script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
     
     <!-- Google Fonts -->
@@ -189,9 +189,9 @@
             <div class="flex gap-4 overflow-x-auto pb-4" id="videosRow"></div>
         </div>
 
-        <!-- Canais ao Vivo (M3U8) -->
+        <!-- Canais ao Vivo / Episódios (M3U8/MP4) -->
         <div class="max-w-7xl mx-auto px-6 md:px-12 py-12 space-y-3">
-            <h2 class="text-xl md:text-2xl font-semibold flex items-center gap-2"><i class="ph-fill ph-broadcast text-brand-500"></i> Canais ao Vivo</h2>
+            <h2 class="text-xl md:text-2xl font-semibold flex items-center gap-2"><i class="ph-fill ph-broadcast text-brand-500"></i> Episódios e Canais</h2>
             <div class="flex gap-4 overflow-x-auto pb-4" id="channelsRow">
                 <!-- Canais serão carregados dinamicamente do lista.m3u8 -->
             </div>
@@ -226,7 +226,7 @@
             <div id="playerOverlay" class="absolute inset-0 bg-gradient-to-t from-black/90 via-transparent to-black/60 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex flex-col justify-between p-6 md:p-10">
                 <div class="flex justify-between items-center">
                     <button onclick="closePlayer()" class="text-white hover:text-brand-500 transition flex items-center gap-2"><i class="ph ph-arrow-left text-2xl"></i><span class="font-medium hidden md:inline">Voltar</span></button>
-                    <h3 id="videoTitle" class="text-white font-medium text-center flex-1">Especial: 4 Anos</h3>
+                    <h3 id="videoTitle" class="text-white font-medium text-center flex-1 truncate px-4">Especial: 4 Anos</h3>
                     <button class="text-white hover:text-brand-500 transition"><i class="ph ph-heart text-2xl"></i></button>
                 </div>
                 <div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 flex items-center gap-8">
@@ -435,7 +435,7 @@
         }
 
         // ==========================================================
-        // FUNÇÕES PARA CANAIS M3U8 (IPTV)
+        // FUNÇÕES PARA CANAIS M3U8 / MP4 (IPTV)
         // ==========================================================
         async function loadChannels() {
             try {
@@ -475,15 +475,15 @@
 
                 channels.forEach((channel) => {
                     const div = document.createElement('div');
-                    div.className = 'flex-shrink-0 w-40 h-24 rounded-md overflow-hidden cursor-pointer hover:scale-105 hover:shadow-xl hover:shadow-brand-900/30 transition-all duration-300 relative group bg-neutral-900 border border-white/10';
+                    div.className = 'flex-shrink-0 w-48 h-28 rounded-md overflow-hidden cursor-pointer hover:scale-105 hover:shadow-xl hover:shadow-brand-900/30 transition-all duration-300 relative group bg-neutral-900 border border-white/10';
                     div.onclick = () => openLiveChannel(channel.url, channel.name);
                     div.innerHTML = `
-                        <img src="${channel.logo}" class="w-full h-full object-contain p-2 group-hover:brightness-110 transition" onerror="this.src='https://cdn-icons-png.flaticon.com/512/3010/3010989.png'">
+                        <img src="${channel.logo}" class="w-full h-full object-contain p-3 group-hover:brightness-110 transition" onerror="this.src='https://cdn-icons-png.flaticon.com/512/3010/3010989.png'">
                         <div class="absolute inset-0 flex items-center justify-center bg-black/60 opacity-0 group-hover:opacity-100 transition">
-                            <i class="ph-fill ph-play text-white text-2xl"></i>
+                            <i class="ph-fill ph-play text-white text-3xl"></i>
                         </div>
-                        <div class="absolute bottom-0 left-0 right-0 p-2 bg-gradient-to-t from-black/90 to-transparent">
-                            <span class="text-xs font-semibold truncate block text-center">${channel.name}</span>
+                        <div class="absolute bottom-0 left-0 right-0 p-2 bg-gradient-to-t from-black/95 to-transparent">
+                            <span class="text-xs font-semibold truncate block text-center leading-tight">${channel.name}</span>
                         </div>
                     `;
                     row.appendChild(div);
@@ -491,7 +491,7 @@
             } catch (error) {
                 console.error('Erro ao carregar canais:', error);
                 const row = document.getElementById('channelsRow');
-                if (row) row.innerHTML = '<p class="text-red-400 text-sm px-2">Erro ao carregar a lista de canais. Verifique se o arquivo lista.m3u8 está na raiz.</p>';
+                if (row) row.innerHTML = '<p class="text-red-400 text-sm px-2">Erro ao carregar a lista. Verifique se o arquivo lista.m3u8 está na raiz do servidor.</p>';
             }
         }
 
@@ -509,29 +509,53 @@
             
             const video = document.getElementById('mainVideo');
             
-            if (Hls.isSupported()) {
-                hlsInstance = new Hls();
-                hlsInstance.loadSource(url);
-                hlsInstance.attachMedia(video);
-                hlsInstance.on(Hls.Events.MANIFEST_PARSED, function() {
+            // DETECÇÃO INTELIGENTE: Verifica se é um arquivo de vídeo direto ou um stream M3U8
+            const isDirectVideo = url.includes('.mp4') || url.includes('.webm') || url.includes('.mkv') || url.includes('.mov');
+            const isM3U8 = url.includes('.m3u8') || url.includes('.m3u');
+
+            if (isDirectVideo) {
+                // Usa o player nativo do HTML5 para arquivos diretos (como os .mp4 da sua lista)
+                video.src = url;
+                video.load();
+                video.play().then(() => {
+                    document.getElementById('playIcon').className = 'ph-fill ph-pause text-4xl text-white';
+                }).catch(e => {
+                    console.error("Erro ao tocar vídeo direto:", e);
+                    alert("Não foi possível reproduzir este vídeo.");
+                });
+            } else if (isM3U8) {
+                // Usa HLS.js para streams ao vivo reais
+                if (Hls.isSupported()) {
+                    hlsInstance = new Hls();
+                    hlsInstance.loadSource(url);
+                    hlsInstance.attachMedia(video);
+                    hlsInstance.on(Hls.Events.MANIFEST_PARSED, function() {
+                        video.play().catch(e => console.log("Erro ao tocar:", e));
+                        document.getElementById('playIcon').className = 'ph-fill ph-pause text-4xl text-white';
+                    });
+                    hlsInstance.on(Hls.Events.ERROR, function (event, data) {
+                        if (data.fatal) {
+                            console.error("HLS Fatal Error:", data);
+                            alert("Erro ao reproduzir este stream. Tente outro.");
+                            closePlayer();
+                        }
+                    });
+                } else if (video.canPlayType('application/vnd.apple.mpegurl')) {
+                    // Fallback nativo para Safari
+                    video.src = url;
                     video.play().catch(e => console.log("Erro ao tocar:", e));
                     document.getElementById('playIcon').className = 'ph-fill ph-pause text-4xl text-white';
-                });
-                hlsInstance.on(Hls.Events.ERROR, function (event, data) {
-                    if (data.fatal) {
-                        console.error("HLS Fatal Error:", data);
-                        alert("Erro ao reproduzir este canal. Tente outro.");
-                        closePlayer();
-                    }
-                });
-            } else if (video.canPlayType('application/vnd.apple.mpegurl')) {
-                // Fallback nativo para Safari
-                video.src = url;
-                video.play().catch(e => console.log("Erro ao tocar:", e));
-                document.getElementById('playIcon').className = 'ph-fill ph-pause text-4xl text-white';
+                } else {
+                    alert("Seu navegador não suporta reprodução de streams M3U8.");
+                    closePlayer();
+                }
             } else {
-                alert("Seu navegador não suporta reprodução de streams M3U8.");
-                closePlayer();
+                // Tentativa genérica (fallback para player nativo)
+                video.src = url;
+                video.play().catch(e => {
+                    console.error("Erro genérico:", e);
+                    alert("Formato de mídia não suportado.");
+                });
             }
         }
 
@@ -562,7 +586,7 @@
             document.getElementById('radioPlayer').classList.remove('translate-y-full', 'opacity-0');
             
             populateVideos();
-            loadChannels(); // Carrega os canais M3U8
+            loadChannels(); // Carrega os canais/episódios do M3U8
             setupRadioEvents();
         }
 
@@ -749,13 +773,19 @@
             }
         }
 
-        function skipTime(seconds) { mainVideo.currentTime += seconds; }
+        function skipTime(seconds) { 
+            if (isFinite(mainVideo.duration)) {
+                mainVideo.currentTime += seconds; 
+            }
+        }
 
         function seekVideo(event) {
             const bar = event.currentTarget;
             const rect = bar.getBoundingClientRect();
             const percent = (event.clientX - rect.left) / rect.width;
-            mainVideo.currentTime = percent * mainVideo.duration;
+            if (isFinite(mainVideo.duration)) {
+                mainVideo.currentTime = percent * mainVideo.duration;
+            }
         }
 
         mainVideo.addEventListener('timeupdate', () => {
