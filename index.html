@@ -210,52 +210,64 @@
         <button onclick="navigateLightbox(1)" class="absolute right-4 md:right-8 top-1/2 -translate-y-1/2 w-12 h-12 rounded-full bg-white/10 hover:bg-brand-600 flex items-center justify-center transition backdrop-blur"><i class="ph ph-caret-right text-2xl"></i></button>
         <div id="lightboxCounter" class="absolute bottom-6 left-1/2 -translate-x-1/2 text-neutral-400 text-sm font-mono"></div>
     </div>
+    <!-- ==================== PLAYER DE RÁDIO FIXO ==================== -->
+    <div id="radioPlayer" class="fixed bottom-0 left-0 right-0 glass z-40 transition-transform duration-500 ease-in-out translate-y-full opacity-0">
+        <div class="max-w-7xl mx-auto px-3 py-2 sm:px-4 sm:py-3 flex flex-col sm:flex-row items-center gap-3 sm:gap-4 w-full">
+            
+            <!-- ESQUERDA (Mobile: Ocupa topo / Desktop: Lado esquerdo) -->
+            <div class="flex items-center gap-3 w-full sm:w-auto sm:flex-1 sm:min-w-[200px]">
+                <img id="radioCover" src="https://lh3.googleusercontent.com/d/1t_dAKnRP2iStAQCsLEukWaIyzTqXs358" class="w-12 h-12 sm:w-14 sm:h-14 rounded-md object-cover shadow-lg animate-pulse-slow flex-shrink-0" alt="Capa">
+                <div class="min-w-0 flex-1">
+                    <div id="radioTitle" class="text-sm font-semibold text-white truncate">Carregando...</div>
+                    <div class="text-xs text-neutral-400 truncate">Bianca & Joel Radio</div>
+                </div>
+            </div>
 
-    <!-- ==================== PLAYER DE VÍDEO ==================== -->
-    <div id="playerScreen" class="fixed inset-0 z-50 bg-black hidden">
-        <div class="relative w-full h-full group">
-            <video id="mainVideo" class="w-full h-full object-contain" playsinline></video>
-            <div id="playerOverlay" class="absolute inset-0 bg-gradient-to-t from-black/90 via-transparent to-black/60 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex flex-col justify-between p-6 md:p-10">
-                <div class="flex justify-between items-center">
-                    <button onclick="closePlayer()" class="text-white hover:text-brand-500 transition flex items-center gap-2"><i class="ph ph-arrow-left text-2xl"></i><span class="font-medium hidden md:inline">Voltar</span></button>
-                    <h3 id="videoTitle" class="text-white font-medium text-center flex-1">Especial: 4 Anos</h3>
-                    <button class="text-white hover:text-brand-500 transition"><i class="ph ph-heart text-2xl"></i></button>
-                </div>
-                <div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 flex items-center gap-8">
-                    <button onclick="skipTime(-10)" class="text-white/80 hover:text-white hover:scale-110 transition"><i class="ph ph-rewind text-4xl"></i></button>
-                    <button onclick="togglePlay()" class="w-20 h-20 rounded-full bg-white/20 backdrop-blur-md border border-white/30 flex items-center justify-center hover:bg-brand-600 hover:border-brand-600 transition transform hover:scale-110">
-                        <i class="ph-fill ph-play text-4xl text-white" id="playIcon"></i>
+            <!-- CENTRO (Controles e Progresso) -->
+            <div class="flex flex-col items-center w-full sm:flex-1 sm:max-w-xl">
+                <!-- Botões de Controle -->
+                <div class="flex items-center gap-4 sm:gap-6 mb-1 sm:mb-2">
+                    <button onclick="radioShuffle()" class="text-neutral-400 hover:text-white transition p-2 sm:p-0" title="Aleatório">
+                        <i class="ph ph-shuffle text-xl"></i>
                     </button>
-                    <button onclick="skipTime(10)" class="text-white/80 hover:text-white hover:scale-110 transition"><i class="ph ph-fast-forward text-4xl"></i></button>
+                    <button onclick="radioPrevious()" class="text-white hover:text-brand-500 transition p-2 sm:p-0" title="Anterior">
+                        <i class="ph-fill ph-skip-back text-2xl"></i>
+                    </button>
+                    
+                    <button onclick="radioTogglePlay()" id="radioPlayPause" class="w-12 h-12 sm:w-10 sm:h-10 bg-white text-black rounded-full flex items-center justify-center hover:scale-110 transition shadow-lg" title="Play/Pause">
+                        <i class="ph-fill ph-play text-xl"></i>
+                    </button>
+                    
+                    <button onclick="radioNext()" class="text-white hover:text-brand-500 transition p-2 sm:p-0" title="Próxima">
+                        <i class="ph-fill ph-skip-forward text-2xl"></i>
+                    </button>
+                    <button onclick="radioRepeat()" class="text-neutral-400 hover:text-white transition p-2 sm:p-0" title="Repetir">
+                        <i class="ph ph-repeat text-xl"></i>
+                    </button>
                 </div>
-                <div class="space-y-4">
-                    <div class="flex items-center gap-3 text-sm font-mono text-neutral-300">
-                        <span id="videoCurrentTime">0:00</span>
-                        <div class="flex-1 h-1.5 bg-white/20 rounded-full cursor-pointer group/progress relative" onclick="seekVideo(event)">
-                            <div id="videoProgressFilled" class="h-full bg-brand-500 rounded-full w-0 relative">
-                                <div class="absolute right-0 top-1/2 -translate-y-1/2 w-3 h-3 bg-white rounded-full opacity-0 group-hover/progress:opacity-100 transition shadow"></div>
-                            </div>
-                        </div>
-                        <span id="videoDuration">0:00</span>
+                
+                <!-- Barra de Progresso -->
+                <div class="w-full flex items-center gap-2 sm:gap-3 text-xs text-neutral-400 font-mono">
+                    <span id="radioCurrentTime" class="w-10 text-right">0:00</span>
+                    <div class="flex-1 h-1.5 sm:h-1 bg-neutral-700 rounded-full cursor-pointer group relative" onclick="seekRadio(event)">
+                        <div id="radioProgressFilled" class="h-full bg-brand-500 rounded-full w-0 group-hover:bg-brand-400 transition-all"></div>
+                        <!-- Bolinha para facilitar o toque no mobile -->
+                        <div class="absolute right-0 top-1/2 -translate-y-1/2 w-3 h-3 bg-white rounded-full opacity-100 sm:opacity-0 group-hover:opacity-100 transition shadow"></div>
                     </div>
-                    <div class="flex justify-between items-center">
-                        <div class="flex items-center gap-4">
-                            <button onclick="togglePlay()" class="hover:text-brand-500 transition"><i class="ph-fill ph-play-pause text-2xl"></i></button>
-                            <button onclick="skipTime(-10)" class="hover:text-brand-500 transition"><i class="ph ph-rewind text-xl"></i></button>
-                            <button onclick="skipTime(10)" class="hover:text-brand-500 transition"><i class="ph ph-fast-forward text-xl"></i></button>
-                            <div class="flex items-center gap-2 group/vol ml-4">
-                                <button onclick="toggleVideoMute()" id="videoMuteBtn"><i class="ph-fill ph-speaker-high text-xl"></i></button>
-                                <input type="range" id="videoVolumeSlider" min="0" max="1" step="0.01" value="0.15" oninput="changeVideoVolume(this.value)" class="w-0 group-hover/vol:w-24 transition-all duration-300 accent-brand-500">
-                            </div>
-                        </div>
-                        <div class="flex items-center gap-4">
-                            <button onclick="toggleFullscreenUI()" class="hover:text-brand-500 transition"><i class="ph ph-corners-out text-2xl"></i></button>
-                        </div>
-                    </div>
+                    <span id="radioDuration" class="w-10">0:00</span>
                 </div>
+            </div>
+
+            <!-- DIREITA (Volume - Oculto no mobile, visível no desktop) -->
+            <div class="hidden sm:flex items-center gap-3 flex-1 justify-end min-w-[150px]">
+                <button onclick="toggleRadioMute()" id="radioMuteBtn" class="text-neutral-400 hover:text-white transition p-2">
+                    <i class="ph-fill ph-speaker-high text-xl"></i>
+                </button>
+                <input type="range" id="radioVolumeSlider" min="0" max="1" step="0.01" value="0.15" oninput="changeRadioVolume(this.value)" class="w-24 accent-brand-500 cursor-pointer">
             </div>
         </div>
     </div>
+
 
     <script>
        const CORRECT_DATE = "29/05/21";
