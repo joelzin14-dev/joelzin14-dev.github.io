@@ -258,16 +258,22 @@
     </div>
 
     <script>
-        const CORRECT_DATE = "29/05/21";
-        const CORRECT_DATE_ALT = "29/05/2021";
-        const INITIAL_VOLUME = 0.15;
-        let isRadioPlaying = false;
-        let allImageUrls = [];
-        let selectedProfile = null;
-        let currentProfileIndex = 0;
+       const CORRECT_DATE = "29/05/21";
+const CORRECT_DATE_ALT = "29/05/2021";
+const INITIAL_VOLUME = 0.15;
+let isRadioPlaying = false;
+let allImageUrls = [];
+let selectedProfile = null;
+let currentProfileIndex = 0;
 
-        // Perfis pré-definidos com nomes
-        const profileNames = ["Bianca", "Joel", "Nós Dois"];
+// ==========================================================
+// CONFIGURAÇÃO DOS PERFIS (Cole suas 3 URLs específicas aqui)
+// ==========================================================
+const profilesConfig = [
+    { name: "Bianca", image: "https://lh3.googleusercontent.com/d/1GJcU8Fu_tqwb1-68896IJ_4Rs8FSzYkb" },
+    { name: "Joel", image: "https://lh3.googleusercontent.com/d/1dMLM_D2YIjS7O45CiMMeaDLRxLApUlF_" },
+    { name: "Nós Dois", image: "https://lh3.googleusercontent.com/d/14M0PMADvzbh4p7T6JeQj-RzAm1S0e9o-" }
+];
 
         const radioPlaylist = [
             { title: "Carregando...", url: "https://www.dropbox.com/scl/fi/20u71xoddg2hqec2re077/Moments-One-Direction.mp3?rlkey=ikf0uy0bec8hcynzit8j3uc2q&st=tqvfb2jp&dl=1" }
@@ -279,35 +285,24 @@
         let radioRepeatMode = false;
         const titleCache = new Map();
 
-        // Criar perfis dinamicamente
-        function createProfiles() {
-            const container = document.getElementById('profilesContainer');
-            container.innerHTML = '';
-            
-            // Usar as primeiras imagens do catálogo para os perfis
-           const profileImages = allImageUrls.length >= 3 ? 
-                allImageUrls.slice(29, 41, 9) :
-                [
-                  'https://lh3.googleusercontent.com/d/1GJcU8Fu_tqwb1-68896IJ_4Rs8FSzYkb',
-                  'https://lh3.googleusercontent.com/d/1dMLM_D2YIjS7O45CiMMeaDLRxLApUlF_',
-                  'https://lh3.googleusercontent.com/d/14M0PMADvzbh4p7T6JeQj-RzAm1S0e9o-'
-                ];
-
-            
-            profileNames.forEach((name, index) => {
-                const imgSrc = profileImages[index] || profileImages[0];
-                const div = document.createElement('div');
-                div.className = 'profile-card flex flex-col items-center gap-3 cursor-pointer group';
-                div.onclick = () => selectProfile(index, name, imgSrc);
-                div.innerHTML = `
-                    <div class="w-24 h-24 md:w-32 md:h-32 rounded-md overflow-hidden border-2 border-transparent group-hover:border-white transition-all duration-300">
-                        <img src="${imgSrc}" alt="${name}" class="w-full h-full object-cover">
-                    </div>
-                    <span class="profile-name text-sm md:text-base text-neutral-400 group-hover:text-white transition-opacity duration-300 opacity-70">${name}</span>
-                `;
-                container.appendChild(div);
-            });
-        }
+  // Criar perfis dinamicamente usando a configuração específica
+function createProfiles() {
+    const container = document.getElementById('profilesContainer');
+    container.innerHTML = '';
+    
+    profilesConfig.forEach((profile, index) => {
+        const div = document.createElement('div');
+        div.className = 'profile-card flex flex-col items-center gap-3 cursor-pointer group';
+        div.onclick = () => selectProfile(index, profile.name, profile.image);
+        div.innerHTML = `
+            <div class="w-24 h-24 md:w-32 md:h-32 rounded-md overflow-hidden border-2 border-transparent group-hover:border-white transition-all duration-300">
+                <img src="${profile.image}" alt="${profile.name}" class="w-full h-full object-cover">
+            </div>
+            <span class="profile-name text-sm md:text-base text-neutral-400 group-hover:text-white transition-opacity duration-300 opacity-70">${profile.name}</span>
+        `;
+        container.appendChild(div);
+    });
+}
 
         function selectProfile(index, name, image) {
             selectedProfile = { index, name, image };
