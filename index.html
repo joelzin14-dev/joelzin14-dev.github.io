@@ -270,7 +270,7 @@
         const profileNames = ["Bianca", "Joel", "Nós Dois"];
 
         const radioPlaylist = [
-            { title: "Carregando...", url: "https://www.dropbox.com/scl/fi/20u71xoddg2hqec2re077/Moments-One-Direction.mp3?rlkey=ikf0uy0bec8hcynzit8j3uc2q&st=tqvfb2jp&raw=1" }
+            { title: "Carregando...", url: "https://www.dropbox.com/scl/fi/20u71xoddg2hqec2re077/Moments-One-Direction.mp3?rlkey=ikf0uy0bec8hcynzit8j3uc2q&st=tqvfb2jp&dl=1" }
         ];
 
         const radioAudio = new Audio();
@@ -381,7 +381,7 @@
 
         async function loadImages() {
             try {
-                const response = await fetch('https://www.dropbox.com/scl/fi/8at4fo9764op5toovtiwd/fotos.json?rlkey=jhtq2dbfs4hk02eabapubu669&st=goi3q7bf&raw=1');
+                const response = await fetch('/ft.json');
                 if (!response.ok) throw new Error('Falha na rede');
                 allImageUrls = await response.json();
                 console.log(`✅ ${allImageUrls.length} fotos carregadas com sucesso do JSON!`);
