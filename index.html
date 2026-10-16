@@ -51,750 +51,759 @@
     </style>
 </head>
 <body class="bg-neutral-950 text-white antialiased pb-24">
-<!-- ==================== TELA DE PERFIS NETFLIX STYLE ==================== -->
-<div id="profileScreen" class="fixed inset-0 z-[100] bg-neutral-950 flex flex-col items-center justify-center">
-    <div class="text-center mb-12">
-        <h1 class="font-serif text-4xl md:text-6xl font-bold text-white mb-4">Quem está assistindo?</h1>
-    </div>
-    
-    <div class="flex flex-wrap justify-center gap-6 md:gap-10 px-4" id="profilesContainer">
-        <!-- Perfis serão gerados dinamicamente -->
-    </div>
-    
-    <button type="button" onclick="manageProfiles()" class="mt-16 px-6 py-2 border border-white/30 rounded text-white/70 hover:text-white hover:border-white transition">
-        Gerenciar perfis
-    </button>
-</div>
 
-<!-- ==================== MODAL DE DATA DE NAMORO ==================== -->
-<div id="dateModal" class="fixed inset-0 z-[110] bg-black/95 backdrop-blur-xl hidden flex items-center justify-center p-4">
-    <div class="bg-neutral-900 border border-white/10 rounded-2xl p-8 max-w-md w-full text-center space-y-6">
-        <div class="w-20 h-20 rounded-full overflow-hidden mx-auto border-4 border-brand-500">
-            <img id="modalProfileImage" src="" class="w-full h-full object-cover" alt="Foto do Perfil">
+    <!-- ==================== TELA DE PERFIS NETFLIX STYLE ==================== -->
+    <div id="profileScreen" class="fixed inset-0 z-[100] bg-neutral-950 flex flex-col items-center justify-center">
+        <div class="text-center mb-12">
+            <h1 class="font-serif text-4xl md:text-6xl font-bold text-white mb-4">Quem está assistindo?</h1>
         </div>
         
-        <div>
-            <h2 class="text-2xl font-bold mb-2" id="modalProfileName">Nome do Perfil</h2>
-            <p class="text-neutral-400">Para continuar, digite a data de namoro de vocês</p>
+        <div class="flex flex-wrap justify-center gap-6 md:gap-10 px-4" id="profilesContainer">
+            <!-- Perfis serão gerados dinamicamente -->
         </div>
         
-        <div class="space-y-2">
-            <label class="block text-sm text-neutral-400">Data de início do namoro</label>
-            <input type="text" id="dateInput" placeholder="DD/MM/AA" inputmode="numeric" pattern="[0-9]*" maxlength="8" class="date-input w-full px-4 py-3 rounded-lg text-center text-xl font-mono tracking-wider bg-neutral-800 text-white border border-white/10 focus:border-brand-500 focus:outline-none transition">
-            <p class="text-xs text-neutral-500">Formato: 01/01/20</p>
-        </div>
-        
-        <div id="dateError" class="text-red-500 text-sm hidden animate-shake">
-            <i class="ph-fill ph-warning-circle mr-1"></i> Data incorreta. Tente novamente!
-        </div>
-        
-        <div class="flex gap-3 pt-2">
-            <button type="button" onclick="closeDateModal()" class="flex-1 px-4 py-3 border border-white/20 rounded-lg hover:bg-white/5 transition text-white">
-                Cancelar
-            </button>
-            <button type="button" onclick="validateDate()" class="flex-1 px-4 py-3 bg-brand-600 hover:bg-brand-500 rounded-lg font-semibold transition text-white">
-                Entrar
-            </button>
-        </div>
-    </div>
-</div>
-
-<!-- OVERLAY DE INÍCIO (aparece após login) -->
-<div id="startOverlay" class="fixed inset-0 z-[9999] bg-black/95 backdrop-blur-xl flex flex-col items-center justify-center transition-opacity duration-700 hidden">
-    <div class="text-center space-y-6 animate-float px-4">
-        <h1 class="font-serif text-5xl md:text-7xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-brand-500 to-netflix text-glow">Bianca & Joel</h1>
-        <p class="text-neutral-400 text-lg md:text-xl max-w-md mx-auto">4 anos de uma história que merece ser assistida em alta definição.</p>
-        <button type="button" onclick="startExperience()" class="group relative px-8 py-4 bg-brand-600 hover:bg-brand-500 text-white font-semibold rounded-full transition-all duration-300 hover:scale-105 hover:shadow-[0_0_30px_rgba(225,29,72,0.6)] flex items-center gap-3 mx-auto">
-            <i class="ph-fill ph-play text-xl"></i> <span>Carregar nossa História</span>
+        <button onclick="manageProfiles()" class="mt-16 px-6 py-2 border border-white/30 rounded text-white/70 hover:text-white hover:border-white transition">
+            Gerenciar perfis
         </button>
     </div>
-</div>
 
-<!-- ==================== TELA PRINCIPAL ==================== -->
-<div id="detailScreen" class="hidden">
-    <!-- HERO COM VÍDEO DE FUNDO -->
-    <div class="relative h-[65vh] md:h-[80vh] w-full flex items-center overflow-hidden">
-        <!-- VÍDEO DE FUNDO -->
-        <video id="heroVideo" class="absolute inset-0 w-full h-full object-cover" autoplay muted loop playsinline preload="auto" poster="https://lh3.googleusercontent.com/d/1t_dAKnRP2iStAQCsLEukWaIyzTqXs358">
-            <source src="https://www.dropbox.com/scl/fi/lyeb08frpvhe7wh0tmvjb/BIANCA-E-JOEL.mp4?rlkey=0quqj5iqxy9b00n7ud4t49rbl&st=0swum96f&dl=1" type="video/mp4">
-        </video>
-        
-        <!-- Overlays para garantir legibilidade do texto -->
-        <div class="absolute inset-0 bg-gradient-to-r from-black/90 via-black/50 to-transparent z-10"></div>
-        <div class="absolute inset-0 bg-gradient-to-t from-neutral-950 via-transparent to-transparent z-10"></div>
-
-        <!-- Conteúdo do Hero -->
-        <div class="relative z-20 max-w-7xl mx-auto px-6 md:px-12 w-full">
-            <div class="flex-1 max-w-2xl space-y-6">
-                <div class="inline-block px-3 py-1 bg-brand-600/20 border border-brand-500/30 rounded-full text-brand-400 text-xs font-bold tracking-wider uppercase backdrop-blur-sm">4 Anos Juntos!</div>
-                <h1 class="font-serif text-5xl md:text-7xl font-bold leading-tight text-white drop-shadow-lg">Nossa História</h1>
-                <div class="flex flex-wrap items-center gap-3 text-sm text-neutral-200">
-                    <span class="text-green-400 font-bold">98% Match</span>
-                    <span>2022</span>
-                    <span class="border border-neutral-500 px-1.5 py-0.5 rounded text-xs">16</span>
-                    <span>4 Temporadas</span>
-                    <span class="bg-neutral-800/80 px-2 py-0.5 rounded text-xs font-semibold border border-neutral-700">HD</span>
-                </div>
-                <p class="text-lg text-neutral-200 leading-relaxed drop-shadow-md">
-                    Foram 4 anos de parceria, aventuras e provas de amor. Acompanhe a história de Bianca e Joel, um casal que prova que o final feliz é você quem faz! Siga para a próxima temporada!<br>
-                    Te amo, Princesa!
-                </p>
-                <div class="flex items-center gap-4 pt-2">
-                    <button type="button" onclick="openPlayer(0)" class="flex items-center gap-2 px-8 py-3 bg-white text-black font-bold rounded-md hover:bg-neutral-200 transition transform hover:scale-105 shadow-lg">
-                        <i class="ph-fill ph-play text-xl"></i> Assistir Especial
-                    </button>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- Seção de Vídeos -->
-    <div class="max-w-7xl mx-auto px-6 md:px-12 py-12 space-y-3">
-        <h2 class="text-xl md:text-2xl font-semibold flex items-center gap-2"><i class="ph-fill ph-film-strip text-brand-500"></i> Nossos Vídeos</h2>
-        <div class="flex gap-4 overflow-x-auto pb-4 scrollbar-hide" id="videosRow"></div>
-    </div>
-
-    <!-- Nossos Momentos (Dinâmico) -->
-    <div class="max-w-7xl mx-auto px-6 md:px-12 py-8 space-y-3">
-        <h2 class="text-xl md:text-2xl font-semibold flex items-center gap-2"><i class="ph-fill ph-heart text-brand-500"></i> Nossos Momentos</h2>
-        <div class="flex gap-4 overflow-x-auto pb-4 scrollbar-hide" id="highlightsRow"></div>
-    </div>
-
-    <!-- Galeria Completa (Dinâmica) -->
-    <div class="max-w-7xl mx-auto px-6 md:px-12 py-12">
-        <h2 class="text-xl md:text-2xl font-semibold mb-6 flex items-center gap-2"><i class="ph-fill ph-images text-brand-500"></i> Galeria Completa</h2>
-        <div class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-3" id="galleryGrid"></div>
-    </div>
-</div>
-
-<!-- ==================== LIGHTBOX ==================== -->
-<div id="lightbox" class="fixed inset-0 z-[60] bg-black/95 backdrop-blur-md hidden items-center justify-center p-4">
-    <button type="button" onclick="closeLightbox()" class="absolute top-6 right-6 text-white/70 hover:text-white hover:scale-110 transition z-50 p-2">
-        <i class="ph ph-x text-4xl"></i>
-    </button>
-    <button type="button" onclick="navigateLightbox(-1)" class="absolute left-4 md:left-8 top-1/2 -translate-y-1/2 w-12 h-12 rounded-full bg-white/10 hover:bg-brand-600 flex items-center justify-center transition backdrop-blur">
-        <i class="ph ph-caret-left text-2xl"></i>
-    </button>
-    <img id="lightboxImg" src="" class="max-w-full max-h-[85vh] object-contain rounded-lg shadow-2xl" alt="Imagem em destaque">
-    <button type="button" onclick="navigateLightbox(1)" class="absolute right-4 md:right-8 top-1/2 -translate-y-1/2 w-12 h-12 rounded-full bg-white/10 hover:bg-brand-600 flex items-center justify-center transition backdrop-blur">
-        <i class="ph ph-caret-right text-2xl"></i>
-    </button>
-    <div id="lightboxCounter" class="absolute bottom-6 left-1/2 -translate-x-1/2 text-neutral-400 text-sm font-mono"></div>
-</div>
-
-<!-- ==================== PLAYER DE RÁDIO FIXO (Versão Responsiva Otimizada) ==================== -->
-<div id="radioPlayer" class="fixed bottom-0 left-0 right-0 glass z-40 transition-transform duration-500 ease-in-out translate-y-full opacity-0">
-    <div class="max-w-7xl mx-auto px-3 py-2 sm:px-4 sm:py-3 flex flex-col sm:flex-row items-center gap-3 sm:gap-4 w-full">
-        
-        <!-- ESQUERDA (Mobile: Ocupa topo / Desktop: Lado esquerdo) -->
-        <div class="flex items-center gap-3 w-full sm:w-auto sm:flex-1 sm:min-w-[200px]">
-            <img id="radioCover" src="https://lh3.googleusercontent.com/d/1t_dAKnRP2iStAQCsLEukWaIyzTqXs358" class="w-12 h-12 sm:w-14 sm:h-14 rounded-md object-cover shadow-lg animate-pulse-slow flex-shrink-0" alt="Capa do Álbum">
-            <div class="min-w-0 flex-1">
-                <div id="radioTitle" class="text-sm font-semibold text-white truncate">Carregando...</div>
-                <div class="text-xs text-neutral-400 truncate">Bianca & Joel Radio</div>
-            </div>
-        </div>
-
-        <!-- CENTRO (Controles e Progresso) -->
-        <div class="flex flex-col items-center w-full sm:flex-1 sm:max-w-xl">
-            <!-- Botões de Controle -->
-            <div class="flex items-center gap-4 sm:gap-6 mb-1 sm:mb-2">
-                <button type="button" onclick="radioShuffle()" class="text-neutral-400 hover:text-white transition p-2 sm:p-0" title="Aleatório">
-                    <i class="ph ph-shuffle text-xl"></i>
-                </button>
-                <button type="button" onclick="radioPrevious()" class="text-white hover:text-brand-500 transition p-2 sm:p-0" title="Anterior">
-                    <i class="ph-fill ph-skip-back text-2xl"></i>
-                </button>
-                
-                <button type="button" onclick="radioTogglePlay()" id="radioPlayPause" class="w-12 h-12 sm:w-10 sm:h-10 bg-white text-black rounded-full flex items-center justify-center hover:scale-110 transition shadow-lg" title="Play/Pause">
-                    <i class="ph-fill ph-play text-xl"></i>
-                </button>
-                
-                <button type="button" onclick="radioNext()" class="text-white hover:text-brand-500 transition p-2 sm:p-0" title="Próxima">
-                    <i class="ph-fill ph-skip-forward text-2xl"></i>
-                </button>
-                <button type="button" onclick="radioRepeat()" class="text-neutral-400 hover:text-white transition p-2 sm:p-0" title="Repetir">
-                    <i class="ph ph-repeat text-xl"></i>
-                </button>
+    <!-- ==================== MODAL DE DATA DE NAMORO ==================== -->
+    <div id="dateModal" class="fixed inset-0 z-[110] bg-black/95 backdrop-blur-xl hidden flex items-center justify-center p-4">
+        <div class="bg-neutral-900 border border-white/10 rounded-2xl p-8 max-w-md w-full text-center space-y-6">
+            <div class="w-20 h-20 rounded-full overflow-hidden mx-auto border-4 border-brand-500">
+                <img id="modalProfileImage" src="" class="w-full h-full object-cover" alt="Profile">
             </div>
             
-            <!-- Barra de Progresso -->
-            <div class="w-full flex items-center gap-2 sm:gap-3 text-xs text-neutral-400 font-mono">
-                <span id="radioCurrentTime" class="w-10 text-right">0:00</span>
-                <div class="flex-1 h-1.5 sm:h-1 bg-neutral-700 rounded-full cursor-pointer group relative" onclick="seekRadio(event)">
-                    <div id="radioProgressFilled" class="h-full bg-brand-500 rounded-full w-0 group-hover:bg-brand-400 transition-all"></div>
-                    <!-- Bolinha para facilitar o toque no mobile -->
-                    <div class="absolute right-0 top-1/2 -translate-y-1/2 w-3 h-3 bg-white rounded-full opacity-100 sm:opacity-0 group-hover:opacity-100 transition shadow"></div>
-                </div>
-                <span id="radioDuration" class="w-10">0:00</span>
+            <div>
+                <h2 class="text-2xl font-bold mb-2" id="modalProfileName">Nome do Perfil</h2>
+                <p class="text-neutral-400">Para continuar, digite a data de namoro de vocês</p>
+            </div>
+            
+            <div class="space-y-2">
+                <label class="block text-sm text-neutral-400">Data de início do namoro</label>
+                <input type="text" id="dateInput" placeholder="DD/MM/AA" class="date-input w-full px-4 py-3 rounded-lg text-center text-xl font-mono tracking-wider" maxlength="8">
+                <p class="text-xs text-neutral-500">Formato: 01/01/20</p>
+            </div>
+            
+            <div id="dateError" class="text-red-500 text-sm hidden animate-shake">
+                <i class="ph-fill ph-warning-circle mr-1"></i> Data incorreta. Tente novamente!
+            </div>
+            
+            <div class="flex gap-3 pt-2">
+                <button onclick="closeDateModal()" class="flex-1 px-4 py-3 border border-white/20 rounded-lg hover:bg-white/5 transition">
+                    Cancelar
+                </button>
+                <button onclick="validateDate()" class="flex-1 px-4 py-3 bg-brand-600 hover:bg-brand-500 rounded-lg font-semibold transition">
+                    Entrar
+                </button>
             </div>
         </div>
+    </div>
 
-        <!-- DIREITA (Volume - Oculto no mobile, visível no desktop) -->
-        <div class="hidden sm:flex items-center gap-3 flex-1 justify-end min-w-[150px]">
-            <button type="button" onclick="toggleRadioMute()" id="radioMuteBtn" class="text-neutral-400 hover:text-white transition p-2" title="Mudo">
-                <i class="ph-fill ph-speaker-high text-xl"></i>
+    <!-- OVERLAY DE INÍCIO (aparece após login) -->
+    <div id="startOverlay" class="fixed inset-0 z-[9999] bg-black/95 backdrop-blur-xl flex flex-col items-center justify-center transition-opacity duration-700 hidden">
+        <div class="text-center space-y-6 animate-float">
+            <h1 class="font-serif text-5xl md:text-7xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-brand-500 to-netflix text-glow">Bianca & Joel</h1>
+            <p class="text-neutral-400 text-lg md:text-xl max-w-md mx-auto">4 anos de uma história que merece ser assistida em alta definição.</p>
+            <button onclick="startExperience()" class="group relative px-8 py-4 bg-brand-600 hover:bg-brand-500 text-white font-semibold rounded-full transition-all duration-300 hover:scale-105 hover:shadow-[0_0_30px_rgba(225,29,72,0.6)] flex items-center gap-3 mx-auto">
+                <i class="ph-fill ph-play text-xl"></i> <span>Carregar nossa História</span>
             </button>
-            <input type="range" id="radioVolumeSlider" min="0" max="1" step="0.01" value="0.15" oninput="changeRadioVolume(this.value)" class="w-24 accent-brand-500 cursor-pointer" title="Volume">
         </div>
     </div>
-</div>
 
-    <script>const CORRECT_DATE = "29/05/21";
-const CORRECT_DATE_ALT = "29/05/2021";
-const INITIAL_VOLUME = 0.15;
-
-let isRadioPlaying = false;
-let allImageUrls = [];
-let selectedProfile = null;
-let currentProfileIndex = 0;
-
-// ==========================================================
-// CONFIGURAÇÃO DOS PERFIS
-// ==========================================================
-const profilesConfig = [
-    { name: "Bianca", image: "https://lh3.googleusercontent.com/d/1GJcU8Fu_tqwb1-68896IJ_4Rs8FSzYkb" },
-    { name: "Joel", image: "https://lh3.googleusercontent.com/d/1dMLM_D2YIjS7O45CiMMeaDLRxLApUlF_" },
-    { name: "Nós Dois", image: "https://lh3.googleusercontent.com/d/14M0PMADvzbh4p7T6JeQj-RzAm1S0e9o-" }
-];
-
-const radioPlaylist = [
-    { title: "Carregando...", url: "https://www.dropbox.com/scl/fi/20u71xoddg2hqec2re077/Moments-One-Direction.mp3?rlkey=ikf0uy0bec8hcynzit8j3uc2q&st=tqvfb2jp&dl=1" }
-];
-
-const radioAudio = new Audio();
-let currentRadioIndex = 0;
-let radioShuffleMode = false;
-let radioRepeatMode = false;
-const titleCache = new Map();
-
-// Variáveis do Player de Vídeo (com verificação de segurança)
-let mainVideo = null;
-
-// ==========================================================
-// FUNÇÕES DE PERFIL E DATA
-// ==========================================================
-function createProfiles() {
-    const container = document.getElementById('profilesContainer');
-    if (!container) return;
-    container.innerHTML = '';
-    
-    profilesConfig.forEach((profile, index) => {
-        const div = document.createElement('div');
-        div.className = 'profile-card flex flex-col items-center gap-3 cursor-pointer group';
-        div.onclick = () => selectProfile(index, profile.name, profile.image);
-        div.innerHTML = `
-            <div class="w-24 h-24 md:w-32 md:h-32 rounded-md overflow-hidden border-2 border-transparent group-hover:border-white transition-all duration-300">
-                <img src="${profile.image}" alt="${profile.name}" class="w-full h-full object-cover" loading="lazy">
-            </div>
-            <span class="profile-name text-sm md:text-base text-neutral-400 group-hover:text-white transition-opacity duration-300 opacity-70">${profile.name}</span>
-        `;
-        container.appendChild(div);
-    });
-}
-
-function selectProfile(index, name, image) {
-    selectedProfile = { index, name, image };
-    document.getElementById('modalProfileName').textContent = name;
-    document.getElementById('modalProfileImage').src = image;
-    
-    const dateInput = document.getElementById('dateInput');
-    dateInput.value = '';
-    dateInput.classList.remove('border-red-500');
-    document.getElementById('dateError').classList.add('hidden');
-    
-    const modal = document.getElementById('dateModal');
-    modal.classList.remove('hidden');
-    modal.classList.add('flex');
-    
-    setTimeout(() => dateInput.focus(), 100);
-}
-
-function closeDateModal() {
-    const modal = document.getElementById('dateModal');
-    modal.classList.add('hidden');
-    modal.classList.remove('flex');
-    selectedProfile = null;
-}
-
-function validateDate() {
-    const input = document.getElementById('dateInput').value.trim();
-    const errorDiv = document.getElementById('dateError');
-    const dateInput = document.getElementById('dateInput');
-    
-    if (input === CORRECT_DATE || input === CORRECT_DATE_ALT) {
-        closeDateModal();
-        showStartOverlay();
-    } else {
-        errorDiv.classList.remove('hidden');
-        dateInput.classList.add('border-red-500');
-        setTimeout(() => dateInput.classList.remove('border-red-500'), 500);
-    }
-}
-
-function showStartOverlay() {
-    const profileScreen = document.getElementById('profileScreen');
-    profileScreen.style.opacity = '0';
-    setTimeout(() => {
-        profileScreen.style.display = 'none';
-        const startOverlay = document.getElementById('startOverlay');
-        startOverlay.classList.remove('hidden');
-        // Força reflow para a transição de opacidade funcionar
-        requestAnimationFrame(() => {
-            startOverlay.style.opacity = '1';
-        });
-    }, 700);
-}
-
-// ==========================================================
-// FUNÇÕES DE RÁDIO
-// ==========================================================
-async function fetchSongTitle(url) {
-    if (titleCache.has(url)) return titleCache.get(url);
-    try {
-        // Nota: Links do Dropbox podem ter bloqueio de CORS no fetch. O fallback será usado.
-        const response = await fetch(url, { method: 'HEAD' });
-        const contentDisposition = response.headers.get('content-disposition');
-        if (contentDisposition) {
-            const filenameStarMatch = contentDisposition.match(/filename\*=(?:UTF-8''|utf-8'')([^;\s]+)/i);
-            if (filenameStarMatch) {
-                let filename = decodeURIComponent(filenameStarMatch[1]);
-                filename = filename.replace(/\.(mp4|mp3|wav|ogg)$/i, '').replace(/_/g, ' ');
-                titleCache.set(url, filename);
-                return filename;
-            }
-        }
-    } catch (error) {
-        console.warn("CORS ou erro de rede ao buscar título da música. Usando fallback.");
-    }
-    
-    const fallback = "Música " + (currentRadioIndex + 1);
-    titleCache.set(url, fallback);
-    return fallback;
-}
-
-function setupRadioEvents() {
-    radioAudio.addEventListener('ended', () => {
-        if (radioRepeatMode) {
-            radioAudio.currentTime = 0;
-            radioAudio.play();
-        } else {
-            radioNext();
-        }
-    });
-    radioAudio.addEventListener('timeupdate', updateRadioProgress);
-    radioAudio.addEventListener('loadedmetadata', updateRadioDuration);
-    radioAudio.addEventListener('error', (e) => {
-        console.error("❌ Erro ao carregar o áudio:", radioAudio.error);
-        radioNext();
-    });
-}
-
-function updateRadioInfo() {
-    document.getElementById('radioTitle').textContent = radioPlaylist[currentRadioIndex].title;
-}
-
-function radioTogglePlay() {
-    if (radioAudio.paused) {
-        radioAudio.play().then(() => {
-            isRadioPlaying = true;
-            document.getElementById('radioPlayPause').innerHTML = '<i class="ph-fill ph-pause text-xl"></i>';
-        }).catch(e => console.log("Aguardando interação do usuário:", e));
-    } else {
-        radioAudio.pause();
-        isRadioPlaying = false;
-        document.getElementById('radioPlayPause').innerHTML = '<i class="ph-fill ph-play text-xl"></i>';
-    }
-}
-
-async function radioNext() {
-    currentRadioIndex = radioShuffleMode ? Math.floor(Math.random() * radioPlaylist.length) : (currentRadioIndex + 1) % radioPlaylist.length;
-    radioAudio.src = radioPlaylist[currentRadioIndex].url;
-    // REMOVIDO: radioAudio.volume = INITIAL_VOLUME; (Não reseta o volume escolhido pelo usuário)
-    
-    const newTitle = await fetchSongTitle(radioPlaylist[currentRadioIndex].url);
-    radioPlaylist[currentRadioIndex].title = newTitle;
-    updateRadioInfo();
-    
-    radioAudio.play().then(() => {
-        isRadioPlaying = true;
-        document.getElementById('radioPlayPause').innerHTML = '<i class="ph-fill ph-pause text-xl"></i>';
-    }).catch(e => console.log("Erro ao tocar próxima:", e));
-}
-
-async function radioPrevious() {
-    currentRadioIndex = (currentRadioIndex - 1 + radioPlaylist.length) % radioPlaylist.length;
-    radioAudio.src = radioPlaylist[currentRadioIndex].url;
-    // REMOVIDO: radioAudio.volume = INITIAL_VOLUME;
-    
-    const prevTitle = await fetchSongTitle(radioPlaylist[currentRadioIndex].url);
-    radioPlaylist[currentRadioIndex].title = prevTitle;
-    updateRadioInfo();
-    
-    if (isRadioPlaying) {
-        radioAudio.play().catch(e => console.log("Erro ao tocar anterior:", e));
-    }
-}
-
-function updateRadioProgress() {
-    if (radioAudio.duration) {
-        const percent = (radioAudio.currentTime / radioAudio.duration) * 100;
-        document.getElementById('radioProgressFilled').style.width = percent + '%';
-        document.getElementById('radioCurrentTime').textContent = formatTime(radioAudio.currentTime);
-    }
-}
-
-function updateRadioDuration() {
-    document.getElementById('radioDuration').textContent = formatTime(radioAudio.duration);
-}
-
-// CORREÇÃO: Suporte a eventos de toque (mobile) e mouse
-function seekRadio(event) {
-    const bar = event.currentTarget;
-    const rect = bar.getBoundingClientRect();
-    const clientX = event.touches ? event.touches[0].clientX : event.clientX;
-    const percent = Math.max(0, Math.min(1, (clientX - rect.left) / rect.width));
-    radioAudio.currentTime = percent * radioAudio.duration;
-}
-
-function toggleRadioMute() {
-    radioAudio.muted = !radioAudio.muted;
-    updateRadioVolumeIcon(radioAudio.muted ? 0 : radioAudio.volume);
-    document.getElementById('radioVolumeSlider').value = radioAudio.muted ? 0 : radioAudio.volume;
-}
-
-function changeRadioVolume(val) {
-    radioAudio.volume = val;
-    radioAudio.muted = val == 0;
-    updateRadioVolumeIcon(val);
-}
-
-function updateRadioVolumeIcon(val) {
-    const icon = document.querySelector('#radioMuteBtn i');
-    if (!icon) return;
-    if (val == 0) icon.className = 'ph-fill ph-speaker-slash text-xl';
-    else if (val < 0.5) icon.className = 'ph-fill ph-speaker-low text-xl';
-    else icon.className = 'ph-fill ph-speaker-high text-xl';
-}
-
-// CORREÇÃO: Adicionado parâmetro 'event' para evitar erro de variável global
-function radioShuffle(event) {
-    radioShuffleMode = !radioShuffleMode;
-    event.currentTarget.classList.toggle('text-brand-500', radioShuffleMode);
-}
-
-function radioRepeat(event) {
-    radioRepeatMode = !radioRepeatMode;
-    event.currentTarget.classList.toggle('text-brand-500', radioRepeatMode);
-}
-
-// ==========================================================
-// FUNÇÕES DE VÍDEO E GALERIA
-// ==========================================================
-const videosList = [
-    {
-        title: "Especial: 4 Anos de Nós ❤️",
-        thumbnail: "https://lh3.googleusercontent.com/d/1t_dAKnRP2iStAQCsLEukWaIyzTqXs358",
-        url: "https://www.dropbox.com/scl/fi/lyeb08frpvhe7wh0tmvjb/BIANCA-E-JOEL.mp4?rlkey=0quqj5iqxy9b00n7ud4t49rbl&st=0swum96f&dl=1"
-    }
-    // ... (mantenha o restante da sua lista de vídeos aqui)
-];
-
-function populateVideos() {
-    const row = document.getElementById('videosRow');
-    if (!row) return;
-    row.innerHTML = '';
-    videosList.forEach((video, index) => {
-        const div = document.createElement('div');
-        div.className = 'flex-shrink-0 w-64 h-36 rounded-md overflow-hidden cursor-pointer hover:scale-105 hover:shadow-xl hover:shadow-brand-900/30 transition-all duration-300 relative group';
-        div.onclick = () => openPlayer(index);
-        div.innerHTML = `
-            <img src="${video.thumbnail}" class="w-full h-full object-cover group-hover:brightness-110 transition" loading="lazy">
-            <div class="absolute inset-0 flex items-center justify-center bg-black/30 group-hover:bg-black/10 transition">
-                <div class="w-12 h-12 rounded-full bg-white/90 flex items-center justify-center shadow-lg group-hover:scale-110 transition">
-                    <i class="ph-fill ph-play text-black text-xl ml-1"></i>
+    <!-- ==================== PLAYER DE RÁDIO FIXO ==================== -->
+    <div id="radioPlayer" class="fixed bottom-0 left-0 right-0 glass z-40 transition-transform duration-500 ease-in-out translate-y-full opacity-0">
+        <div class="max-w-7xl mx-auto px-4 py-3 flex items-center justify-between gap-4">
+            <div class="flex items-center gap-4 min-w-[200px] flex-1">
+                <img id="radioCover" src="https://lh3.googleusercontent.com/d/1t_dAKnRP2iStAQCsLEukWaIyzTqXs358" class="w-14 h-14 rounded-md object-cover shadow-lg animate-pulse-slow" alt="Capa">
+                <div class="hidden sm:block">
+                    <div id="radioTitle" class="text-sm font-semibold text-white truncate max-w-[200px]">Carregando...</div>
+                    <div class="text-xs text-neutral-400">Bianca & Joel Radio</div>
                 </div>
             </div>
-            <div class="absolute bottom-0 left-0 right-0 p-3 bg-gradient-to-t from-black/90 to-transparent">
-                <span class="text-sm font-semibold text-white drop-shadow-md">${video.title}</span>
+
+            <div class="flex flex-col items-center flex-1 max-w-xl">
+                <div class="flex items-center gap-5 mb-1">
+                    <button onclick="radioShuffle()" class="text-neutral-400 hover:text-white transition" title="Aleatório"><i class="ph ph-shuffle text-xl"></i></button>
+                    <button onclick="radioPrevious()" class="text-white hover:text-brand-500 transition" title="Anterior"><i class="ph-fill ph-skip-back text-2xl"></i></button>
+                    <button onclick="radioTogglePlay()" id="radioPlayPause" class="w-10 h-10 bg-white text-black rounded-full flex items-center justify-center hover:scale-110 transition shadow-lg" title="Play/Pause">
+                        <i class="ph-fill ph-play text-xl"></i>
+                    </button>
+                    <button onclick="radioNext()" class="text-white hover:text-brand-500 transition" title="Próxima"><i class="ph-fill ph-skip-forward text-2xl"></i></button>
+                    <button onclick="radioRepeat()" class="text-neutral-400 hover:text-white transition" title="Repetir"><i class="ph ph-repeat text-xl"></i></button>
+                </div>
+                <div class="w-full flex items-center gap-3 text-xs text-neutral-400 font-mono">
+                    <span id="radioCurrentTime">0:00</span>
+                    <div class="flex-1 h-1 bg-neutral-700 rounded-full cursor-pointer group relative" onclick="seekRadio(event)">
+                        <div id="radioProgressFilled" class="h-full bg-brand-500 rounded-full w-0 group-hover:bg-brand-400 transition-all"></div>
+                    </div>
+                    <span id="radioDuration">0:00</span>
+                </div>
             </div>
-        `;
-        row.appendChild(div);
-    });
-}
 
-function openPlayer(index) {
-    mainVideo = document.getElementById('mainVideo'); // Garante que o elemento existe
-    const video = videosList[index];
-    
-    if (!mainVideo) {
-        console.error("Elemento 'mainVideo' não encontrado no HTML. Adicione a seção do player de vídeo.");
-        return;
-    }
+            <div class="flex items-center gap-3 flex-1 justify-end min-w-[150px]">
+                <button onclick="toggleRadioMute()" id="radioMuteBtn" class="text-neutral-400 hover:text-white transition"><i class="ph-fill ph-speaker-high text-xl"></i></button>
+                <input type="range" id="radioVolumeSlider" min="0" max="1" step="0.01" value="0.15" oninput="changeRadioVolume(this.value)" class="w-24 accent-brand-500">
+            </div>
+        </div>
+    </div>
 
-    mainVideo.src = video.url;
-    mainVideo.volume = INITIAL_VOLUME;
-    
-    const volSlider = document.getElementById('videoVolumeSlider');
-    if (volSlider) volSlider.value = INITIAL_VOLUME;
-    updateVideoVolumeIcon(INITIAL_VOLUME);
-    
-    const titleEl = document.getElementById('videoTitle');
-    if (titleEl) titleEl.textContent = video.title;
-    
-    const detailScreen = document.getElementById('detailScreen');
-    const playerScreen = document.getElementById('playerScreen');
-    const radioPlayer = document.getElementById('radioPlayer');
-
-    if (detailScreen) detailScreen.style.display = 'none';
-    if (playerScreen) playerScreen.classList.remove('hidden');
-    if (radioPlayer) radioPlayer.classList.add('translate-y-full', 'opacity-0');
-    
-    mainVideo.play().then(() => {
-        const playIcon = document.getElementById('playIcon');
-        if (playIcon) playIcon.className = 'ph-fill ph-pause text-4xl text-white';
-    }).catch(e => console.log("Erro ao tocar vídeo:", e));
-}
-
-function closePlayer() {
-    if (mainVideo) {
-        mainVideo.pause();
-        mainVideo.src = "";
-    }
-    const playerScreen = document.getElementById('playerScreen');
-    if (playerScreen) playerScreen.classList.add('hidden');
-    
-    const detailScreen = document.getElementById('detailScreen');
-    if (detailScreen) detailScreen.style.display = 'block';
-    
-    const radioPlayer = document.getElementById('radioPlayer');
-    if (radioPlayer) radioPlayer.classList.remove('translate-y-full', 'opacity-0');
-}
-
-function togglePlay() {
-    if (!mainVideo) return;
-    if (mainVideo.paused) {
-        mainVideo.play();
-        const playIcon = document.getElementById('playIcon');
-        if (playIcon) playIcon.className = 'ph-fill ph-pause text-4xl text-white';
-    } else {
-        mainVideo.pause();
-        const playIcon = document.getElementById('playIcon');
-        if (playIcon) playIcon.className = 'ph-fill ph-play text-4xl text-white';
-    }
-}
-
-function skipTime(seconds) { 
-    if (mainVideo) mainVideo.currentTime += seconds; 
-}
-
-// CORREÇÃO: Suporte a eventos de toque (mobile) e mouse
-function seekVideo(event) {
-    if (!mainVideo) return;
-    const bar = event.currentTarget;
-    const rect = bar.getBoundingClientRect();
-    const clientX = event.touches ? event.touches[0].clientX : event.clientX;
-    const percent = Math.max(0, Math.min(1, (clientX - rect.left) / rect.width));
-    mainVideo.currentTime = percent * mainVideo.duration;
-}
-
-function setupVideoEvents() {
-    if (!mainVideo) return;
-    mainVideo.addEventListener('timeupdate', () => {
-        if (mainVideo.duration) {
-            const percent = (mainVideo.currentTime / mainVideo.duration) * 100;
-            const progress = document.getElementById('videoProgressFilled');
-            if (progress) progress.style.width = percent + '%';
+    <!-- ==================== TELA PRINCIPAL ==================== -->
+    <div id="detailScreen" class="hidden">
+        <!-- HERO COM VÍDEO DE FUNDO -->
+        <div class="relative h-[65vh] md:h-[80vh] w-full flex items-center overflow-hidden">
+            <!--  VÍDEO DE FUNDO -->
+            <video id="heroVideo" class="absolute inset-0 w-full h-full object-cover" autoplay muted loop playsinline preload="auto">
+                <source src="https://www.dropbox.com/scl/fi/lyeb08frpvhe7wh0tmvjb/BIANCA-E-JOEL.mp4?rlkey=0quqj5iqxy9b00n7ud4t49rbl&st=0swum96f&dl=1" type="video/mp4">
+            </video>
             
-            const currentTime = document.getElementById('videoCurrentTime');
-            if (currentTime) currentTime.textContent = formatTime(mainVideo.currentTime);
+            <!-- Overlays para garantir legibilidade do texto -->
+            <div class="absolute inset-0 bg-gradient-to-r from-black/90 via-black/50 to-transparent z-10"></div>
+            <div class="absolute inset-0 bg-gradient-to-t from-neutral-950 via-transparent to-transparent z-10"></div>
+
+            <!-- Conteúdo do Hero -->
+            <div class="relative z-20 max-w-7xl mx-auto px-6 md:px-12 w-full">
+                <div class="flex-1 max-w-2xl space-y-6">
+                    <div class="inline-block px-3 py-1 bg-brand-600/20 border border-brand-500/30 rounded-full text-brand-400 text-xs font-bold tracking-wider uppercase backdrop-blur-sm">4 Anos Juntos!</div>
+                    <h1 class="font-serif text-5xl md:text-7xl font-bold leading-tight text-white drop-shadow-lg">Nossa História</h1>
+                    <div class="flex flex-wrap items-center gap-3 text-sm text-neutral-200">
+                        <span class="text-green-400 font-bold">98% Match</span>
+                        <span>2022</span>
+                        <span class="border border-neutral-500 px-1.5 py-0.5 rounded text-xs">16</span>
+                        <span>4 Temporadas</span>
+                        <span class="bg-neutral-800/80 px-2 py-0.5 rounded text-xs font-semibold border border-neutral-700">HD</span>
+                    </div>
+                    <p class="text-lg text-neutral-200 leading-relaxed drop-shadow-md">Quatro anos de risadas, aventuras, cumplicidade e um amor que só cresce. Acompanhe a história de Bianca e Joel, um casal que prova que o final feliz é apenas o começo de uma nova e incrível temporada.</p>
+                    <div class="flex items-center gap-4 pt-2">
+                        <button onclick="openPlayer(0)" class="flex items-center gap-2 px-8 py-3 bg-white text-black font-bold rounded-md hover:bg-neutral-200 transition transform hover:scale-105 shadow-lg">
+                            <i class="ph-fill ph-play text-xl"></i> Assistir Especial
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Seção de Vídeos -->
+        <div class="max-w-7xl mx-auto px-6 md:px-12 py-12 space-y-3">
+            <h2 class="text-xl md:text-2xl font-semibold flex items-center gap-2"><i class="ph-fill ph-film-strip text-brand-500"></i> Nossos Vídeos</h2>
+            <div class="flex gap-4 overflow-x-auto pb-4" id="videosRow"></div>
+        </div>
+
+        <!-- Nossos Momentos (Dinâmico) -->
+        <div class="max-w-7xl mx-auto px-6 md:px-12 py-8 space-y-3">
+            <h2 class="text-xl md:text-2xl font-semibold flex items-center gap-2"><i class="ph-fill ph-heart text-brand-500"></i> Nossos Momentos</h2>
+            <div class="flex gap-4 overflow-x-auto pb-4" id="highlightsRow"></div>
+        </div>
+
+        <!-- Galeria Completa (Dinâmica) -->
+        <div class="max-w-7xl mx-auto px-6 md:px-12 py-12">
+            <h2 class="text-xl md:text-2xl font-semibold mb-6 flex items-center gap-2"><i class="ph-fill ph-images text-brand-500"></i> Galeria Completa</h2>
+            <div class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-3" id="galleryGrid"></div>
+        </div>
+    </div>
+
+    <!-- ==================== LIGHTBOX ==================== -->
+    <div id="lightbox" class="fixed inset-0 z-[60] bg-black/95 backdrop-blur-md hidden items-center justify-center p-4">
+        <button onclick="closeLightbox()" class="absolute top-6 right-6 text-white/70 hover:text-white hover:scale-110 transition z-50"><i class="ph ph-x text-4xl"></i></button>
+        <button onclick="navigateLightbox(-1)" class="absolute left-4 md:left-8 top-1/2 -translate-y-1/2 w-12 h-12 rounded-full bg-white/10 hover:bg-brand-600 flex items-center justify-center transition backdrop-blur"><i class="ph ph-caret-left text-2xl"></i></button>
+        <img id="lightboxImg" src="" class="max-w-full max-h-[85vh] object-contain rounded-lg shadow-2xl">
+        <button onclick="navigateLightbox(1)" class="absolute right-4 md:right-8 top-1/2 -translate-y-1/2 w-12 h-12 rounded-full bg-white/10 hover:bg-brand-600 flex items-center justify-center transition backdrop-blur"><i class="ph ph-caret-right text-2xl"></i></button>
+        <div id="lightboxCounter" class="absolute bottom-6 left-1/2 -translate-x-1/2 text-neutral-400 text-sm font-mono"></div>
+    </div>
+
+    <!-- ==================== PLAYER DE VÍDEO ==================== -->
+    <div id="playerScreen" class="fixed inset-0 z-50 bg-black hidden">
+        <div class="relative w-full h-full group">
+            <video id="mainVideo" class="w-full h-full object-contain" playsinline></video>
+            <div id="playerOverlay" class="absolute inset-0 bg-gradient-to-t from-black/90 via-transparent to-black/60 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex flex-col justify-between p-6 md:p-10">
+                <div class="flex justify-between items-center">
+                    <button onclick="closePlayer()" class="text-white hover:text-brand-500 transition flex items-center gap-2"><i class="ph ph-arrow-left text-2xl"></i><span class="font-medium hidden md:inline">Voltar</span></button>
+                    <h3 id="videoTitle" class="text-white font-medium text-center flex-1">Especial: 4 Anos</h3>
+                    <button class="text-white hover:text-brand-500 transition"><i class="ph ph-heart text-2xl"></i></button>
+                </div>
+                <div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 flex items-center gap-8">
+                    <button onclick="skipTime(-10)" class="text-white/80 hover:text-white hover:scale-110 transition"><i class="ph ph-rewind text-4xl"></i></button>
+                    <button onclick="togglePlay()" class="w-20 h-20 rounded-full bg-white/20 backdrop-blur-md border border-white/30 flex items-center justify-center hover:bg-brand-600 hover:border-brand-600 transition transform hover:scale-110">
+                        <i class="ph-fill ph-play text-4xl text-white" id="playIcon"></i>
+                    </button>
+                    <button onclick="skipTime(10)" class="text-white/80 hover:text-white hover:scale-110 transition"><i class="ph ph-fast-forward text-4xl"></i></button>
+                </div>
+                <div class="space-y-4">
+                    <div class="flex items-center gap-3 text-sm font-mono text-neutral-300">
+                        <span id="videoCurrentTime">0:00</span>
+                        <div class="flex-1 h-1.5 bg-white/20 rounded-full cursor-pointer group/progress relative" onclick="seekVideo(event)">
+                            <div id="videoProgressFilled" class="h-full bg-brand-500 rounded-full w-0 relative">
+                                <div class="absolute right-0 top-1/2 -translate-y-1/2 w-3 h-3 bg-white rounded-full opacity-0 group-hover/progress:opacity-100 transition shadow"></div>
+                            </div>
+                        </div>
+                        <span id="videoDuration">0:00</span>
+                    </div>
+                    <div class="flex justify-between items-center">
+                        <div class="flex items-center gap-4">
+                            <button onclick="togglePlay()" class="hover:text-brand-500 transition"><i class="ph-fill ph-play-pause text-2xl"></i></button>
+                            <button onclick="skipTime(-10)" class="hover:text-brand-500 transition"><i class="ph ph-rewind text-xl"></i></button>
+                            <button onclick="skipTime(10)" class="hover:text-brand-500 transition"><i class="ph ph-fast-forward text-xl"></i></button>
+                            <div class="flex items-center gap-2 group/vol ml-4">
+                                <button onclick="toggleVideoMute()" id="videoMuteBtn"><i class="ph-fill ph-speaker-high text-xl"></i></button>
+                                <input type="range" id="videoVolumeSlider" min="0" max="1" step="0.01" value="0.15" oninput="changeVideoVolume(this.value)" class="w-0 group-hover/vol:w-24 transition-all duration-300 accent-brand-500">
+                            </div>
+                        </div>
+                        <div class="flex items-center gap-4">
+                            <button onclick="toggleFullscreenUI()" class="hover:text-brand-500 transition"><i class="ph ph-corners-out text-2xl"></i></button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const CORRECT_DATE = "29/05/21";
+        const CORRECT_DATE_ALT = "29/05/2021";
+        const INITIAL_VOLUME = 0.15;
+        let isRadioPlaying = false;
+        let allImageUrls = [];
+        let selectedProfile = null;
+        let currentProfileIndex = 0;
+
+        // Perfis pré-definidos com nomes
+        const profileNames = ["Bianca", "Joel", "Nós Dois"];
+
+        const radioPlaylist = [
+            { title: "Carregando...", url: "https://www.dropbox.com/scl/fi/20u71xoddg2hqec2re077/Moments-One-Direction.mp3?rlkey=ikf0uy0bec8hcynzit8j3uc2q&st=tqvfb2jp&dl=1" }
+        ];
+
+        const radioAudio = new Audio();
+        let currentRadioIndex = 0;
+        let radioShuffleMode = false;
+        let radioRepeatMode = false;
+        const titleCache = new Map();
+
+        // Criar perfis dinamicamente
+        function createProfiles() {
+            const container = document.getElementById('profilesContainer');
+            container.innerHTML = '';
             
-            const duration = document.getElementById('videoDuration');
-            if (duration) duration.textContent = formatTime(mainVideo.duration);
+            // Usar as primeiras imagens do catálogo para os perfis
+           const profileImages = allImageUrls.length >= 3 ? 
+                allImageUrls.slice(29, 41, 9) :
+                [
+                  'https://lh3.googleusercontent.com/d/1GJcU8Fu_tqwb1-68896IJ_4Rs8FSzYkb',
+                  'https://lh3.googleusercontent.com/d/1dMLM_D2YIjS7O45CiMMeaDLRxLApUlF_',
+                  'https://lh3.googleusercontent.com/d/14M0PMADvzbh4p7T6JeQj-RzAm1S0e9o-'
+                ];
+
+            
+            profileNames.forEach((name, index) => {
+                const imgSrc = profileImages[index] || profileImages[0];
+                const div = document.createElement('div');
+                div.className = 'profile-card flex flex-col items-center gap-3 cursor-pointer group';
+                div.onclick = () => selectProfile(index, name, imgSrc);
+                div.innerHTML = `
+                    <div class="w-24 h-24 md:w-32 md:h-32 rounded-md overflow-hidden border-2 border-transparent group-hover:border-white transition-all duration-300">
+                        <img src="${imgSrc}" alt="${name}" class="w-full h-full object-cover">
+                    </div>
+                    <span class="profile-name text-sm md:text-base text-neutral-400 group-hover:text-white transition-opacity duration-300 opacity-70">${name}</span>
+                `;
+                container.appendChild(div);
+            });
         }
-    });
-}
 
-function toggleVideoMute() {
-    if (!mainVideo) return;
-    mainVideo.muted = !mainVideo.muted;
-    updateVideoVolumeIcon(mainVideo.muted ? 0 : mainVideo.volume);
-    const slider = document.getElementById('videoVolumeSlider');
-    if (slider) slider.value = mainVideo.muted ? 0 : mainVideo.volume;
-}
+        function selectProfile(index, name, image) {
+            selectedProfile = { index, name, image };
+            document.getElementById('modalProfileName').textContent = name;
+            document.getElementById('modalProfileImage').src = image;
+            document.getElementById('dateInput').value = '';
+            document.getElementById('dateError').classList.add('hidden');
+            document.getElementById('dateModal').classList.remove('hidden');
+            document.getElementById('dateModal').classList.add('flex');
+            setTimeout(() => document.getElementById('dateInput').focus(), 100);
+        }
 
-function changeVideoVolume(val) {
-    if (!mainVideo) return;
-    mainVideo.volume = val;
-    mainVideo.muted = val == 0;
-    updateVideoVolumeIcon(val);
-}
+        function closeDateModal() {
+            document.getElementById('dateModal').classList.add('hidden');
+            document.getElementById('dateModal').classList.remove('flex');
+            selectedProfile = null;
+        }
 
-function updateVideoVolumeIcon(val) {
-    const icon = document.querySelector('#videoMuteBtn i');
-    if (!icon) return;
-    if (val == 0) icon.className = 'ph-fill ph-speaker-slash text-xl';
-    else if (val < 0.5) icon.className = 'ph-fill ph-speaker-low text-xl';
-    else icon.className = 'ph-fill ph-speaker-high text-xl';
-}
-
-function toggleFullscreenUI() {
-    const playerScreen = document.getElementById('playerScreen');
-    if (!playerScreen) return;
-    if (!document.fullscreenElement) {
-        playerScreen.requestFullscreen().catch(err => console.log(`Erro ao entrar em fullscreen: ${err.message}`));
-    } else {
-        document.exitFullscreen();
-    }
-}
-
-// ==========================================================
-// FUNÇÕES DE GALERIA / LIGHTBOX
-// ==========================================================
-let currentLightboxIndex = 0;
-
-function openLightbox(index) {
-    currentLightboxIndex = index;
-    document.getElementById('lightboxImg').src = allImageUrls[index];
-    document.getElementById('lightboxCounter').textContent = `${index + 1} / ${allImageUrls.length}`;
-    
-    const lightbox = document.getElementById('lightbox');
-    lightbox.classList.remove('hidden');
-    lightbox.classList.add('flex');
-    document.body.style.overflow = 'hidden';
-}
-
-function closeLightbox() {
-    const lightbox = document.getElementById('lightbox');
-    lightbox.classList.add('hidden');
-    lightbox.classList.remove('flex');
-    document.body.style.overflow = 'auto';
-}
-
-function navigateLightbox(direction) {
-    currentLightboxIndex += direction;
-    if (currentLightboxIndex < 0) currentLightboxIndex = allImageUrls.length - 1;
-    if (currentLightboxIndex >= allImageUrls.length) currentLightboxIndex = 0;
-    
-    document.getElementById('lightboxImg').src = allImageUrls[currentLightboxIndex];
-    document.getElementById('lightboxCounter').textContent = `${currentLightboxIndex + 1} / ${allImageUrls.length}`;
-}
-
-function manageProfiles() {
-    alert('Em breve você poderá gerenciar os perfis!');
-}
-
-function formatTime(seconds) {
-    if (isNaN(seconds)) return "0:00";
-    const m = Math.floor(seconds / 60);
-    const s = Math.floor(seconds % 60);
-    return `${m}:${s.toString().padStart(2, '0')}`;
-}
-
-// ==========================================================
-// INICIALIZAÇÃO E EVENTOS GLOBAIS
-// ==========================================================
-async function loadImages() {
-    try {
-        const response = await fetch('/ft.json');
-        if (!response.ok) throw new Error('Falha na rede');
-        allImageUrls = await response.json();
-        console.log(`✅ ${allImageUrls.length} fotos carregadas com sucesso do JSON!`);
-    } catch (error) {
-        console.warn('Erro ao carregar fotos do JSON. Usando fallback.', error);
-        allImageUrls = ["https://lh3.googleusercontent.com/d/1t_dAKnRP2iStAQCsLEukWaIyzTqXs358"];
-    }
-    
-    createProfiles();
-    populateHighlights();
-    populateGallery();
-    populateVideos();
-}
-
-function populateHighlights() {
-    const container = document.getElementById('highlightsRow');
-    if (!container || allImageUrls.length === 0) return;
-    container.innerHTML = '';
-    const count = Math.min(5, allImageUrls.length);
-    for (let i = 0; i < count; i++) {
-        const div = document.createElement('div');
-        div.className = 'flex-shrink-0 w-64 h-36 rounded-md overflow-hidden cursor-pointer hover:scale-105 hover:shadow-xl hover:shadow-brand-900/30 transition-all duration-300 relative group';
-        div.onclick = () => openLightbox(i);
-        div.innerHTML = `<img src="${allImageUrls[i]}" class="w-full h-full object-cover group-hover:brightness-110 transition" loading="lazy">`;
-        container.appendChild(div);
-    }
-}
-
-function populateGallery() {
-    const grid = document.getElementById('galleryGrid');
-    if (!grid || allImageUrls.length === 0) return;
-    grid.innerHTML = '';
-    allImageUrls.forEach((url, index) => {
-        const item = document.createElement('div');
-        item.className = 'aspect-video rounded-md overflow-hidden cursor-pointer hover:scale-[1.02] hover:shadow-xl hover:shadow-brand-900/20 transition-all duration-300 bg-neutral-900';
-        item.onclick = () => openLightbox(index);
-        const img = document.createElement('img');
-        img.src = url;
-        img.className = 'w-full h-full object-cover hover:brightness-110 transition';
-        img.loading = 'lazy';
-        item.appendChild(img);
-        grid.appendChild(item);
-    });
-}
-
-document.addEventListener('DOMContentLoaded', () => {
-    // Inicializa o mainVideo se ele já existir no DOM
-    mainVideo = document.getElementById('mainVideo');
-    if (mainVideo) setupVideoEvents();
-
-    const dateInput = document.getElementById('dateInput');
-    if (dateInput) {
-        dateInput.addEventListener('input', (e) => {
-            let value = e.target.value.replace(/\D/g, '');
-            if (value.length >= 2) {
-                value = value.slice(0, 2) + '/' + value.slice(2);
+        function validateDate() {
+            const input = document.getElementById('dateInput').value.trim();
+            const errorDiv = document.getElementById('dateError');
+            
+            if (input === CORRECT_DATE || input === CORRECT_DATE_ALT) {
+                // Data correta - prosseguir
+                closeDateModal();
+                showStartOverlay();
+            } else {
+                // Data incorreta - mostrar erro
+                errorDiv.classList.remove('hidden');
+                document.getElementById('dateInput').classList.add('border-red-500');
+                setTimeout(() => {
+                    document.getElementById('dateInput').classList.remove('border-red-500');
+                }, 500);
             }
-            if (value.length >= 5) {
-                value = value.slice(0, 5) + '/' + value.slice(5, 7);
+        }
+
+        function showStartOverlay() {
+            document.getElementById('profileScreen').style.opacity = '0';
+            setTimeout(() => {
+                document.getElementById('profileScreen').style.display = 'none';
+                document.getElementById('startOverlay').classList.remove('hidden');
+                document.getElementById('startOverlay').style.opacity = '1';
+            }, 700);
+        }
+
+        async function fetchSongTitle(url) {
+            if (titleCache.has(url)) return titleCache.get(url);
+            try {
+                const response = await fetch(url, { method: 'HEAD' });
+                const contentDisposition = response.headers.get('content-disposition');
+                if (contentDisposition) {
+                    const filenameStarMatch = contentDisposition.match(/filename\*=(?:UTF-8''|utf-8'')([^;\s]+)/i);
+                    if (filenameStarMatch) {
+                        let filename = decodeURIComponent(filenameStarMatch[1]);
+                        filename = filename.replace(/\.(mp4|mp3|wav|ogg)$/i, '').replace(/_/g, ' ');
+                        titleCache.set(url, filename);
+                        return filename;
+                    }
+                    const filenameMatch = contentDisposition.match(/filename="([^"]+)"/i);
+                    if (filenameMatch) {
+                        let filename = filenameMatch[1];
+                        filename = filename.replace(/\.(mp4|mp3|wav|ogg)$/i, '').replace(/_/g, ' ');
+                        titleCache.set(url, filename);
+                        return filename;
+                    }
+                }
+                const fallback = "Música " + (radioPlaylist.findIndex(p => p.url === url) + 1);
+                titleCache.set(url, fallback);
+                return fallback;
+            } catch (error) {
+                const fallback = "Música " + (radioPlaylist.findIndex(p => p.url === url) + 1);
+                titleCache.set(url, fallback);
+                return fallback;
             }
-            e.target.value = value;
+        }
+
+        async function loadImages() {
+            try {
+                const response = await fetch('/ft.json');
+                if (!response.ok) throw new Error('Falha na rede');
+                allImageUrls = await response.json();
+                console.log(`✅ ${allImageUrls.length} fotos carregadas com sucesso do JSON!`);
+                createProfiles();
+                populateHighlights();
+                populateGallery();
+            } catch (error) {
+                console.error('Erro ao carregar fotos:', error);
+                allImageUrls = ["https://lh3.googleusercontent.com/d/1t_dAKnRP2iStAQCsLEukWaIyzTqXs358"];
+                createProfiles();
+                populateHighlights();
+                populateGallery();
+            }
+        }
+
+        function populateHighlights() {
+            const container = document.getElementById('highlightsRow');
+            if (!container || allImageUrls.length === 0) return;
+            container.innerHTML = '';
+            const count = Math.min(5, allImageUrls.length);
+            for (let i = 0; i < count; i++) {
+                const div = document.createElement('div');
+                div.className = 'flex-shrink-0 w-64 h-36 rounded-md overflow-hidden cursor-pointer hover:scale-105 hover:shadow-xl hover:shadow-brand-900/30 transition-all duration-300 relative group';
+                div.onclick = () => openLightbox(i);
+                div.innerHTML = `<img src="${allImageUrls[i]}" class="w-full h-full object-cover group-hover:brightness-110 transition">`;
+                container.appendChild(div);
+            }
+        }
+
+        function populateGallery() {
+            const grid = document.getElementById('galleryGrid');
+            if (!grid || allImageUrls.length === 0) return;
+            grid.innerHTML = '';
+            allImageUrls.forEach((url, index) => {
+                const item = document.createElement('div');
+                item.className = 'aspect-video rounded-md overflow-hidden cursor-pointer hover:scale-[1.02] hover:shadow-xl hover:shadow-brand-900/20 transition-all duration-300 bg-neutral-900';
+                item.onclick = () => openLightbox(index);
+                const img = document.createElement('img');
+                img.src = url;
+                img.className = 'w-full h-full object-cover hover:brightness-110 transition';
+                img.loading = 'lazy';
+                item.appendChild(img);
+                grid.appendChild(item);
+            });
+        }
+
+        async function startExperience() {
+            const overlay = document.getElementById('startOverlay');
+            overlay.style.opacity = '0';
+            setTimeout(() => overlay.style.display = 'none', 700);
+
+            const heroVideo = document.getElementById('heroVideo');
+            heroVideo.muted = true;
+            heroVideo.play().catch(e => console.log("Hero video autoplay:", e));
+
+            radioAudio.volume = INITIAL_VOLUME;
+            document.getElementById('radioVolumeSlider').value = INITIAL_VOLUME;
+            updateRadioVolumeIcon(INITIAL_VOLUME);
+            
+            radioAudio.src = radioPlaylist[0].url;
+            const firstTitle = await fetchSongTitle(radioPlaylist[0].url);
+            radioPlaylist[0].title = firstTitle;
+            updateRadioInfo();
+            
+            radioAudio.play().then(() => {
+                isRadioPlaying = true;
+                document.getElementById('radioPlayPause').innerHTML = '<i class="ph-fill ph-pause text-xl"></i>';
+            }).catch(e => console.log("Aguardando interação:", e));
+
+            document.getElementById('detailScreen').classList.remove('hidden');
+            document.getElementById('radioPlayer').classList.remove('translate-y-full', 'opacity-0');
+            
+            populateVideos();
+            setupRadioEvents();
+        }
+
+        function setupRadioEvents() {
+            radioAudio.addEventListener('ended', () => {
+                if (radioRepeatMode) {
+                    radioAudio.currentTime = 0;
+                    radioAudio.play();
+                } else {
+                    radioNext();
+                }
+            });
+            radioAudio.addEventListener('timeupdate', updateRadioProgress);
+            radioAudio.addEventListener('loadedmetadata', updateRadioDuration);
+            radioAudio.addEventListener('error', (e) => {
+                console.error("❌ Erro ao carregar o áudio:", radioAudio.error);
+                radioNext();
+            });
+        }
+
+        function updateRadioInfo() {
+            document.getElementById('radioTitle').textContent = radioPlaylist[currentRadioIndex].title;
+        }
+
+        function radioTogglePlay() {
+            if (radioAudio.paused) {
+                radioAudio.play();
+                isRadioPlaying = true;
+                document.getElementById('radioPlayPause').innerHTML = '<i class="ph-fill ph-pause text-xl"></i>';
+            } else {
+                radioAudio.pause();
+                isRadioPlaying = false;
+                document.getElementById('radioPlayPause').innerHTML = '<i class="ph-fill ph-play text-xl"></i>';
+            }
+        }
+
+        async function radioNext() {
+            currentRadioIndex = radioShuffleMode ? Math.floor(Math.random() * radioPlaylist.length) : (currentRadioIndex + 1) % radioPlaylist.length;
+            radioAudio.src = radioPlaylist[currentRadioIndex].url;
+            radioAudio.volume = INITIAL_VOLUME;
+            const newTitle = await fetchSongTitle(radioPlaylist[currentRadioIndex].url);
+            radioPlaylist[currentRadioIndex].title = newTitle;
+            updateRadioInfo();
+            radioAudio.play().then(() => {
+                isRadioPlaying = true;
+                document.getElementById('radioPlayPause').innerHTML = '<i class="ph-fill ph-pause text-xl"></i>';
+            }).catch(e => console.log("Erro ao tocar próxima:", e));
+        }
+
+        async function radioPrevious() {
+            currentRadioIndex = (currentRadioIndex - 1 + radioPlaylist.length) % radioPlaylist.length;
+            radioAudio.src = radioPlaylist[currentRadioIndex].url;
+            radioAudio.volume = INITIAL_VOLUME;
+            const prevTitle = await fetchSongTitle(radioPlaylist[currentRadioIndex].url);
+            radioPlaylist[currentRadioIndex].title = prevTitle;
+            updateRadioInfo();
+            if (isRadioPlaying) radioAudio.play();
+        }
+
+        function updateRadioProgress() {
+            if (radioAudio.duration) {
+                const percent = (radioAudio.currentTime / radioAudio.duration) * 100;
+                document.getElementById('radioProgressFilled').style.width = percent + '%';
+                document.getElementById('radioCurrentTime').textContent = formatTime(radioAudio.currentTime);
+            }
+        }
+
+        function updateRadioDuration() {
+            document.getElementById('radioDuration').textContent = formatTime(radioAudio.duration);
+        }
+
+        function seekRadio(event) {
+            const bar = event.currentTarget;
+            const rect = bar.getBoundingClientRect();
+            const percent = (event.clientX - rect.left) / rect.width;
+            radioAudio.currentTime = percent * radioAudio.duration;
+        }
+
+        function toggleRadioMute() {
+            radioAudio.muted = !radioAudio.muted;
+            updateRadioVolumeIcon(radioAudio.muted ? 0 : radioAudio.volume);
+            document.getElementById('radioVolumeSlider').value = radioAudio.muted ? 0 : radioAudio.volume;
+        }
+
+        function changeRadioVolume(val) {
+            radioAudio.volume = val;
+            radioAudio.muted = val == 0;
+            updateRadioVolumeIcon(val);
+        }
+
+        function updateRadioVolumeIcon(val) {
+            const icon = document.querySelector('#radioMuteBtn i');
+            if (val == 0) icon.className = 'ph-fill ph-speaker-slash text-xl';
+            else if (val < 0.5) icon.className = 'ph-fill ph-speaker-low text-xl';
+            else icon.className = 'ph-fill ph-speaker-high text-xl';
+        }
+
+        function radioShuffle() {
+            radioShuffleMode = !radioShuffleMode;
+            event.currentTarget.classList.toggle('text-brand-500', radioShuffleMode);
+        }
+
+        function radioRepeat() {
+            radioRepeatMode = !radioRepeatMode;
+            event.currentTarget.classList.toggle('text-brand-500', radioRepeatMode);
+        }
+
+        const mainVideo = document.getElementById('mainVideo');
+        const videosList = [
+            {
+                title: "Especial: 4 Anos de Nós ❤️",
+                thumbnail: "https://lh3.googleusercontent.com/d/1t_dAKnRP2iStAQCsLEukWaIyzTqXs358",
+                url: "https://www.dropbox.com/scl/fi/lyeb08frpvhe7wh0tmvjb/BIANCA-E-JOEL.mp4?rlkey=0quqj5iqxy9b00n7ud4t49rbl&st=0swum96f&dl=1"
+            },
+            {
+                title: "Uma Mente Excepcional 1x4 - Modo Sobrevivência",
+                thumbnail: "https://disney.images.edge.bamgrid.com/ripcut-delivery/v2/variant/disney/0e0f1db6-b70e-4cbe-bf8b-5ed4e39a33f0/compose?aspectRatio=1.78&format=webp&width=1200",
+                url: "https://6a445625f581de5585c8beb5433db9ec.r2.cloudflarestorage.com/streambetter-videos/series/uma-mente-excepcional-2024/s1/e4/uma_mente_excepcional_2024_s01e04_dublado_1222481.mp4?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=f39b42c00f5a63fde31858aa6d06af9d%2F20261015%2Fauto%2Fs3%2Faws4_request&X-Amz-Date=20261015T184909Z&X-Amz-Expires=10800&X-Amz-SignedHeaders=host&response-content-type=video%2Fmp4&X-Amz-Signature=16294d6401427d953e68cc14aaf1f9d6c78f28705b64a25165101e41ded47eac"
+            },
+            {
+                title: "Uma Mente Excepcional 1x5 - Bateu as Botas",
+                thumbnail: "https://disney.images.edge.bamgrid.com/ripcut-delivery/v2/variant/disney/0e0f1db6-b70e-4cbe-bf8b-5ed4e39a33f0/compose?aspectRatio=1.78&format=webp&width=1200",
+                url: "https://6a445625f581de5585c8beb5433db9ec.r2.cloudflarestorage.com/streambetter-videos/series/uma-mente-excepcional-2024/s1/e5/uma_mente_excepcional_2024_s01e05_dublado_1222483.mp4?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=f39b42c00f5a63fde31858aa6d06af9d%2F20261015%2Fauto%2Fs3%2Faws4_request&X-Amz-Date=20261015T185026Z&X-Amz-Expires=10800&X-Amz-SignedHeaders=host&response-content-type=video%2Fmp4&X-Amz-Signature=80454b14a2efe0db1377b4750d9265b417dbf369b30a8a2546a4bbfe6e2eacba"
+            },
+            {
+                title: "Uma Mente Excepcional 1x6 - Ressaca",
+                thumbnail: "https://disney.images.edge.bamgrid.com/ripcut-delivery/v2/variant/disney/0e0f1db6-b70e-4cbe-bf8b-5ed4e39a33f0/compose?aspectRatio=1.78&format=webp&width=1200",
+                url: "https://6a445625f581de5585c8beb5433db9ec.r2.cloudflarestorage.com/streambetter-videos/series/uma-mente-excepcional-2024/s1/e6/uma_mente_excepcional_2024_s01e06_dublado_1222485.mp4?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=f39b42c00f5a63fde31858aa6d06af9d%2F20261015%2Fauto%2Fs3%2Faws4_request&X-Amz-Date=20261015T185235Z&X-Amz-Expires=10800&X-Amz-SignedHeaders=host&response-content-type=video%2Fmp4&X-Amz-Signature=4d865f3de8e22337fc35fb9ae0bb98bb8f18de8419e8ed62e438bd7ba7b58d2e"
+            },
+            {
+                title: "Uma Mente Excepcional 1x7 - Um de Nós",
+                thumbnail: "https://disney.images.edge.bamgrid.com/ripcut-delivery/v2/variant/disney/0e0f1db6-b70e-4cbe-bf8b-5ed4e39a33f0/compose?aspectRatio=1.78&format=webp&width=1200",
+                url: "https://6a445625f581de5585c8beb5433db9ec.r2.cloudflarestorage.com/streambetter-videos/series/uma-mente-excepcional-2024/s1/e7/uma_mente_excepcional_2024_s01e07_dublado_1222487.mp4?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=f39b42c00f5a63fde31858aa6d06af9d%2F20261015%2Fauto%2Fs3%2Faws4_request&X-Amz-Date=20261015T185302Z&X-Amz-Expires=10800&X-Amz-SignedHeaders=host&response-content-type=video%2Fmp4&X-Amz-Signature=74b40269e4d85032581a8692060bd83303b9b5bf9cdf7acb18570ee5466c18e7"
+            },
+            {
+                title: "Uma Mente Excepcional 1x8 - Obsessão",
+                thumbnail: "https://disney.images.edge.bamgrid.com/ripcut-delivery/v2/variant/disney/0e0f1db6-b70e-4cbe-bf8b-5ed4e39a33f0/compose?aspectRatio=1.78&format=webp&width=1200",
+                url: "https://6a445625f581de5585c8beb5433db9ec.r2.cloudflarestorage.com/streambetter-videos/series/uma-mente-excepcional-2024/s1/e8/uma_mente_excepcional_2024_s01e08_dublado_1222489.mp4?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=f39b42c00f5a63fde31858aa6d06af9d%2F20261015%2Fauto%2Fs3%2Faws4_request&X-Amz-Date=20261015T185325Z&X-Amz-Expires=10800&X-Amz-SignedHeaders=host&response-content-type=video%2Fmp4&X-Amz-Signature=0a6e18edc9f43e47d98818edf7dcd13eed40c67196c6c9ff426e080fca476e97"
+            },
+            {
+                title: "Uma Mente Excepcional 1x9 - Os RAMs",
+                thumbnail: "https://disney.images.edge.bamgrid.com/ripcut-delivery/v2/variant/disney/0e0f1db6-b70e-4cbe-bf8b-5ed4e39a33f0/compose?aspectRatio=1.78&format=webp&width=1200",
+                url: "https://6a445625f581de5585c8beb5433db9ec.r2.cloudflarestorage.com/streambetter-videos/series/uma-mente-excepcional-2024/s1/e9/uma_mente_excepcional_2024_s01e09_dublado_1222491.mp4?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=f39b42c00f5a63fde31858aa6d06af9d%2F20261015%2Fauto%2Fs3%2Faws4_request&X-Amz-Date=20261015T185453Z&X-Amz-Expires=10800&X-Amz-SignedHeaders=host&response-content-type=video%2Fmp4&X-Amz-Signature=8b744df329983cb05bc4f68ec4977603796cc7adc77aa5fd45b9d826d8bc88b8"
+            },
+            {
+                title: "Uma Mente Excepcional 1x10 - Calhas e Assassinatos",
+                thumbnail: "https://disney.images.edge.bamgrid.com/ripcut-delivery/v2/variant/disney/0e0f1db6-b70e-4cbe-bf8b-5ed4e39a33f0/compose?aspectRatio=1.78&format=webp&width=1200",
+                url: "https://6a445625f581de5585c8beb5433db9ec.r2.cloudflarestorage.com/streambetter-videos/series/uma-mente-excepcional-2024/s1/e10/uma_mente_excepcional_2024_s01e10_dublado_1222493.mp4?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=f39b42c00f5a63fde31858aa6d06af9d%2F20261015%2Fauto%2Fs3%2Faws4_request&X-Amz-Date=20261015T185522Z&X-Amz-Expires=10800&X-Amz-SignedHeaders=host&response-content-type=video%2Fmp4&X-Amz-Signature=68eb0c5b7fc3efa78d7d98cd26217002c3c690f3a04e633183b0b670ebb76b11"
+            },
+            {
+                title: "Uma Mente Excepcional 1x11 - A Sauna no Final da Escada",
+                thumbnail: "https://disney.images.edge.bamgrid.com/ripcut-delivery/v2/variant/disney/0e0f1db6-b70e-4cbe-bf8b-5ed4e39a33f0/compose?aspectRatio=1.78&format=webp&width=1200",
+                url: "https://6a445625f581de5585c8beb5433db9ec.r2.cloudflarestorage.com/streambetter-videos/series/uma-mente-excepcional-2024/s1/e11/uma_mente_excepcional_2024_s01e11_dublado_1222495.mp4?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=f39b42c00f5a63fde31858aa6d06af9d%2F20261015%2Fauto%2Fs3%2Faws4_request&X-Amz-Date=20261015T190154Z&X-Amz-Expires=10800&X-Amz-SignedHeaders=host&response-content-type=video%2Fmp4&X-Amz-Signature=3f2f90132532c0163e702347575b9e69126ea958c2efece34403f914f9991351"
+            },
+            {
+                title: "Uma Mente Excepcional 1x12 - Parceiros",
+                thumbnail: "https://disney.images.edge.bamgrid.com/ripcut-delivery/v2/variant/disney/0e0f1db6-b70e-4cbe-bf8b-5ed4e39a33f0/compose?aspectRatio=1.78&format=webp&width=1200",
+                url: "https://6a445625f581de5585c8beb5433db9ec.r2.cloudflarestorage.com/streambetter-videos/series/uma-mente-excepcional-2024/s1/e12/uma_mente_excepcional_2024_s01e12_dublado_1222497.mp4?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=f39b42c00f5a63fde31858aa6d06af9d%2F20261015%2Fauto%2Fs3%2Faws4_request&X-Amz-Date=20261015T190212Z&X-Amz-Expires=10800&X-Amz-SignedHeaders=host&response-content-type=video%2Fmp4&X-Amz-Signature=21af88612aad19de943418d86a80256ae0bf6c18d399ce9503d69034de1f2716"
+            },
+            {
+                title: "Uma Mente Excepcional 1x13 - Vamos Jogar",
+                thumbnail: "https://disney.images.edge.bamgrid.com/ripcut-delivery/v2/variant/disney/0e0f1db6-b70e-4cbe-bf8b-5ed4e39a33f0/compose?aspectRatio=1.78&format=webp&width=1200",
+                url: "https://6a445625f581de5585c8beb5433db9ec.r2.cloudflarestorage.com/streambetter-videos/series/uma-mente-excepcional-2024/s1/e13/uma_mente_excepcional_2024_s01e13_dublado_16548.mp4?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=f39b42c00f5a63fde31858aa6d06af9d%2F20261015%2Fauto%2Fs3%2Faws4_request&X-Amz-Date=20261015T190243Z&X-Amz-Expires=10800&X-Amz-SignedHeaders=host&response-content-type=video%2Fmp4&X-Amz-Signature=6708c57a6133990f3b5ed684d9689efa2cd58f40a093ab7e6fe0fa335c01113b"
+            }
+        ];
+
+        function populateVideos() {
+            const row = document.getElementById('videosRow');
+            videosList.forEach((video, index) => {
+                const div = document.createElement('div');
+                div.className = 'flex-shrink-0 w-64 h-36 rounded-md overflow-hidden cursor-pointer hover:scale-105 hover:shadow-xl hover:shadow-brand-900/30 transition-all duration-300 relative group';
+                div.onclick = () => openPlayer(index);
+                div.innerHTML = `
+                    <img src="${video.thumbnail}" class="w-full h-full object-cover group-hover:brightness-110 transition">
+                    <div class="absolute inset-0 flex items-center justify-center bg-black/30 group-hover:bg-black/10 transition">
+                        <div class="w-12 h-12 rounded-full bg-white/90 flex items-center justify-center shadow-lg group-hover:scale-110 transition">
+                            <i class="ph-fill ph-play text-black text-xl ml-1"></i>
+                        </div>
+                    </div>
+                    <div class="absolute bottom-0 left-0 right-0 p-3 bg-gradient-to-t from-black/90 to-transparent">
+                        <span class="text-sm font-semibold">${video.title}</span>
+                    </div>
+                `;
+                row.appendChild(div);
+            });
+        }
+
+        function openPlayer(index) {
+            const video = videosList[index];
+            mainVideo.src = video.url;
+            mainVideo.volume = INITIAL_VOLUME;
+            document.getElementById('videoVolumeSlider').value = INITIAL_VOLUME;
+            updateVideoVolumeIcon(INITIAL_VOLUME);
+            document.getElementById('videoTitle').textContent = video.title;
+            
+            document.getElementById('detailScreen').style.display = 'none';
+            document.getElementById('playerScreen').classList.remove('hidden');
+            document.getElementById('radioPlayer').classList.add('translate-y-full', 'opacity-0');
+            
+            mainVideo.play().then(() => {
+                document.getElementById('playIcon').className = 'ph-fill ph-pause text-4xl text-white';
+            }).catch(e => console.log("Erro ao tocar vídeo:", e));
+        }
+
+        function closePlayer() {
+            mainVideo.pause();
+            mainVideo.src = "";
+            document.getElementById('playerScreen').classList.add('hidden');
+            document.getElementById('detailScreen').style.display = 'block';
+            document.getElementById('radioPlayer').classList.remove('translate-y-full', 'opacity-0');
+        }
+
+        function togglePlay() {
+            if (mainVideo.paused) {
+                mainVideo.play();
+                document.getElementById('playIcon').className = 'ph-fill ph-pause text-4xl text-white';
+            } else {
+                mainVideo.pause();
+                document.getElementById('playIcon').className = 'ph-fill ph-play text-4xl text-white';
+            }
+        }
+
+        function skipTime(seconds) { mainVideo.currentTime += seconds; }
+
+        function seekVideo(event) {
+            const bar = event.currentTarget;
+            const rect = bar.getBoundingClientRect();
+            const percent = (event.clientX - rect.left) / rect.width;
+            mainVideo.currentTime = percent * mainVideo.duration;
+        }
+
+        mainVideo.addEventListener('timeupdate', () => {
+            if (mainVideo.duration) {
+                const percent = (mainVideo.currentTime / mainVideo.duration) * 100;
+                document.getElementById('videoProgressFilled').style.width = percent + '%';
+                document.getElementById('videoCurrentTime').textContent = formatTime(mainVideo.currentTime);
+                document.getElementById('videoDuration').textContent = formatTime(mainVideo.duration);
+            }
         });
-        
-        dateInput.addEventListener('keypress', (e) => {
-            if (e.key === 'Enter') validateDate();
+
+        function toggleVideoMute() {
+            mainVideo.muted = !mainVideo.muted;
+            updateVideoVolumeIcon(mainVideo.muted ? 0 : mainVideo.volume);
+            document.getElementById('videoVolumeSlider').value = mainVideo.muted ? 0 : mainVideo.volume;
+        }
+
+        function changeVideoVolume(val) {
+            mainVideo.volume = val;
+            mainVideo.muted = val == 0;
+            updateVideoVolumeIcon(val);
+        }
+
+        function updateVideoVolumeIcon(val) {
+            const icon = document.querySelector('#videoMuteBtn i');
+            if (val == 0) icon.className = 'ph-fill ph-speaker-slash text-xl';
+            else if (val < 0.5) icon.className = 'ph-fill ph-speaker-low text-xl';
+            else icon.className = 'ph-fill ph-speaker-high text-xl';
+        }
+
+        function toggleFullscreenUI() {
+            if (!document.fullscreenElement) document.getElementById('playerScreen').requestFullscreen();
+            else document.exitFullscreen();
+        }
+
+        let currentLightboxIndex = 0;
+
+        function openLightbox(index) {
+            currentLightboxIndex = index;
+            document.getElementById('lightboxImg').src = allImageUrls[index];
+            document.getElementById('lightboxCounter').textContent = `${index + 1} / ${allImageUrls.length}`;
+            document.getElementById('lightbox').classList.remove('hidden');
+            document.getElementById('lightbox').classList.add('flex');
+            document.body.style.overflow = 'hidden';
+        }
+
+        function closeLightbox() {
+            document.getElementById('lightbox').classList.add('hidden');
+            document.getElementById('lightbox').classList.remove('flex');
+            document.body.style.overflow = 'auto';
+        }
+
+        function navigateLightbox(direction) {
+            currentLightboxIndex += direction;
+            if (currentLightboxIndex < 0) currentLightboxIndex = allImageUrls.length - 1;
+            if (currentLightboxIndex >= allImageUrls.length) currentLightboxIndex = 0;
+            document.getElementById('lightboxImg').src = allImageUrls[currentLightboxIndex];
+            document.getElementById('lightboxCounter').textContent = `${currentLightboxIndex + 1} / ${allImageUrls.length}`;
+        }
+
+        function manageProfiles() {
+            alert('Em breve você poderá gerenciar os perfis!');
+        }
+
+        function formatTime(seconds) {
+            if (isNaN(seconds)) return "0:00";
+            const m = Math.floor(seconds / 60);
+            const s = Math.floor(seconds % 60);
+            return `${m}:${s.toString().padStart(2, '0')}`;
+        }
+
+        // Formatar input de data automaticamente
+        document.addEventListener('DOMContentLoaded', () => {
+            const dateInput = document.getElementById('dateInput');
+            if (dateInput) {
+                dateInput.addEventListener('input', (e) => {
+                    let value = e.target.value.replace(/\D/g, '');
+                    if (value.length >= 2) {
+                        value = value.slice(0, 2) + '/' + value.slice(2);
+                    }
+                    if (value.length >= 5) {
+                        value = value.slice(0, 5) + '/' + value.slice(5, 7);
+                    }
+                    e.target.value = value;
+                });
+                
+                dateInput.addEventListener('keypress', (e) => {
+                    if (e.key === 'Enter') {
+                        validateDate();
+                    }
+                });
+            }
+            
+            loadImages();
         });
-    }
-    
-    loadImages();
-    setupRadioEvents();
-});
 
-document.addEventListener('keydown', (e) => {
-    const lightbox = document.getElementById('lightbox');
-    const playerScreen = document.getElementById('playerScreen');
-    const dateModal = document.getElementById('dateModal');
+        document.addEventListener('keydown', (e) => {
+            if (!document.getElementById('lightbox').classList.contains('hidden')) {
+                if (e.key === 'Escape') closeLightbox();
+                if (e.key === 'ArrowLeft') navigateLightbox(-1);
+                if (e.key === 'ArrowRight') navigateLightbox(1);
+            } else if (!document.getElementById('playerScreen').classList.contains('hidden')) {
+                if (e.key === 'Escape') closePlayer();
+                if (e.key === ' ') { e.preventDefault(); togglePlay(); }
+                if (e.key === 'ArrowLeft') skipTime(-10);
+                if (e.key === 'ArrowRight') skipTime(10);
+                if (e.key === 'f') toggleFullscreenUI();
+            } else if (!document.getElementById('dateModal').classList.contains('hidden')) {
+                if (e.key === 'Escape') closeDateModal();
+            }
+        });
 
-    if (lightbox && !lightbox.classList.contains('hidden')) {
-        if (e.key === 'Escape') closeLightbox();
-        if (e.key === 'ArrowLeft') navigateLightbox(-1);
-        if (e.key === 'ArrowRight') navigateLightbox(1);
-    } else if (playerScreen && !playerScreen.classList.contains('hidden')) {
-        if (e.key === 'Escape') closePlayer();
-        if (e.key === ' ') { e.preventDefault(); togglePlay(); }
-        if (e.key === 'ArrowLeft') skipTime(-10);
-        if (e.key === 'ArrowRight') skipTime(10);
-        if (e.key === 'f' || e.key === 'F') toggleFullscreenUI();
-    } else if (dateModal && !dateModal.classList.contains('hidden')) {
-        if (e.key === 'Escape') closeDateModal();
-    }
-});
-
-const lightboxEl = document.getElementById('lightbox');
-if (lightboxEl) {
-    lightboxEl.addEventListener('click', (e) => {
-        if (e.target.id === 'lightbox') closeLightbox();
-    });
-}
+        document.getElementById('lightbox').addEventListener('click', (e) => {
+            if (e.target.id === 'lightbox') closeLightbox();
+        });
     </script>
 </body>
 </html>
