@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html lang="pt-BR" class="scroll-smooth">
 <head>
+    <link rel="icon" type="image/x-icon" href="https://cdn-icons-png.flaticon.com/512/3010/3010989.png">
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Bianca & Joel: A Série</title>
@@ -380,7 +381,7 @@
 
         async function loadImages() {
             try {
-                const response = await fetch('https://uc9ff5d0b82374edc72aef9be91d.dl.dropboxusercontent.com/cd/0/inline/DKCuAzWfyQv6zhJY2XQsUupJNnPWfBTYH_GufegaZeIdCCxVDho75SAlm8QxD4hkftQKdd7J-vkIpF60dd-scFhjsbQQG7RJcNaBzcHYaSSLhevHLcUAByP2XTRmbDVliODBs_-HHgYKGpmtOyC2Kgrj/file#');
+                const response = await fetch('https://www.dropbox.com/scl/fi/8at4fo9764op5toovtiwd/fotos.json?rlkey=jhtq2dbfs4hk02eabapubu669&st=goi3q7bf&dl=1');
                 if (!response.ok) throw new Error('Falha na rede');
                 allImageUrls = await response.json();
                 console.log(`✅ ${allImageUrls.length} fotos carregadas com sucesso do JSON!`);
