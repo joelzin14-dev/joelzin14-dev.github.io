@@ -1,7 +1,7 @@
 #EXTM3U
-#EXTINF:-1 tvg-logo="https://cms-imgp.jw-cdn.org/img/p/gnj/univ/pt/gnj_univ_lg.jpg" group-title="Filmes",EPISÓDIO 1  A Verdadeira Luz do Mundo
+#EXTINF:-1 tvg-logo="https://cms-imgp.jw-cdn.org/img/p/gnj/univ/pt/gnj_univ_lg.jpg" group-title="Series",EPISÓDIO 1  A Verdadeira Luz do Mundo
 https://cfp2.jw-cdn.org/a/c065eb5/4/o/gnj_T_01_r1080P.mp4
-#EXTINF:-1 tvg-logo="https://cms-imgp.jw-cdn.org/img/p/gnj/univ/pt/gnj_univ_lg.jpg" group-title="Filmes",EPISÓDIO 2  “Este É Meu Filho”
+#EXTINF:-1 tvg-logo="https://cms-imgp.jw-cdn.org/img/p/gnj/univ/pt/gnj_univ_lg.jpg" group-title="Filmes Pessoais",EPISÓDIO 2  “Este É Meu Filho”
 https://cfp2.jw-cdn.org/a/d6a5cd/5/o/gnj_T_02_r1080P.mp4
 #EXTINF:-1 tvg-logo="https://cms-imgp.jw-cdn.org/img/p/gnj/univ/pt/gnj_univ_lg.jpg" group-title="Filmes",EPISÓDIO 3  ‘Eu Sou Ele’
 https://cfp2.jw-cdn.org/a/061a423/4/o/gnj_T_03_r1080P.mp4
