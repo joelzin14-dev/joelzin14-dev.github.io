@@ -10343,11 +10343,11 @@
                 </div>
                 <div class="data-row">
                     <span class="data-label">Upload</span>
-                    <span class="data-value" id="net-upload">0.9 KB/s</span>
+                    <span class="data-value" id="net-upload">1.2 KB/s</span>
                 </div>
                 <div class="data-row">
                     <span class="data-label">Download</span>
-                    <span class="data-value" id="net-download">4.7 KB/s</span>
+                    <span class="data-value" id="net-download">0.8 KB/s</span>
                 </div>
             </section>
 
@@ -10355,19 +10355,19 @@
                 <h2 class="panel-title">System</h2>
                 <div class="data-row">
                     <span class="data-label">CPU Usage</span>
-                    <span class="data-value" id="cpu-val">36%</span>
+                    <span class="data-value" id="cpu-val">54%</span>
                 </div>
-                <div class="progress-bar"><div class="progress-bar-fill" id="cpu-bar" style="width: 36%;"></div></div>
+                <div class="progress-bar"><div class="progress-bar-fill" id="cpu-bar" style="width: 54%;"></div></div>
                 <div class="data-row">
                     <span class="data-label">RAM Usage</span>
-                    <span class="data-value" id="ram-val">74%</span>
+                    <span class="data-value" id="ram-val">56%</span>
                 </div>
-                <div class="progress-bar"><div class="progress-bar-fill" id="ram-bar" style="width: 74%;"></div></div>
+                <div class="progress-bar"><div class="progress-bar-fill" id="ram-bar" style="width: 56%;"></div></div>
                 <div class="data-row">
                     <span class="data-label">SWAP Usage</span>
-                    <span class="data-value" id="swap-val">61%</span>
+                    <span class="data-value" id="swap-val">69%</span>
                 </div>
-                <div class="progress-bar"><div class="progress-bar-fill" id="swap-bar" style="width: 61%;"></div></div>
+                <div class="progress-bar"><div class="progress-bar-fill" id="swap-bar" style="width: 69%;"></div></div>
             </section>
 
             <section class="panel">
@@ -19436,14 +19436,14 @@
     <footer class="bottom-bar">
         <div class="bottom-clock" aria-label="Relógio">
             <div>
-                <div class="bottom-clock-time" id="bottom-time">10:02</div>
+                <div class="bottom-clock-time" id="bottom-time">04:33</div>
                 <div class="bottom-clock-date" id="bottom-date">23-Oct, Friday</div>
             </div>
-            <div class="bottom-clock-ampm" id="bottom-ampm">AM</div>
+            <div class="bottom-clock-ampm" id="bottom-ampm">PM</div>
         </div>
         <div class="bottom-center">
             <div class="power-status">
-                Currently power level is at <span class="value" id="footer-power">98</span> percent and holding steady.
+                Currently power level is at <span class="value" id="footer-power">99</span> percent and holding steady.
             </div>
             <div class="bottom-stats" id="bottom-stats">Days Left: 69, Weeks Left: 9, Months Left: 2, In Year: 2026</div>
         </div>
@@ -19453,11 +19453,18 @@
                     <div class="music-title">Back in Black</div>
                     <div class="music-artist">AC/DC</div>
                 </div>
-                <div class="music-controls">
-                    <button class="music-btn" type="button" aria-label="Anterior"><i class="fas fa-backward"></i></button>
-                    <button class="music-btn" type="button" aria-label="Play/Pause"><i class="fas fa-play"></i></button>
-                    <button class="music-btn" type="button" aria-label="Próxima"><i class="fas fa-forward"></i></button>
-                </div>
+         <!-- Substitua o seu bloco .music-controls por este: -->
+<div class="music-controls">
+    <button class="music-btn" type="button" aria-label="Anterior"><i class="fas fa-backward"></i></button>
+    <button class="music-btn" type="button" aria-label="Play/Pause" id="play-pause-btn">
+        <i class="fas fa-play"></i>
+    </button>
+    <button class="music-btn" type="button" aria-label="Próxima"><i class="fas fa-forward"></i></button>
+</div>
+
+<!-- Adicione esta tag no final do arquivo, logo antes de </body> -->
+<!-- IMPORTANTE: Troque "COLE_SUA_URL_DO_MP3_AQUI" pela URL real do seu arquivo .mp3 -->
+<audio id="bg-music" src="https://s3.ustatik.com/audio.com.audio/transcoding/46/96/1817807292079646-1817807292127005-1817807481744644.mp3?X-Amz-Content-Sha256=UNSIGNED-PAYLOAD&X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=F0E8U41NBMMW3Y027UTJ%2F20261022%2Feu-central-1%2Fs3%2Faws4_request&X-Amz-Date=20261022T150547Z&X-Amz-SignedHeaders=host&X-Amz-Expires=518400&X-Amz-Signature=dc3e135568dbe18b0f5ac50f2ba27cfb36fb29ed531b7e458a9dd3fde147c09e" preload="auto"></audio>
             </div>
         </div>
     </footer>
@@ -19467,7 +19474,7 @@
         <i class="fas fa-comment-dots"></i>
     </button>
 
-    <div class="chat-modal" id="chat-modal" role="dialog" aria-label="Chat com J.A.R.V.I.S." aria-modal="true">
+    <div class="chat-modal active" id="chat-modal" role="dialog" aria-label="Chat com J.A.R.V.I.S." aria-modal="true">
         <div class="chat-header">
             <span class="chat-header-title">J.A.R.V.I.S. Terminal</span>
             <button class="chat-close" id="chat-close" type="button" aria-label="Fechar chat">
@@ -19475,7 +19482,9 @@
             </button>
         </div>
         <div class="chat-output" id="chat-output" role="log" aria-live="polite" aria-label="Mensagens do J.A.R.V.I.S.">
-        <div class="chat-msg jarvis">Interface neural inicializada. Sistemas online. A seus serviços, Sir.</div><div class="chat-msg user">oi</div><div class="chat-msg jarvis">A seus serviços, Sir. Como posso auxiliá-lo nesta magnífica ocasião?</div></div>
+        <div class="chat-msg jarvis">Interface neural inicializada. Sistemas online. A seus serviços, Sir.</div><div class="chat-msg user">oi</div><div class="chat-msg jarvis">A seus serviços, Sir. Como posso auxiliá-lo nesta magnífica ocasião?</div><div class="chat-msg jarvis">Interface neural inicializada. Sistemas online. A seus serviços, Sir.</div><div class="chat-msg user">ola</div><div class="chat-msg jarvis">Boa tarde, senhor(a).  
+Como J.A.R.V.I.S., estou à disposição para atender às suas necessidades com a eficiência de um relógio suíço.  
+Em que posso auxiliá‑lo hoje?</div></div>
         <form class="chat-input-area" id="chat-form" autocomplete="off">
             <label for="chat-input" class="visually-hidden">Digite seu comando</label>
             <input type="text" id="chat-input" class="chat-input" placeholder="Converse comigo, Sir..." required="">
@@ -19483,7 +19492,7 @@
         </form>
     </div>
 <!-- Modal Overlay -->
-<div class="modal-overlay" id="modal-overlay"></div>
+<div class="modal-overlay active" id="modal-overlay"></div>
 
 <!-- Settings Modal -->
 <div class="settings-modal" id="settings-modal" role="dialog" aria-label="Configurações do Sistema" aria-modal="true">
@@ -19496,11 +19505,11 @@
   <form id="settings-form" class="settings-form">
     <div class="form-group">
       <label for="config-api-key">Groq API Key</label>
-      <input type="password" id="config-api-key" class="chat-input" placeholder="gsk_..." required>
+      <input type="password" id="config-api-key" class="chat-input" placeholder="gsk_..." required="">
     </div>
     <div class="form-group">
       <label for="config-model">Model Name</label>
-      <input type="text" id="config-model" class="chat-input" value="llama-3.1-8b-instant" required>
+      <input type="text" id="config-model" class="chat-input" value="llama-3.1-8b-instant" required="">
     </div>
     <div class="form-group">
       <label for="config-prompt">System Prompt (Personalidade)</label>
@@ -19514,6 +19523,27 @@
 </div>
     <script>
     
+// --- Lógica do Reprodutor de Música ---
+const audio = document.getElementById('bg-music');
+const playPauseBtn = document.getElementById('play-pause-btn');
+
+if (audio && playPauseBtn) {
+    playPauseBtn.addEventListener('click', () => {
+        if (audio.paused) {
+            audio.play().catch(err => console.warn('Autoplay bloqueado ou erro:', err));
+            playPauseBtn.innerHTML = '<i class="fas fa-pause"></i>';
+        } else {
+            audio.pause();
+            playPauseBtn.innerHTML = '<i class="fas fa-play"></i>';
+        }
+    });
+
+    // Reseta o ícone quando a música termina
+    audio.addEventListener('ended', () => {
+        playPauseBtn.innerHTML = '<i class="fas fa-play"></i>';
+    });
+}
+
     /**
  * J.A.R.V.I.S. Dashboard v4.0 - Real-time AI Integration
  */
@@ -19780,5 +19810,6 @@ const init = () => {
 document.addEventListener('DOMContentLoaded', init);
     
     </script>
+
 
 </body></html>
