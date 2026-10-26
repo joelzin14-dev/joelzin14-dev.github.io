@@ -788,7 +788,7 @@
         cursor: pointer;
         box-shadow: 0 0 20px var(--neon-cyan-dim);
         transition: all 0.3s ease;
-        z-index: 200;
+        z-index: 1000;
         display: flex;
         align-items: center;
         justify-content: center;
@@ -814,7 +814,7 @@
         box-shadow: 0 0 30px rgba(0, 212, 255, 0.3);
         display: none;
         flex-direction: column;
-        z-index: 200;
+        z-index: 1001;
         overflow: hidden;
     }
 
@@ -942,10 +942,12 @@
     .modal-overlay {
         position: fixed;
         inset: 0;
-        background: rgba(0, 0, 0, 0.8);
+        background: rgba(0, 0, 0, 0.6);
         backdrop-filter: blur(4px);
-        z-index: 250;
+        z-index: 999;
         display: none;
+		opacity: 0;
+    transition: opacity 0.3s ease;
     }
 
     .modal-overlay.active { 
@@ -965,7 +967,7 @@
         box-shadow: 0 0 40px rgba(0, 212, 255, 0.2);
         display: none;
         flex-direction: column;
-        z-index: 300;
+        z-index: 1002;
         padding: 1.5rem;
     }
 
@@ -19763,29 +19765,37 @@ const toggleChat = () => {
   state.chatOpen = !state.chatOpen;
   dom.chatModal.classList.toggle('active', state.chatOpen);
   dom.modalOverlay.classList.toggle('active', state.chatOpen);
+  dom.settingsModal.classList.remove('active');
   if (state.chatOpen) dom.chatInput.focus();
 };
 
 const toggleSettings = () => {
-  const isActive = dom.settingsModal.classList.contains('active');
-  if (!isActive) {
-    document.getElementById('config-api-key').value = config.apiKey;
-    document.getElementById('config-model').value = config.model;
-    document.getElementById('config-prompt').value = config.systemPrompt;
-  }
-  dom.settingsModal.classList.toggle('active', !isActive);
-  dom.modalOverlay.classList.toggle('active', !isActive);
+    const isActive = dom.settingsModal.classList.contains('active');
+    
+    // Fecha chat se estiver aberto
+    if (!isActive) {
+        dom.chatModal.classList.remove('active');
+        state.chatOpen = false;
+        
+        document.getElementById('config-api-key').value = config.apiKey;
+        document.getElementById('config-model').value = config.model;
+        document.getElementById('config-prompt').value = config.systemPrompt;
+    }
+    
+    dom.settingsModal.classList.toggle('active', !isActive);
+    dom.modalOverlay.classList.toggle('active', !isActive);
 };
-
+		
 dom.chatToggle.addEventListener('click', toggleChat);
 dom.chatClose.addEventListener('click', toggleChat);
 dom.openSettingsBtn.addEventListener('click', toggleSettings);
 dom.settingsClose.addEventListener('click', toggleSettings);
+// Click no overlay fecha ambos
 dom.modalOverlay.addEventListener('click', () => {
-  dom.chatModal.classList.remove('active');
-  dom.settingsModal.classList.remove('active');
-  dom.modalOverlay.classList.remove('active');
-  state.chatOpen = false;
+    dom.chatModal.classList.remove('active');
+    dom.settingsModal.classList.remove('active');
+    dom.modalOverlay.classList.remove('active');
+    state.chatOpen = false;
 });
 
 dom.settingsForm.addEventListener('submit', (e) => {
