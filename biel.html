@@ -1,0 +1,576 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Controle de Gastos - Biel</title>
+<style>
+:root {
+  --color-bg: #f4f6f8;
+  --color-surface: #ffffff;
+  --color-primary: #2563eb;
+  --color-primary-hover: #1d4ed8;
+  --color-text: #1e293b;
+  --color-text-muted: #64748b;
+  --color-success: #10b981;
+  --color-danger: #ef4444;
+  --color-border: #e2e8f0;
+  --spacing-xs: 0.5rem;
+  --spacing-sm: 1rem;
+  --spacing-md: 1.5rem;
+  --spacing-lg: 2rem;
+  --radius: 8px;
+  --shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  font-family: system-ui, -apple-system, sans-serif;
+  background-color: var(--color-bg);
+  color: var(--color-text);
+  line-height: 1.5;
+  padding: var(--spacing-sm);
+}
+
+.container {
+  max-width: 800px;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-md);
+}
+
+.view {
+  display: none;
+}
+
+.view.active {
+  display: block;
+  animation: fadeIn 0.3s ease-in-out;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.app-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: var(--spacing-md);
+  padding-bottom: var(--spacing-sm);
+  border-bottom: 1px solid var(--color-border);
+}
+
+.app-header h1 {
+  font-size: 1.25rem;
+  font-weight: 600;
+}
+
+.card {
+  background: var(--color-surface);
+  border-radius: var(--radius);
+  padding: var(--spacing-md);
+  box-shadow: var(--shadow);
+  border: 1px solid var(--color-border);
+}
+
+.form-group {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-xs);
+}
+
+.form-group.full-width {
+  grid-column: 1 / -1;
+}
+
+label {
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: var(--color-text-muted);
+}
+
+input, select {
+  padding: 0.75rem;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius);
+  font-size: 1rem;
+  transition: border-color 0.2s;
+}
+
+input:focus, select:focus {
+  outline: none;
+  border-color: var(--color-primary);
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+}
+
+.btn {
+  padding: 0.75rem 1.5rem;
+  border: none;
+  border-radius: var(--radius);
+  font-size: 1rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.btn-primary {
+  background-color: var(--color-primary);
+  color: white;
+}
+
+.btn-primary:hover {
+  background-color: var(--color-primary-hover);
+}
+
+.btn-secondary {
+  background-color: transparent;
+  color: var(--color-text-muted);
+  border: 1px solid var(--color-border);
+}
+
+.btn-secondary:hover {
+  background-color: var(--color-bg);
+}
+
+.form-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: var(--spacing-sm);
+}
+
+.summary-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: var(--spacing-sm);
+}
+
+.summary-card h2 {
+  font-size: 0.875rem;
+  color: var(--color-text-muted);
+  margin-bottom: var(--spacing-xs);
+}
+
+.summary-card .amount {
+  font-size: 1.5rem;
+  font-weight: 700;
+}
+
+.summary-card.income .amount { color: var(--color-success); }
+.summary-card.expense .amount { color: var(--color-danger); }
+.summary-card.balance .amount { color: var(--color-primary); }
+
+.transactions-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-sm);
+}
+
+.transaction-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: var(--spacing-sm);
+  border-bottom: 1px solid var(--color-border);
+}
+
+.transaction-item:last-child {
+  border-bottom: none;
+}
+
+.tx-info h3 {
+  font-size: 1rem;
+  font-weight: 500;
+}
+
+.tx-info p {
+  font-size: 0.875rem;
+  color: var(--color-text-muted);
+}
+
+.tx-amount {
+  font-weight: 600;
+}
+
+.tx-amount.entrada { color: var(--color-success); }
+.tx-amount.saida { color: var(--color-danger); }
+
+.error-message {
+  color: var(--color-danger);
+  font-size: 0.875rem;
+  margin-top: var(--spacing-xs);
+  min-height: 1.25rem;
+}
+
+.empty-state {
+  text-align: center;
+  color: var(--color-text-muted);
+  padding: var(--spacing-md);
+}
+
+/* Desktop Responsiveness */
+@media (min-width: 640px) {
+  .form-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+  
+  .summary-grid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+  
+  body {
+    padding: var(--spacing-lg);
+  }
+}
+  
+</style>
+  
+</head>
+<body>
+  <div id="app">
+    <!-- Tela de Login -->
+    <section id="login-view" class="view active" aria-labelledby="login-title">
+      <header class="app-header">
+        <h1 id="login-title">Acesso ao Controle Financeiro</h1>
+      </header>
+      <main class="container">
+        <form id="login-form" class="card" novalidate>
+          <div class="form-group">
+            <label for="username">Usuário</label>
+            <input type="text" id="username" name="username" required autocomplete="username" aria-required="true">
+          </div>
+          <div class="form-group">
+            <label for="password">Senha</label>
+            <input type="password" id="password" name="password" required autocomplete="current-password" aria-required="true">
+          </div>
+          <button type="submit" class="btn btn-primary" data-action="login">Entrar</button>
+          <p id="login-error" class="error-message" role="alert" aria-live="polite"></p>
+        </form>
+      </main>
+    </section>
+
+    <!-- Tela Principal (Dashboard) -->
+    <section id="dashboard-view" class="view" aria-labelledby="dashboard-title" hidden>
+      <header class="app-header">
+        <h1 id="dashboard-title">Painel Financeiro</h1>
+        <button id="logout-btn" class="btn btn-secondary" data-action="logout">Sair</button>
+      </header>
+      
+      <main class="container">
+        <!-- Filtro de Período -->
+        <div class="card period-selector">
+          <label for="period-select">Período Ativo</label>
+          <select id="period-select" name="periodo" aria-label="Selecionar período financeiro">
+            <option value="">Carregando períodos...</option>
+          </select>
+        </div>
+
+        <!-- Resumo -->
+        <section class="summary-grid" aria-label="Resumo financeiro">
+          <article class="card summary-card income">
+            <h2>Entradas</h2>
+            <p id="total-income" class="amount">R$ 0,00</p>
+          </article>
+          <article class="card summary-card expense">
+            <h2>Saídas</h2>
+            <p id="total-expense" class="amount">R$ 0,00</p>
+          </article>
+          <article class="card summary-card balance">
+            <h2>Saldo</h2>
+            <p id="total-balance" class="amount">R$ 0,00</p>
+          </article>
+        </section>
+
+        <!-- Formulário de Nova Transação -->
+        <section class="card" aria-labelledby="new-transaction-title">
+          <h2 id="new-transaction-title">Nova Transação</h2>
+          <form id="transaction-form" class="form-grid" novalidate>
+            <div class="form-group">
+              <label for="tx-tipo">Tipo</label>
+              <select id="tx-tipo" name="tipo" required>
+                <option value="entrada">Entrada</option>
+                <option value="saida">Saída</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label for="tx-categoria">Categoria</label>
+              <input type="text" id="tx-categoria" name="categoria" list="categorias-list" required placeholder="Ex: Alimentação, Aluguel">
+              <datalist id="categorias-list">
+                <option value="Aluguel">
+                <option value="Água">
+                <option value="Internet">
+                <option value="Cartão de Crédito">
+                <option value="Empréstimo">
+              </datalist>
+            </div>
+            <div class="form-group">
+              <label for="tx-valor">Valor (R$)</label>
+              <input type="number" id="tx-valor" name="valor" step="0.01" min="0" required>
+            </div>
+            <div class="form-group">
+              <label for="tx-data">Data</label>
+              <input type="date" id="tx-data" name="data" required>
+            </div>
+            <div class="form-group full-width">
+              <label for="tx-descricao">Descrição</label>
+              <input type="text" id="tx-descricao" name="descricao" placeholder="Detalhes do gasto">
+            </div>
+            <div class="form-group">
+              <label for="tx-projeto">Projeto (Opcional)</label>
+              <input type="text" id="tx-projeto" name="projeto" placeholder="Ex: Reforma Casa">
+            </div>
+            <div class="form-group">
+              <label for="tx-emprestimo">É Empréstimo?</label>
+              <select id="tx-emprestimo" name="emprestimo">
+                <option value="nao">Não</option>
+                <option value="sim">Sim</option>
+              </select>
+            </div>
+            <button type="submit" class="btn btn-primary full-width" data-action="add-transaction">Registrar</button>
+          </form>
+          <p id="tx-error" class="error-message" role="alert" aria-live="polite"></p>
+        </section>
+
+        <!-- Lista de Transações -->
+        <section class="card" aria-labelledby="transactions-list-title">
+          <h2 id="transactions-list-title">Histórico do Período</h2>
+          <div id="transactions-list" class="transactions-list" role="list">
+            <!-- Preenchido via JS -->
+            <p class="empty-state">Selecione um período para ver as transações.</p>
+          </div>
+        </section>
+      </main>
+    </section>
+  </div>
+  <script>
+
+    // Configuração
+const API_URL = "https://script.google.com/macros/s/AKfycbx7ygQ4o_D183G8qT52in9JYNDOixYusFfR1SKMNUxUdqy982uJWZ-WfDkPrGu7QssY/exec"; // Substitua pela sua URL implantada
+
+// Estado da Aplicação
+const state = {
+  token: sessionStorage.getItem("financeToken") || null,
+  currentPeriod: null
+};
+
+// Utilitários de Segurança e Formatação
+const sanitize = (str) => {
+  if (typeof str !== "string") return str;
+  const div = document.createElement("div");
+  div.textContent = str;
+  return div.innerHTML;
+};
+
+const formatCurrency = (value) => {
+  return new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL" }).format(value);
+};
+
+const formatDate = (dateString) => {
+  if (!dateString) return "";
+  const date = new Date(dateString);
+  return new Intl.DateTimeFormat("pt-BR").format(date);
+};
+
+// Gerenciamento de Views
+const showView = (viewId) => {
+  document.querySelectorAll(".view").forEach(view => {
+    view.classList.remove("active");
+    view.hidden = true;
+  });
+  const target = document.getElementById(viewId);
+  if (target) {
+    target.classList.add("active");
+    target.hidden = false;
+  }
+};
+
+// Chamadas à API
+const apiCall = async (payload) => {
+  try {
+    const response = await fetch(API_URL, {
+      method: "POST",
+      body: JSON.stringify(payload)
+    });
+    return await response.json();
+  } catch (error) {
+    console.error("Erro na API:", error);
+    return { success: false, message: "Erro de conexão com o servidor." };
+  }
+};
+
+// Inicialização
+const init = () => {
+  if (state.token) {
+    showView("dashboard-view");
+    loadPeriods();
+  } else {
+    showView("login-view");
+  }
+  attachEventListeners();
+};
+
+// Event Listeners
+const attachEventListeners = () => {
+  // Login
+  const loginForm = document.getElementById("login-form");
+  loginForm.addEventListener("submit", async (e) => {
+    e.preventDefault();
+    const errorMsg = document.getElementById("login-error");
+    errorMsg.textContent = "Autenticando...";
+    
+    const username = sanitize(document.getElementById("username").value.trim());
+    const password = document.getElementById("password").value;
+
+    const result = await apiCall({ action: "login", username, password });
+    
+    if (result.success) {
+      state.token = result.token;
+      sessionStorage.setItem("financeToken", result.token);
+      errorMsg.textContent = "";
+      loginForm.reset();
+      showView("dashboard-view");
+      loadPeriods();
+    } else {
+      errorMsg.textContent = result.message;
+    }
+  });
+
+  // Logout
+  document.getElementById("logout-btn").addEventListener("click", () => {
+    state.token = null;
+    sessionStorage.removeItem("financeToken");
+    showView("login-view");
+  });
+
+  // Seleção de Período
+  const periodSelect = document.getElementById("period-select");
+  periodSelect.addEventListener("change", (e) => {
+    state.currentPeriod = e.target.value;
+    if (state.currentPeriod) {
+      loadTransactions(state.currentPeriod);
+    }
+  });
+
+  // Adicionar Transação
+  const txForm = document.getElementById("transaction-form");
+  txForm.addEventListener("submit", async (e) => {
+    e.preventDefault();
+    const errorMsg = document.getElementById("tx-error");
+    
+    if (!state.currentPeriod) {
+      errorMsg.textContent = "Selecione um período antes de registrar.";
+      return;
+    }
+
+    const payload = {
+      action: "addTransacao",
+      token: state.token,
+      periodoId: state.currentPeriod,
+      tipo: sanitize(document.getElementById("tx-tipo").value),
+      categoria: sanitize(document.getElementById("tx-categoria").value.trim()),
+      valor: parseFloat(document.getElementById("tx-valor").value),
+      data: document.getElementById("tx-data").value,
+      descricao: sanitize(document.getElementById("tx-descricao").value.trim()),
+      projeto: sanitize(document.getElementById("tx-projeto").value.trim()) || "Geral",
+      emprestimo: document.getElementById("tx-emprestimo").value
+    };
+
+    if (isNaN(payload.valor) || payload.valor <= 0) {
+      errorMsg.textContent = "Valor inválido.";
+      return;
+    }
+
+    errorMsg.textContent = "Salvando...";
+    const result = await apiCall(payload);
+
+    if (result.success) {
+      errorMsg.textContent = "";
+      txForm.reset();
+      // Define a data de hoje como padrão novamente
+      document.getElementById("tx-data").valueAsDate = new Date();
+      loadTransactions(state.currentPeriod);
+    } else {
+      errorMsg.textContent = result.message;
+    }
+  });
+};
+
+// Carregar Dados
+const loadPeriods = async () => {
+  const select = document.getElementById("period-select");
+  select.innerHTML = '<option value="">Carregando...</option>';
+  
+  const result = await apiCall({ action: "getPeriodos", token: state.token });
+  
+  if (result.success) {
+    select.innerHTML = '<option value="">Selecione um período</option>';
+    result.data.forEach(periodo => {
+      const option = document.createElement("option");
+      option.value = periodo.id;
+      option.textContent = `${periodo.nome} (${periodo.status})`;
+      select.appendChild(option);
+    });
+    
+    // Define a data de hoje no formulário por padrão
+    document.getElementById("tx-data").valueAsDate = new Date();
+  } else {
+    select.innerHTML = '<option value="">Erro ao carregar</option>';
+  }
+};
+
+const loadTransactions = async (periodoId) => {
+  const listContainer = document.getElementById("transactions-list");
+  listContainer.innerHTML = '<p class="empty-state">Carregando...</p>';
+
+  const result = await apiCall({ action: "getTransacoes", periodoId, token: state.token });
+
+  if (result.success && result.data.length > 0) {
+    listContainer.innerHTML = "";
+    let totalIncome = 0;
+    let totalExpense = 0;
+
+    result.data.forEach(tx => {
+      const item = document.createElement("div");
+      item.className = "transaction-item";
+      item.setAttribute("role", "listitem");
+      item.setAttribute("data-tipo", tx.tipo);
+      
+      const valorNum = parseFloat(tx.valor);
+      if (tx.tipo === "entrada") totalIncome += valorNum;
+      else totalExpense += valorNum;
+
+      item.innerHTML = `
+        <div class="tx-info">
+          <h3>${sanitize(tx.categoria)} ${tx.projeto && tx.projeto !== "Geral" ? `<small>(${sanitize(tx.projeto)})</small>` : ""}</h3>
+          <p>${sanitize(tx.descricao)} • ${formatDate(tx.data)}</p>
+        </div>
+        <div class="tx-amount ${sanitize(tx.tipo)}">
+          ${tx.tipo === "entrada" ? "+" : "-"} ${formatCurrency(valorNum)}
+        </div>
+      `;
+      listContainer.appendChild(item);
+    });
+
+    document.getElementById("total-income").textContent = formatCurrency(totalIncome);
+    document.getElementById("total-expense").textContent = formatCurrency(totalExpense);
+    document.getElementById("total-balance").textContent = formatCurrency(totalIncome - totalExpense);
+  } else {
+    listContainer.innerHTML = '<p class="empty-state">Nenhuma transação neste período.</p>';
+    document.getElementById("total-income").textContent = formatCurrency(0);
+    document.getElementById("total-expense").textContent = formatCurrency(0);
+    document.getElementById("total-balance").textContent = formatCurrency(0);
+  }
+};
+
+// Iniciar aplicação
+document.addEventListener("DOMContentLoaded", init);
+  </script>
+</body>
+</html>
