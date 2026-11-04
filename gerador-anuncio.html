@@ -1016,7 +1016,7 @@
       const canvas = await renderThemeToCanvas(state.theme);
       setProgress(80, 'Codificando JPG…');
       const blob = await canvasToBlob(canvas);
-      triggerDownload(blob, `encarte-${slugify(state.fields.title)}-${state.theme}.jpg`);
+      triggerDownload(blob, `${slugify(state.fields.title)}.jpg`);
       setProgress(100, 'Concluído!');
       toast('Encarte JPG baixado (1350×1800).', 'success');
     } catch (error) {
