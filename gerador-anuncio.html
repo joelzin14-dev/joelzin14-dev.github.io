@@ -191,7 +191,7 @@
 
   .progress-fill{ width:var(--progress,0%); transition:width .25s ease; }
 
-  /* ---------- GALERIA DE ANÚNCIOS (ATUALIZADO) ---------- */
+  /* ---------- GALERIA DE ANÚNCIOS ---------- */
   .anuncio-item{ 
     @apply flex flex-col gap-2 rounded-xl border border-zinc-800 bg-zinc-900/60 p-2 transition hover:border-amber-400/50 hover:bg-zinc-800/80; 
   }
@@ -254,7 +254,6 @@
           </button>
         </div>
 
-        <!-- CONTAINER ALTERADO PARA GRID DE 3 COLUNAS -->
         <div id="anunciosList" class="grid grid-cols-3 gap-3">
           <p class="col-span-3 text-center text-[11px] font-medium text-zinc-600 py-4">Nenhum anúncio salvo ainda.</p>
         </div>
@@ -265,21 +264,21 @@
         </p>
       </fieldset>
 
-      <!-- ========== LOGO DA LOJA ========== -->
+      <!-- ========== LOGO DA LOJA (GLOBAL) ========== -->
       <fieldset class="ui-panel">
-        <legend class="ui-legend"><i class="fa-solid fa-store text-amber-400" aria-hidden="true"></i> Logo da loja</legend>
+        <legend class="ui-legend"><i class="fa-solid fa-store text-amber-400" aria-hidden="true"></i> Logo da loja (Global)</legend>
 
         <input id="logoFile" type="file" accept="image/*" class="peer sr-only">
         <label for="logoFile" class="flex cursor-pointer flex-col items-center gap-2 rounded-xl border-2 border-dashed border-zinc-700 bg-zinc-950/60 px-4 py-4 text-center transition hover:border-amber-400/70 hover:bg-zinc-900 peer-focus-visible:border-amber-400 peer-focus-visible:ring-2 peer-focus-visible:ring-amber-400/30">
           <i class="fa-solid fa-image text-xl text-amber-400" aria-hidden="true"></i>
-          <span class="text-xs font-bold text-zinc-200">Enviar logo</span>
+          <span class="text-xs font-bold text-zinc-200">Enviar logo da loja</span>
           <span class="text-[9px] font-medium uppercase tracking-wider text-zinc-500">PNG · JPG · SVG</span>
         </label>
 
         <div class="mt-3 flex items-center gap-2">
           <label class="flex flex-1 items-center gap-2 text-xs font-bold text-zinc-300">
             <input type="checkbox" id="showLogo" class="toggle-switch" checked>
-            <span>Mostrar no encarte</span>
+            <span>Mostrar no encarte atual</span>
           </label>
           <button type="button" id="btnRemoveLogo" class="btn-ghost">
             <i class="fa-solid fa-trash" aria-hidden="true"></i>
@@ -562,6 +561,10 @@
   const CANVAS_H = 600;
   const EXPORT_SCALE = 3;
   const STORAGE_KEY = 'encarte-studio-anuncios';
+  
+  // NOVAS CHAVES PARA LOGO GLOBAL
+  const LOGO_STORAGE_KEY = 'encarte-studio-logo-global';
+  const LOGO_NAME_STORAGE_KEY = 'encarte-studio-logo-name-global';
 
   const THEMES = [
     { id: 'padrao', label: 'Padrão Foto',       file: '01-padrao-foto' },
@@ -651,7 +654,7 @@
     theme: 'padrao',
     image: DEMO_IMAGE,
     source: null,
-    logo: null,
+    logo: null, // Agora é populado globalmente
     showLogo: true,
     showSeal: false,
     fields: {
@@ -760,8 +763,26 @@
     dom.flyerLogo.classList.toggle('logo--hidden', !visible || !state.logo);
   };
 
+  // --- FUNÇÕES DE LOGO GLOBAL ---
+  const loadGlobalLogo = () => {
+    try {
+      const logoData = localStorage.getItem(LOGO_STORAGE_KEY);
+      const logoName = localStorage.getItem(LOGO_NAME_STORAGE_KEY) || 'Logo da loja';
+      if (logoData) {
+        state.logo = logoData;
+        dom.flyerLogo.src = logoData;
+        dom.logoName.textContent = logoName;
+      }
+    } catch (e) {
+      console.error('Erro ao carregar logo global', e);
+    }
+  };
+
   const setLogo = (dataUrl, name) => {
     state.logo = dataUrl;
+    localStorage.setItem(LOGO_STORAGE_KEY, dataUrl);
+    localStorage.setItem(LOGO_NAME_STORAGE_KEY, name);
+    
     dom.flyerLogo.src = dataUrl;
     dom.logoName.textContent = name || 'Logo carregada.';
     toggleLogo(state.showLogo);
@@ -769,10 +790,15 @@
 
   const removeLogo = () => {
     state.logo = null;
+    localStorage.removeItem(LOGO_STORAGE_KEY);
+    localStorage.removeItem(LOGO_NAME_STORAGE_KEY);
+    
     dom.flyerLogo.src = '';
     dom.logoName.textContent = 'Nenhuma logo enviada.';
     toggleLogo(false);
+    toast('Logo removida globalmente.', 'info');
   };
+  // ------------------------------
 
   const toast = (message, type = 'info') => {
     const palette = {
@@ -916,7 +942,7 @@
     try {
       const dataUrl = await readFileAsDataURL(file);
       setLogo(dataUrl, sanitize(file.name, 60));
-      toast('Logo carregada.', 'success');
+      toast('Logo da loja atualizada globalmente.', 'success');
     } catch (error) {
       console.error(error);
       toast('Erro ao ler a logo.', 'error');
@@ -1077,8 +1103,7 @@
         theme: state.theme,
         fields: { ...state.fields },
         image: state.image,
-        logo: state.logo,
-        showLogo: state.showLogo,
+        // REMOVIDO: logo e showLogo não são mais salvos por anúncio, são globais
         showSeal: state.showSeal
       };
     },
@@ -1088,15 +1113,18 @@
       state.theme = anuncio.theme;
       state.fields = { ...anuncio.fields };
       state.image = anuncio.image || DEMO_IMAGE;
-      state.logo = anuncio.logo || null;
-      state.showLogo = anuncio.showLogo ?? true;
       state.showSeal = anuncio.showSeal ?? false;
 
       dom.flyerImage.src = state.image;
-      if (state.logo) {
-        dom.flyerLogo.src = state.logo;
-        dom.logoName.textContent = 'Logo carregada.';
+      
+      // Aplica a logo global se existir
+      const globalLogo = localStorage.getItem(LOGO_STORAGE_KEY);
+      if (globalLogo) {
+        state.logo = globalLogo;
+        dom.flyerLogo.src = globalLogo;
+        dom.logoName.textContent = localStorage.getItem(LOGO_NAME_STORAGE_KEY) || 'Logo carregada.';
       } else {
+        state.logo = null;
         dom.flyerLogo.src = '';
         dom.logoName.textContent = 'Nenhuma logo enviada.';
       }
@@ -1185,7 +1213,6 @@
     state.currentAnuncioId = null;
     state.image = DEMO_IMAGE;
     state.source = null;
-    state.logo = null;
     state.showLogo = true;
     state.showSeal = false;
     state.fields = {
@@ -1202,9 +1229,20 @@
     };
 
     dom.flyerImage.src = DEMO_IMAGE;
-    dom.flyerLogo.src = '';
+    
+    // Reaplica a logo global se existir
+    const globalLogo = localStorage.getItem(LOGO_STORAGE_KEY);
+    if (globalLogo) {
+      state.logo = globalLogo;
+      dom.flyerLogo.src = globalLogo;
+      dom.logoName.textContent = localStorage.getItem(LOGO_NAME_STORAGE_KEY) || 'Logo carregada.';
+    } else {
+      state.logo = null;
+      dom.flyerLogo.src = '';
+      dom.logoName.textContent = 'Nenhuma logo enviada.';
+    }
+
     dom.fileName.textContent = 'Nenhum arquivo enviado — usando arte de demonstração.';
-    dom.logoName.textContent = 'Nenhuma logo enviada.';
     dom.btnRecrop.disabled = true;
 
     Object.keys(state.fields).forEach((key) => {
@@ -1212,10 +1250,10 @@
       if (input) input.value = state.fields[key];
     });
 
-    dom.showLogo.checked = true;
-    dom.showSeal.checked = false;
-    toggleLogo(true);
-    toggleSeal(true);
+    dom.showLogo.checked = state.showLogo;
+    dom.showSeal.checked = state.showSeal;
+    toggleLogo(state.showLogo);
+    toggleSeal(state.showSeal);
     scheduleRender();
     toast('Novo anúncio criado.', 'info');
   };
@@ -1289,7 +1327,6 @@
   dom.showLogo.addEventListener('change', () => toggleLogo(dom.showLogo.checked));
   dom.btnRemoveLogo.addEventListener('click', () => {
     removeLogo();
-    toast('Logo removida.', 'info');
   });
 
   dom.showSeal.addEventListener('change', () => toggleSeal(dom.showSeal.checked));
@@ -1334,6 +1371,7 @@
   });
 
   const init = () => {
+    loadGlobalLogo(); // Carrega a logo global antes de renderizar
     dom.flyerImage.src = state.image;
     applyTheme(state.theme);
     toggleLogo(state.showLogo);
