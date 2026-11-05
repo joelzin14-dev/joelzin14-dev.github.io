@@ -202,8 +202,42 @@
   .cat-produto-card{
     @apply flex flex-col gap-2 rounded-xl border border-zinc-800 bg-zinc-900/60 p-3 transition hover:border-amber-400/40 hover:bg-zinc-800/80;
   }
+  .cat-produto-thumb-wrap{
+    @apply relative aspect-square w-full overflow-hidden rounded-lg border border-zinc-700 bg-zinc-800;
+  }
   .cat-produto-thumb{
-    @apply aspect-square w-full rounded-lg border border-zinc-700 bg-zinc-800 object-cover;
+    @apply h-full w-full object-cover;
+  }
+  .cat-produto-photos-badge{
+    @apply absolute bottom-1.5 right-1.5 flex items-center gap-1 rounded-md bg-zinc-950/85 px-1.5 py-0.5 text-[9px] font-bold text-zinc-200 backdrop-blur;
+  }
+
+  /* ================= FORMULÁRIO DE FOTOS MÚLTIPLAS ================= */
+  .fotos-grid{
+    @apply grid grid-cols-3 gap-2 sm:grid-cols-4 md:grid-cols-5;
+  }
+  .foto-item{
+    @apply relative aspect-square overflow-hidden rounded-lg border-2 border-zinc-700 bg-zinc-800 transition hover:border-amber-400/60;
+  }
+  .foto-item.is-principal{
+    @apply border-amber-400 ring-2 ring-amber-400/40;
+  }
+  .foto-item__img{
+    @apply h-full w-full object-cover;
+  }
+  .foto-item__principal-badge{
+    @apply absolute left-1 top-1 flex items-center gap-1 rounded-md bg-amber-400 px-1.5 py-0.5 text-[9px] font-extrabold uppercase tracking-wider text-zinc-950 shadow-lg;
+  }
+  .foto-item__actions{
+    @apply absolute inset-x-0 bottom-0 flex items-center justify-between gap-1 bg-gradient-to-t from-zinc-950/90 to-transparent p-1.5 opacity-0 transition group-hover:opacity-100;
+  }
+  .foto-item__btn{
+    @apply inline-flex h-6 w-6 items-center justify-center rounded-md bg-zinc-900/80 text-[10px] font-bold text-zinc-200 transition hover:bg-amber-400 hover:text-zinc-950 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-400/50;
+  }
+  .foto-item__btn.danger{ @apply hover:bg-red-500 hover:text-white; }
+
+  .foto-add-btn{
+    @apply flex aspect-square cursor-pointer flex-col items-center justify-center gap-1 rounded-lg border-2 border-dashed border-zinc-700 bg-zinc-950/60 text-center transition hover:border-amber-400/70 hover:bg-zinc-900 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-400/40;
   }
 
   /* ================= IMPORTAR ANÚNCIO ================= */
@@ -576,16 +610,29 @@
             </button>
           </div>
 
-          <div class="grid grid-cols-1 gap-3 md:grid-cols-[160px_1fr]">
+          <div class="grid grid-cols-1 gap-4 md:grid-cols-[220px_1fr]">
+            <!-- COLUNA DE FOTOS MÚLTIPLAS -->
             <div>
-              <label class="ui-label" for="produtoFile"><i class="fa-solid fa-image" aria-hidden="true"></i> Foto</label>
-              <input id="produtoFile" type="file" accept="image/*" class="peer sr-only">
-              <label for="produtoFile" class="flex cursor-pointer flex-col items-center justify-center gap-1 rounded-xl border-2 border-dashed border-zinc-700 bg-zinc-950/60 aspect-square text-center transition hover:border-amber-400/70 hover:bg-zinc-900 peer-focus-visible:border-amber-400 peer-focus-visible:ring-2 peer-focus-visible:ring-amber-400/30">
-                <i id="produtoFileIcon" class="fa-solid fa-cloud-arrow-up text-xl text-amber-400" aria-hidden="true"></i>
-                <span class="text-[10px] font-bold text-zinc-300">Enviar</span>
+              <label class="ui-label">
+                <i class="fa-solid fa-images text-amber-400" aria-hidden="true"></i>
+                Fotos do produto
+                <span class="ml-auto text-[9px] font-semibold normal-case tracking-normal text-zinc-500">Múltiplas imagens</span>
               </label>
-              <img id="produtoPreview" class="mt-2 hidden w-full aspect-square rounded-lg border border-zinc-700 object-cover" alt="Preview do produto">
+              <input id="produtoFile" type="file" accept="image/*" multiple class="peer sr-only">
+              <div id="fotosGrid" class="fotos-grid">
+                <!-- Fotos serão injetadas aqui via JS -->
+                <label for="produtoFile" class="foto-add-btn" tabindex="0" aria-label="Adicionar fotos">
+                  <i class="fa-solid fa-plus text-lg text-amber-400" aria-hidden="true"></i>
+                  <span class="text-[9px] font-bold text-zinc-300">Adicionar</span>
+                </label>
+              </div>
+              <p class="ui-hint mt-2">
+                <i class="fa-solid fa-star text-amber-400" aria-hidden="true"></i>
+                Clique em <strong class="text-zinc-200">"Capa"</strong> para definir a foto principal. A primeira foto é usada no PDF.
+              </p>
             </div>
+
+            <!-- COLUNA DE DADOS -->
             <div class="space-y-3">
               <div>
                 <label class="ui-label" for="produtoNome"><i class="fa-solid fa-font" aria-hidden="true"></i> Nome do produto</label>
@@ -593,7 +640,7 @@
               </div>
               <div>
                 <label class="ui-label" for="produtoDescricao"><i class="fa-solid fa-align-left" aria-hidden="true"></i> Descrição</label>
-                <textarea class="ui-textarea" id="produtoDescricao" rows="3" maxlength="400" placeholder="Ex: 8 braços · cristal premium · acabamento dourado · bocal E14"></textarea>
+                <textarea class="ui-textarea" id="produtoDescricao" rows="4" maxlength="400" placeholder="Ex: 8 braços · cristal premium · acabamento dourado · bocal E14"></textarea>
               </div>
               <div class="flex gap-2">
                 <button type="button" id="btnSalvarProduto" class="btn-primary flex-1">
@@ -815,7 +862,7 @@
     },
     cat: {
       categoriaAtivaId: null,
-      produtoImagem: null,
+      produtoImagens: [],      // Array de dataUrls (primeira é a principal)
       editandoProdutoId: null
     }
   };
@@ -836,7 +883,7 @@
     produtosArea: $('#produtosArea'), catHeaderSubtitle: $('#catHeaderSubtitle'), catStatusMsg: $('#catStatusMsg'),
     catProdutoFormHost: $('#catProdutoFormHost'), catProdutoCategoriaLabel: $('#catProdutoCategoriaLabel'),
     catProdutosCategoriaLabel: $('#catProdutosCategoriaLabel'), catProdutosCount: $('#catProdutosCount'),
-    produtoFile: $('#produtoFile'), produtoFileIcon: $('#produtoFileIcon'), produtoPreview: $('#produtoPreview'),
+    produtoFile: $('#produtoFile'), fotosGrid: $('#fotosGrid'),
     produtoNome: $('#produtoNome'), produtoDescricao: $('#produtoDescricao'),
     btnSalvarProduto: $('#btnSalvarProduto'), btnLimparProduto: $('#btnLimparProduto'),
     produtosList: $('#produtosList'),
@@ -1562,11 +1609,24 @@
     async loadProdutosByCategoria(categoriaId) {
       try {
         const prods = await DB.getByIndex(DB_CONFIG.stores.produtos, 'categoriaId', categoriaId);
-        return prods.sort((a, b) => (a.ordem || 0) - (b.ordem || 0));
+        // Migração silenciosa: converte formato antigo (imagem singular) para novo (imagens array)
+        return prods.map((p) => this._normalizeProduto(p)).sort((a, b) => (a.ordem || 0) - (b.ordem || 0));
       } catch (e) { console.error(e); return []; }
     },
 
-    async addOrUpdateProduto({ id, categoriaId, nome, descricao, imagem }) {
+    _normalizeProduto(produto) {
+      // Compatibilidade com produtos salvos no formato antigo (imagem única)
+      if (!produto.imagens || !Array.isArray(produto.imagens)) {
+        if (produto.imagem) {
+          produto.imagens = [produto.imagem];
+        } else {
+          produto.imagens = [];
+        }
+      }
+      return produto;
+    },
+
+    async addOrUpdateProduto({ id, categoriaId, nome, descricao, imagens }) {
       try {
         const existing = id ? await DB.get(DB_CONFIG.stores.produtos, id) : null;
         const record = {
@@ -1574,7 +1634,7 @@
           categoriaId,
           nome: sanitize(nome, 120).trim(),
           descricao: sanitize(descricao, 400).trim(),
-          imagem: imagem || (existing ? existing.imagem : null),
+          imagens: Array.isArray(imagens) ? imagens : [],
           ordem: existing ? existing.ordem : Date.now(),
           createdAt: existing ? existing.createdAt : new Date().toISOString(),
           updatedAt: new Date().toISOString()
@@ -1606,15 +1666,12 @@
     async editProduto(id) {
       const prod = await DB.get(DB_CONFIG.stores.produtos, id);
       if (!prod) return;
+      const normalized = this._normalizeProduto(prod);
       state.cat.editandoProdutoId = id;
-      dom.produtoNome.value = prod.nome || '';
-      dom.produtoDescricao.value = prod.descricao || '';
-      if (prod.imagem) {
-        state.cat.produtoImagem = prod.imagem;
-        dom.produtoPreview.src = prod.imagem;
-        dom.produtoPreview.classList.remove('hidden');
-        dom.produtoFileIcon.className = 'fa-solid fa-rotate-right text-xl text-amber-400';
-      }
+      state.cat.produtoImagens = [...normalized.imagens];
+      dom.produtoNome.value = normalized.nome || '';
+      dom.produtoDescricao.value = normalized.descricao || '';
+      this.renderFotosGrid();
       dom.btnSalvarProduto.innerHTML = '<i class="fa-solid fa-floppy-disk" aria-hidden="true"></i> Atualizar produto';
       dom.produtoNome.focus();
       window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -1622,13 +1679,78 @@
 
     resetProdutoForm() {
       state.cat.editandoProdutoId = null;
-      state.cat.produtoImagem = null;
+      state.cat.produtoImagens = [];
       dom.produtoNome.value = '';
       dom.produtoDescricao.value = '';
-      dom.produtoPreview.classList.add('hidden');
-      dom.produtoPreview.removeAttribute('src');
-      dom.produtoFileIcon.className = 'fa-solid fa-cloud-arrow-up text-xl text-amber-400';
+      this.renderFotosGrid();
       dom.btnSalvarProduto.innerHTML = '<i class="fa-solid fa-floppy-disk" aria-hidden="true"></i> Adicionar produto';
+    },
+
+    // ---------- GRID DE FOTOS MÚLTIPLAS ----------
+    renderFotosGrid() {
+      const fotos = state.cat.produtoImagens;
+      const items = fotos.map((dataUrl, index) => {
+        const isPrincipal = index === 0;
+        return `
+          <div class="foto-item group ${isPrincipal ? 'is-principal' : ''}" data-foto-index="${index}">
+            <img class="foto-item__img" src="${dataUrl}" alt="Foto ${index + 1}${isPrincipal ? ' (principal)' : ''}">
+            ${isPrincipal
+              ? `<span class="foto-item__principal-badge"><i class="fa-solid fa-star" aria-hidden="true"></i> Capa</span>`
+              : ''}
+            <div class="foto-item__actions">
+              ${!isPrincipal
+                ? `<button type="button" class="foto-item__btn" data-foto-action="set-principal" data-index="${index}" title="Definir como capa" aria-label="Definir foto ${index + 1} como capa"><i class="fa-solid fa-star" aria-hidden="true"></i></button>`
+                : `<span></span>`}
+              <button type="button" class="foto-item__btn danger" data-foto-action="remove" data-index="${index}" title="Remover foto" aria-label="Remover foto ${index + 1}"><i class="fa-solid fa-trash" aria-hidden="true"></i></button>
+            </div>
+          </div>
+        `;
+      }).join('');
+
+      dom.fotosGrid.innerHTML = `
+        ${items}
+        <label for="produtoFile" class="foto-add-btn" tabindex="0" aria-label="Adicionar mais fotos">
+          <i class="fa-solid fa-plus text-lg text-amber-400" aria-hidden="true"></i>
+          <span class="text-[9px] font-bold text-zinc-300">Adicionar</span>
+        </label>
+      `;
+    },
+
+    async adicionarFotos(fileList) {
+      if (!fileList || fileList.length === 0) return;
+      const files = Array.from(fileList).filter((f) => f.type.startsWith('image/'));
+      if (files.length === 0) { toast('Nenhuma imagem válida selecionada.', 'error'); return; }
+
+      try {
+        for (const file of files) {
+          if (file.size > 10 * 1024 * 1024) {
+            toast(`Imagem "${sanitize(file.name, 30)}" muito grande (máx. 10MB).`, 'error');
+            continue;
+          }
+          const raw = await readFileAsDataURL(file);
+          const compressed = await ImageProcessor.compress(raw, 800, 0.88);
+          state.cat.produtoImagens.push(compressed);
+        }
+        this.renderFotosGrid();
+        toast(`${files.length} ${files.length === 1 ? 'foto adicionada' : 'fotos adicionadas'}.`, 'success');
+      } catch (e) {
+        console.error(e);
+        toast('Erro ao processar imagens.', 'error');
+      }
+    },
+
+    setFotoPrincipal(index) {
+      if (index <= 0 || index >= state.cat.produtoImagens.length) return;
+      const [foto] = state.cat.produtoImagens.splice(index, 1);
+      state.cat.produtoImagens.unshift(foto);
+      this.renderFotosGrid();
+      toast('Foto principal atualizada.', 'info');
+    },
+
+    removeFoto(index) {
+      if (index < 0 || index >= state.cat.produtoImagens.length) return;
+      state.cat.produtoImagens.splice(index, 1);
+      this.renderFotosGrid();
     },
 
     async renderProdutosList(categoriaId) {
@@ -1638,25 +1760,34 @@
         dom.produtosList.innerHTML = '<p class="col-span-full text-center text-[11px] font-medium text-zinc-600 py-4">Nenhum produto cadastrado nesta categoria.</p>';
         return;
       }
-      dom.produtosList.innerHTML = prods.map((p) => `
-        <article class="cat-produto-card" data-produto-id="${p.id}">
-          ${p.imagem
-            ? `<img class="cat-produto-thumb" src="${p.imagem}" alt="${sanitize(p.nome, 60)}" loading="lazy">`
-            : `<div class="cat-produto-thumb flex items-center justify-center text-zinc-600"><i class="fa-solid fa-image text-2xl" aria-hidden="true"></i></div>`}
-          <div class="min-w-0">
-            <h3 class="truncate text-[12px] font-bold text-zinc-100" title="${sanitize(p.nome, 80)}">${sanitize(p.nome, 60)}</h3>
-            <p class="mt-0.5 line-clamp-2 text-[10px] font-medium text-zinc-500 leading-tight" title="${sanitize(p.descricao, 200)}">${sanitize(p.descricao || 'Sem descrição', 100)}</p>
-          </div>
-          <div class="flex items-center justify-end gap-1 pt-1 border-t border-zinc-800/50">
-            <button type="button" class="btn-action-mini" data-action="edit-prod" data-id="${p.id}" aria-label="Editar produto" title="Editar">
-              <i class="fa-solid fa-pen" aria-hidden="true"></i>
-            </button>
-            <button type="button" class="btn-action-mini danger" data-action="delete-prod" data-id="${p.id}" aria-label="Excluir produto" title="Excluir">
-              <i class="fa-solid fa-trash" aria-hidden="true"></i>
-            </button>
-          </div>
-        </article>
-      `).join('');
+      dom.produtosList.innerHTML = prods.map((p) => {
+        const fotoPrincipal = p.imagens[0];
+        const totalFotos = p.imagens.length;
+        return `
+          <article class="cat-produto-card" data-produto-id="${p.id}">
+            <div class="cat-produto-thumb-wrap">
+              ${fotoPrincipal
+                ? `<img class="cat-produto-thumb" src="${fotoPrincipal}" alt="${sanitize(p.nome, 60)}" loading="lazy">`
+                : `<div class="flex h-full w-full items-center justify-center text-zinc-600"><i class="fa-solid fa-image text-2xl" aria-hidden="true"></i></div>`}
+              ${totalFotos > 1
+                ? `<span class="cat-produto-photos-badge"><i class="fa-solid fa-images" aria-hidden="true"></i> ${totalFotos}</span>`
+                : ''}
+            </div>
+            <div class="min-w-0">
+              <h3 class="truncate text-[12px] font-bold text-zinc-100" title="${sanitize(p.nome, 80)}">${sanitize(p.nome, 60)}</h3>
+              <p class="mt-0.5 line-clamp-2 text-[10px] font-medium text-zinc-500 leading-tight" title="${sanitize(p.descricao, 200)}">${sanitize(p.descricao || 'Sem descrição', 100)}</p>
+            </div>
+            <div class="flex items-center justify-end gap-1 pt-1 border-t border-zinc-800/50">
+              <button type="button" class="btn-action-mini" data-action="edit-prod" data-id="${p.id}" aria-label="Editar produto" title="Editar">
+                <i class="fa-solid fa-pen" aria-hidden="true"></i>
+              </button>
+              <button type="button" class="btn-action-mini danger" data-action="delete-prod" data-id="${p.id}" aria-label="Excluir produto" title="Excluir">
+                <i class="fa-solid fa-trash" aria-hidden="true"></i>
+              </button>
+            </div>
+          </article>
+        `;
+      }).join('');
     },
 
     // ---------- IMPORTAR DE ANÚNCIO ----------
@@ -1671,7 +1802,6 @@
         return;
       }
 
-      // Ordena por data mais recente
       anuncios.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
 
       dom.importarAnuncioList.innerHTML = anuncios.map((anuncio) => {
@@ -1701,7 +1831,6 @@
         return;
       }
 
-      // Preenche o formulário com os dados do anúncio
       const nome = anuncio.fields?.title || anuncio.name || '';
       const descricao = anuncio.fields?.subtitle || '';
       const imagem = anuncio.image || null;
@@ -1709,28 +1838,21 @@
       dom.produtoNome.value = nome;
       dom.produtoDescricao.value = descricao;
 
+      // Coloca a imagem do anúncio como única foto (principal)
       if (imagem && !imagem.startsWith('data:image/svg')) {
-        state.cat.produtoImagem = imagem;
-        dom.produtoPreview.src = imagem;
-        dom.produtoPreview.classList.remove('hidden');
-        dom.produtoFileIcon.className = 'fa-solid fa-rotate-right text-xl text-amber-400';
+        state.cat.produtoImagens = [imagem];
       } else {
-        state.cat.produtoImagem = null;
-        dom.produtoPreview.classList.add('hidden');
-        dom.produtoPreview.removeAttribute('src');
-        dom.produtoFileIcon.className = 'fa-solid fa-cloud-arrow-up text-xl text-amber-400';
+        state.cat.produtoImagens = [];
       }
+      this.renderFotosGrid();
 
-      // Limpa estado de edição (será um novo produto)
       state.cat.editandoProdutoId = null;
       dom.btnSalvarProduto.innerHTML = '<i class="fa-solid fa-floppy-disk" aria-hidden="true"></i> Adicionar produto';
 
-      // Fecha o modal
       if (dom.importarAnuncioDialog.open) dom.importarAnuncioDialog.close();
 
       toast(`Dados do anúncio "${sanitize(nome, 30)}" importados. Revise antes de salvar.`, 'success');
 
-      // Rola até o formulário
       dom.produtoNome.focus();
       dom.produtoNome.scrollIntoView({ behavior: 'smooth', block: 'center' });
     },
@@ -1772,17 +1894,20 @@
           page.innerHTML = `
             ${headerHtml}
             <div class="pdf-grid">
-              ${chunk.map((p) => `
-                <article class="pdf-item">
-                  ${p.imagem
-                    ? `<img class="pdf-item__img" src="${p.imagem}" alt="${sanitize(p.nome, 60)}">`
-                    : `<div class="pdf-item__img" style="display:flex;align-items:center;justify-content:center;color:#a1a1aa;"><i class="fa-solid fa-image" style="font-size:48px;"></i></div>`}
-                  <div class="pdf-item__body">
-                    <h3 class="pdf-item__name">${sanitize(p.nome, 80)}</h3>
-                    <p class="pdf-item__desc">${sanitize(p.descricao || '', 300)}</p>
-                  </div>
-                </article>
-              `).join('')}
+              ${chunk.map((p) => {
+                const fotoPrincipal = p.imagens[0];
+                return `
+                  <article class="pdf-item">
+                    ${fotoPrincipal
+                      ? `<img class="pdf-item__img" src="${fotoPrincipal}" alt="${sanitize(p.nome, 60)}">`
+                      : `<div class="pdf-item__img" style="display:flex;align-items:center;justify-content:center;color:#a1a1aa;"><i class="fa-solid fa-image" style="font-size:48px;"></i></div>`}
+                    <div class="pdf-item__body">
+                      <h3 class="pdf-item__name">${sanitize(p.nome, 80)}</h3>
+                      <p class="pdf-item__desc">${sanitize(p.descricao || '', 300)}</p>
+                    </div>
+                  </article>
+                `;
+              }).join('')}
             </div>
           `;
           dom.pdfHost.appendChild(page);
@@ -1994,22 +2119,22 @@
     }
   });
 
+  // Upload múltiplo de fotos do produto
   dom.produtoFile.addEventListener('change', async (event) => {
-    const file = event.target.files[0];
+    const files = event.target.files;
     event.target.value = '';
-    if (!file) return;
-    if (!file.type.startsWith('image/')) { toast('Envie uma imagem válida.', 'error'); return; }
-    if (file.size > 10 * 1024 * 1024) { toast('Imagem muito grande (máx. 10MB).', 'error'); return; }
-    try {
-      const raw = await readFileAsDataURL(file);
-      const compressed = await ImageProcessor.compress(raw, 800, 0.88);
-      state.cat.produtoImagem = compressed;
-      dom.produtoPreview.src = compressed;
-      dom.produtoPreview.classList.remove('hidden');
-      dom.produtoFileIcon.className = 'fa-solid fa-rotate-right text-xl text-amber-400';
-    } catch (e) {
-      console.error(e);
-      toast('Erro ao processar imagem.', 'error');
+    await CatalogoManager.adicionarFotos(files);
+  });
+
+  // Delegação de eventos do grid de fotos (definir capa / remover)
+  dom.fotosGrid.addEventListener('click', (event) => {
+    const btn = event.target.closest('[data-foto-action]');
+    if (!btn) return;
+    const index = Number(btn.dataset.index);
+    if (btn.dataset.fotoAction === 'set-principal') {
+      CatalogoManager.setFotoPrincipal(index);
+    } else if (btn.dataset.fotoAction === 'remove') {
+      CatalogoManager.removeFoto(index);
     }
   });
 
@@ -2024,7 +2149,7 @@
       categoriaId: state.cat.categoriaAtivaId,
       nome,
       descricao,
-      imagem: state.cat.produtoImagem
+      imagens: [...state.cat.produtoImagens]
     });
 
     if (success) {
