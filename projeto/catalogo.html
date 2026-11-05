@@ -1,0 +1,2003 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Encarte Studio · Gerador Profissional de Ofertas e Catálogos</title>
+<meta name="description" content="Gerador client-side de encartes e catálogos em PDF com categorias, em alta resolução.">
+
+<!-- ================= FONTES ================= -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800;900&family=Oswald:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+<!-- ================= CDN: ÍCONES / CROPPER ================= -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.6.2/cropper.min.css">
+
+<!-- ================= CDN: TAILWIND ================= -->
+<script src="https://cdn.tailwindcss.com"></script>
+<script>
+  tailwind.config = {
+    theme: {
+      extend: {
+        fontFamily: {
+          sans: ['Montserrat', 'system-ui', 'sans-serif'],
+          display: ['Oswald', 'Impact', 'sans-serif']
+        }
+      }
+    }
+  }
+</script>
+
+<!-- ================= COMPONENTES DE UI ================= -->
+<style type="text/tailwindcss">
+  @layer components {
+    .ui-panel      { @apply rounded-2xl border border-zinc-800/80 bg-zinc-900/60 p-4; }
+    .ui-legend     { @apply mb-3 flex items-center gap-2 text-[11px] font-extrabold uppercase tracking-[0.16em] text-zinc-400; }
+    .ui-label      { @apply mb-1.5 flex items-center gap-2 text-[11px] font-bold uppercase tracking-wider text-zinc-400; }
+    .ui-input      { @apply w-full rounded-lg border border-zinc-700/80 bg-zinc-950/70 px-3 py-2.5 text-sm font-medium text-zinc-100 placeholder-zinc-600 outline-none transition focus:border-amber-400/80 focus:ring-2 focus:ring-amber-400/25; }
+    .ui-textarea   { @apply w-full rounded-lg border border-zinc-700/80 bg-zinc-950/70 px-3 py-2.5 text-sm font-medium text-zinc-100 placeholder-zinc-600 outline-none transition focus:border-amber-400/80 focus:ring-2 focus:ring-amber-400/25 resize-none; }
+    .ui-hint       { @apply mt-1 text-[10px] font-medium text-zinc-500; }
+    .btn           { @apply inline-flex items-center justify-center gap-2 rounded-xl px-4 py-3 text-sm font-extrabold uppercase tracking-wide transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-offset-zinc-950 disabled:cursor-not-allowed disabled:opacity-50; }
+    .btn-primary   { @apply btn bg-gradient-to-r from-amber-400 to-amber-500 text-zinc-950 shadow-lg shadow-amber-500/20 hover:from-amber-300 hover:to-amber-400 focus-visible:ring-amber-300; }
+    .btn-secondary { @apply btn border border-zinc-700 bg-zinc-800/70 text-zinc-100 hover:border-zinc-500 hover:bg-zinc-800 focus-visible:ring-zinc-400; }
+    .btn-ghost     { @apply inline-flex items-center justify-center gap-2 rounded-lg border border-zinc-700 bg-zinc-900 px-3 py-2 text-xs font-bold text-zinc-300 transition hover:border-amber-400/60 hover:text-amber-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-400/40 disabled:opacity-40; }
+    .btn-danger    { @apply inline-flex items-center justify-center gap-2 rounded-lg border border-red-700/60 bg-red-950/40 px-3 py-2 text-xs font-bold text-red-300 transition hover:border-red-500 hover:text-red-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-400/40; }
+    .theme-card    { @apply flex cursor-pointer flex-col items-center gap-1.5 rounded-xl border border-zinc-700/80 bg-zinc-950/60 px-2 py-3 text-center transition hover:border-zinc-500; }
+    .theme-radio:checked + .theme-card { @apply border-amber-400 bg-amber-400/10 ring-2 ring-amber-400/30; }
+    .theme-radio:focus-visible + .theme-card { @apply ring-2 ring-amber-300; }
+    .toggle-switch { @apply relative h-6 w-11 cursor-pointer rounded-full bg-zinc-700 transition focus-visible:ring-2 focus-visible:ring-amber-400/40; }
+    .toggle-switch::after { @apply absolute left-0.5 top-0.5 h-5 w-5 rounded-full bg-zinc-300 transition-transform content-['']; }
+    .toggle-switch:checked { @apply bg-amber-400; }
+    .toggle-switch:checked::after { @apply translate-x-5 bg-zinc-950; }
+  }
+</style>
+
+<!-- ================= ARTE DO ENCARTE ================= -->
+<style>
+  .flyer{
+    position:relative; width:450px; height:600px; overflow:hidden;
+    background:#0a0a0b; color:#fff; font-family:'Montserrat',sans-serif;
+    -webkit-font-smoothing:antialiased; user-select:none;
+  }
+  .flyer__media{ position:absolute; inset:0; width:100%; height:100%; object-fit:cover; object-position:center; display:block; }
+  .flyer__scrim{ position:absolute; inset:0;}
+  .logo{ position:absolute; top:20px; left:20%; transform:translateX(-50%); width:175px; object-fit:contain; z-index:10; filter:drop-shadow(0 4px 12px rgba(0,0,0,.6)); }
+  .logo--hidden{ display:none; }
+  .seal{ position:absolute; top:80px; left:16px; width:132px; height:132px; }
+  .seal--hidden{ display:none; }
+  .seal__disc{
+    position:absolute; inset:0; border-radius:50%;
+    display:flex; flex-direction:column; align-items:center; justify-content:center; padding-bottom:30px;
+    background:radial-gradient(circle at 34% 26%, var(--seal-hi) 0%, var(--seal-a) 36%, var(--seal-b) 76%, var(--seal-c) 100%);
+    border:3px dashed var(--seal-border);
+    box-shadow:0 10px 24px rgba(0,0,0,.55), inset 0 -9px 18px rgba(0,0,0,.45), inset 0 8px 16px rgba(255,255,255,.20);
+  }
+  .seal__top{ font-size:9px; font-weight:800; letter-spacing:2.4px; text-transform:uppercase; color:var(--seal-top); }
+  .seal__value{ display:flex; align-items:flex-start; justify-content:center; margin-top:4px; font-family:'Oswald',sans-serif; font-weight:700; font-size:46px; line-height:1; color:var(--seal-value); text-shadow:0 3px 7px rgba(0,0,0,.55); }
+  .seal__pct{ font-size:22px; margin-top:4px; margin-left:1px; }
+  .seal__ribbon{
+    position:absolute; left:-16px; top:92px; width:164px; height:30px;
+    display:flex; align-items:center; justify-content:center; transform:rotate(-5deg);
+    background:linear-gradient(180deg, var(--ribbon-hi) 0%, var(--ribbon-a) 46%, var(--ribbon-b) 100%);
+    border-top:1px solid rgba(255,255,255,.40); border-bottom:1px solid rgba(0,0,0,.28);
+    box-shadow:0 6px 14px rgba(0,0,0,.5), inset 0 1px 0 rgba(255,255,255,.5);
+  }
+  .seal__ribbon::before, .seal__ribbon::after{ content:''; position:absolute; top:100%; width:0; height:0; border-style:solid; }
+  .seal__ribbon::before{ left:0; border-width:7px 9px 0 0; border-color:var(--ribbon-fold) transparent transparent transparent; }
+  .seal__ribbon::after{ right:0; border-width:7px 0 0 9px; border-color:var(--ribbon-fold) transparent transparent transparent; }
+  .seal__ribbon-text{ font-family:'Oswald',sans-serif; font-weight:600; font-size:13px; letter-spacing:3px; text-transform:uppercase; color:var(--ribbon-text); }
+  .pricebox{
+    position:absolute; left:16px; bottom:112px; padding:11px 14px 10px; border-radius:12px;
+    background:var(--price-bg); border:1px solid var(--price-border);
+    box-shadow:0 14px 30px rgba(0,0,0,.55); text-align:right;
+  }
+  .pricebox::before{ content:''; position:absolute; inset:5px; border:1px solid var(--price-inner); border-radius:8px; pointer-events:none; }
+  .pricebox__old{ font-size:10.5px; font-weight:600; letter-spacing:.6px; color:var(--price-old); text-transform:uppercase; }
+  .pricebox__old s{ text-decoration:line-through; }
+  .pricebox__new{ display:flex; align-items:flex-start; justify-content:flex-end; margin-top:1px; font-family:'Oswald',sans-serif; color:var(--price-text); text-shadow:0 4px 14px rgba(0,0,0,.6); }
+  .pricebox__cur{ font-size:18px; font-weight:600; margin-top:10px; margin-right:3px; }
+  .pricebox__int{ font-size:62px; font-weight:700; line-height:.86; letter-spacing:-1.5px; }
+  .pricebox__cents{ font-size:24px; font-weight:600; margin-top:5px; }
+  .pricebox__terms{ margin-top:8px; font-size:9.5px; font-weight:800; letter-spacing:1.6px; text-transform:uppercase; color:var(--price-accent);}
+  .pricebox[data-digits="4"] .pricebox__int{ font-size:52px; }
+  .pricebox[data-digits="5"] .pricebox__int{ font-size:44px; }
+  .pricebox[data-digits="6"] .pricebox__int{ font-size:38px; }
+  .pricebox__list{ margin-top:8px; padding-top:7px; border-top:1px dashed var(--price-inner); display:flex; flex-direction:column; gap:2px; }
+  .pricebox__row{ display:flex; align-items:center; justify-content:space-between; gap:6px; font-family:'Montserrat',sans-serif; font-size:9.5px; font-weight:700; letter-spacing:.4px; }
+  .pricebox__row-label{ color:var(--price-row-label); text-transform:uppercase; letter-spacing:1px; }
+  .pricebox__row-value{ color:var(--price-row-value); font-family:'Oswald',sans-serif; font-weight:600; font-size:11px; letter-spacing:.3px; }
+  .plate{ position:absolute; left:16px; right:16px; bottom:14px; padding:12px 16px 10px; background:var(--plate-bg); border:1px solid var(--plate-border); box-shadow:0 14px 28px rgba(0,0,0,.55); }
+  .plate::before{ content:''; position:absolute; inset:4px; border:1px solid var(--plate-inner); pointer-events:none; }
+  .plate__title{ font-family:'Oswald',sans-serif; font-weight:700; font-size:25px; line-height:1.06; letter-spacing:.6px; text-transform:uppercase; text-align:center; color:var(--plate-title); word-break:break-word; }
+  .plate__subtitle{ margin-top:3px; font-size:9px; font-weight:700; letter-spacing:1.5px; text-transform:uppercase; text-align:center; color:var(--plate-sub); }
+  .plate__rule{ height:1px; margin:8px 0 6px; background:var(--plate-inner); }
+  .plate__legal{ display:flex; justify-content:space-between; gap:12px; font-size:6.6px; font-weight:700; letter-spacing:.55px; text-transform:uppercase; color:var(--plate-legal); }
+  .plate__legal span:last-child{ text-align:right; }
+
+  .theme-padrao{
+    --scrim:linear-gradient(180deg, rgba(0,0,0,.55) 0%, rgba(0,0,0,.04) 30%, rgba(0,0,0,.28) 62%, rgba(0,0,0,.85) 100%);
+    --seal-hi:#ff8a7a; --seal-a:#e4231d; --seal-b:#9c0d0d; --seal-c:#5c0505;
+    --seal-border:#ffd54a; --seal-top:#ffe9a8; --seal-value:#ffffff;
+    --ribbon-hi:#ffe89a; --ribbon-a:#f5c33b; --ribbon-b:#c98f10; --ribbon-text:#7a1010; --ribbon-fold:#8a5f08;
+    --price-bg:rgba(14,14,16,.84); --price-border:rgba(255,255,255,.30); --price-inner:rgba(255,255,255,.18);
+    --price-text:#ffffff; --price-old:#d8d8dc; --price-accent:#ffd54a;
+    --price-row-label:#b8b8bf; --price-row-value:#ffffff;
+    --plate-bg:linear-gradient(160deg,#fbf5e9 0%,#f2e7d2 48%,#e6d7ba 100%);
+    --plate-border:#b9975b; --plate-inner:rgba(155,124,66,.55);
+    --plate-title:#17171b; --plate-sub:#5b5347; --plate-legal:#7b7264;
+  }
+  .theme-black{
+    --scrim:linear-gradient(180deg, rgba(0,0,0,.84) 0%, rgba(0,0,0,.56) 35%, rgba(0,0,0,.78) 70%, rgba(0,0,0,.97) 100%);
+    --seal-hi:#4d4d4d; --seal-a:#1f1f1f; --seal-b:#0a0a0a; --seal-c:#000000;
+    --seal-border:#f5ff00; --seal-top:#f5ff00; --seal-value:#f5ff00;
+    --ribbon-hi:#fbff7a; --ribbon-a:#f5ff00; --ribbon-b:#c2cc00; --ribbon-text:#0a0a0a; --ribbon-fold:#7d8400;
+    --price-bg:rgba(0,0,0,.93); --price-border:#f5ff00; --price-inner:rgba(245,255,0,.35);
+    --price-text:#ffffff; --price-old:#a1a1aa; --price-accent:#f5ff00;
+    --price-row-label:#8a8a8a; --price-row-value:#ffffff;
+    --plate-bg:linear-gradient(160deg,#171717 0%,#0a0a0a 55%,#000000 100%);
+    --plate-border:#f5ff00; --plate-inner:rgba(245,255,0,.35);
+    --plate-title:#ffffff; --plate-sub:#f5ff00; --plate-legal:#8a8a8a;
+  }
+  .theme-natal{
+    --scrim:linear-gradient(180deg, rgba(60,6,10,.62) 0%, rgba(20,4,6,.12) 32%, rgba(40,6,8,.44) 66%, rgba(24,3,5,.92) 100%);
+    --seal-hi:#ff7a6e; --seal-a:#d21f26; --seal-b:#8c0f16; --seal-c:#4d060b;
+    --seal-border:#f4d68a; --seal-top:#f7e6bb; --seal-value:#fff8e6;
+    --ribbon-hi:#3fd08a; --ribbon-a:#0f8a55; --ribbon-b:#075334; --ribbon-text:#f8e9bf; --ribbon-fold:#04321f;
+    --price-bg:rgba(48,8,11,.90); --price-border:rgba(244,214,138,.75); --price-inner:rgba(244,214,138,.35);
+    --price-text:#ffffff; --price-old:#e8cfcf; --price-accent:#f4d68a;
+    --price-row-label:#d8bfbf; --price-row-value:#ffffff;
+    --plate-bg:linear-gradient(160deg,#fdf7ea 0%,#f6e9cf 50%,#ecd9b4 100%);
+    --plate-border:#b08d3f; --plate-inner:rgba(176,141,63,.60);
+    --plate-title:#8f1418; --plate-sub:#1f6b48; --plate-legal:#7a6a4f;
+  }
+
+  .stage-frame{ width:var(--pw,450px); height:var(--ph,600px); }
+  .stage-scaler{ width:450px; height:600px; transform:scale(var(--ps,1)); transform-origin:top left; box-shadow:0 30px 70px rgba(0,0,0,.65); }
+  .export-host{ position:fixed; top:0; left:-10000px; width:450px; height:600px; pointer-events:none; z-index:-1; }
+  .dropzone-active{ outline:2px dashed #fbbf24; outline-offset:8px; }
+
+  #cropDialog{ border:none; padding:0; background:transparent; max-width:none; max-height:none; }
+  #cropDialog::backdrop{ background:rgba(2,6,23,.88); }
+  .crop-stage{ height:min(58vh,540px); background:#09090b; }
+  .crop-stage img{ display:block; max-width:100%; }
+  .cropper-view-box, .cropper-face{ outline:1px solid #fbbf24; }
+  .cropper-line, .cropper-point{ background-color:#fbbf24; }
+
+  .progress-fill{ width:var(--progress,0%); transition:width .25s ease; }
+
+  .anuncio-item{ @apply flex flex-col gap-2 rounded-xl border border-zinc-800 bg-zinc-900/60 p-2 transition hover:border-amber-400/50 hover:bg-zinc-800/80; }
+  .anuncio-item__thumb{ @apply w-full h-20 flex-shrink-0 rounded-lg border border-zinc-700 bg-zinc-800 object-cover; }
+  .anuncio-item__info{ @apply min-w-0 flex-1 flex flex-col justify-center; }
+  .anuncio-item__name{ @apply truncate text-[11px] font-bold text-zinc-100 leading-tight; }
+  .anuncio-item__meta{ @apply truncate text-[9px] font-medium text-zinc-500 mt-0.5; }
+  .anuncio-item__actions{ @apply flex items-center justify-end gap-1 mt-1 pt-1 border-t border-zinc-800/50; }
+  .btn-action-mini{ @apply inline-flex items-center justify-center rounded-md border border-zinc-700 bg-zinc-900 px-1.5 py-1 text-[10px] font-bold text-zinc-400 transition hover:border-amber-400/60 hover:text-amber-300 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-amber-400/40; }
+  .btn-action-mini.danger{ @apply hover:border-red-500/60 hover:text-red-400 focus-visible:ring-red-400/40; }
+
+  /* ================= NAVBAR ================= */
+  .app-nav{
+    @apply sticky top-0 z-40 border-b border-zinc-800 bg-zinc-950/95 backdrop-blur;
+  }
+  .nav-tab{
+    @apply relative inline-flex items-center gap-2 px-4 py-3 text-sm font-bold uppercase tracking-wider text-zinc-400 transition hover:text-zinc-100;
+  }
+  .nav-tab.active{ @apply text-amber-400; }
+  .nav-tab.active::after{
+    @apply absolute bottom-0 left-2 right-2 h-0.5 rounded-t bg-amber-400 content-[''];
+  }
+  .nav-tab:focus-visible{ @apply outline-none ring-2 ring-amber-400/40 ring-inset rounded; }
+
+  .modulo{ display:none; }
+  .modulo.active{ display:block; }
+
+  /* ================= CATÁLOGO ================= */
+  .cat-categoria-item{
+    @apply flex items-center justify-between gap-2 rounded-lg border border-zinc-800 bg-zinc-900/60 px-3 py-2 text-sm font-bold text-zinc-200 transition cursor-pointer hover:border-amber-400/50 hover:bg-zinc-800;
+  }
+  .cat-categoria-item.active{
+    @apply border-amber-400 bg-amber-400/10 text-amber-300;
+  }
+  .cat-produto-card{
+    @apply flex flex-col gap-2 rounded-xl border border-zinc-800 bg-zinc-900/60 p-3 transition hover:border-amber-400/40 hover:bg-zinc-800/80;
+  }
+  .cat-produto-thumb{
+    @apply aspect-square w-full rounded-lg border border-zinc-700 bg-zinc-800 object-cover;
+  }
+
+  /* ================= TEMPLATE PDF (oculto) ================= */
+  #pdfHost{
+    position:fixed; top:0; left:-10000px; width:794px; pointer-events:none; z-index:-1;
+    background:#fff; color:#111; font-family:'Montserrat',sans-serif;
+  }
+  .pdf-page{
+    width:794px; min-height:1123px; padding:48px 44px; background:#fff; color:#111;
+    box-sizing:border-box; page-break-after:always;
+  }
+  .pdf-page:last-child{ page-break-after:auto; }
+  .pdf-cover{
+    width:794px; height:1123px; background:linear-gradient(160deg,#0a0a0b 0%,#1c1917 55%,#292524 100%);
+    color:#fff; display:flex; flex-direction:column; justify-content:center; align-items:center; text-align:center;
+    padding:60px; box-sizing:border-box; page-break-after:always;
+  }
+  .pdf-cover__brand{ font-family:'Oswald',sans-serif; font-size:22px; letter-spacing:8px; color:#fbbf24; text-transform:uppercase; margin-bottom:24px; }
+  .pdf-cover__title{ font-family:'Oswald',sans-serif; font-size:84px; font-weight:800; line-height:1; letter-spacing:-1px; text-transform:uppercase; margin-bottom:20px; }
+  .pdf-cover__sub{ font-size:18px; color:#d4d4d8; letter-spacing:2px; text-transform:uppercase; }
+  .pdf-cover__year{ margin-top:60px; font-size:14px; color:#71717a; letter-spacing:4px; }
+
+  .pdf-cat-title{
+    font-family:'Oswald',sans-serif; font-size:42px; font-weight:700; text-transform:uppercase;
+    color:#18181b; letter-spacing:1px; border-bottom:3px solid #fbbf24; padding-bottom:12px; margin-bottom:28px;
+  }
+  .pdf-grid{
+    display:grid; grid-template-columns:repeat(2, 1fr); gap:22px;
+  }
+  .pdf-item{
+    border:1px solid #e4e4e7; border-radius:10px; overflow:hidden; background:#fafafa;
+    display:flex; flex-direction:column;
+  }
+  .pdf-item__img{
+    width:100%; height:280px; object-fit:cover; background:#f4f4f5; display:block;
+  }
+  .pdf-item__body{ padding:14px 16px; }
+  .pdf-item__name{
+    font-family:'Oswald',sans-serif; font-size:18px; font-weight:700; text-transform:uppercase;
+    color:#18181b; letter-spacing:.5px; line-height:1.15; margin-bottom:6px;
+  }
+  .pdf-item__desc{
+    font-size:11px; color:#52525b; line-height:1.45; letter-spacing:.2px;
+  }
+
+  @media (prefers-reduced-motion: reduce){
+    .progress-fill{ transition:none; }
+  }
+</style>
+</head>
+
+<body class="min-h-screen bg-zinc-950 font-sans text-zinc-100 antialiased">
+
+<!-- ================= NAVBAR SUPERIOR ================= -->
+<nav class="app-nav" aria-label="Navegação principal de módulos">
+  <div class="mx-auto flex max-w-[1600px] items-center justify-between px-5">
+    <a href="#" class="flex items-center gap-2.5 py-3">
+      <i class="fa-solid fa-bolt text-amber-400 text-lg" aria-hidden="true"></i>
+      <span class="font-display text-lg uppercase tracking-wide">Encarte<span class="text-amber-400">Studio</span></span>
+    </a>
+    <div class="flex items-center gap-1" role="tablist" aria-label="Módulos">
+      <button type="button" class="nav-tab active" data-modulo="encarte" role="tab" aria-selected="true" aria-controls="moduloEncarte">
+        <i class="fa-solid fa-bolt" aria-hidden="true"></i> Encarte
+      </button>
+      <button type="button" class="nav-tab" data-modulo="catalogo" role="tab" aria-selected="false" aria-controls="moduloCatalogo">
+        <i class="fa-solid fa-book-open" aria-hidden="true"></i> Catálogo PDF
+      </button>
+    </div>
+    <div class="hidden items-center gap-2 text-[10px] font-bold uppercase tracking-widest text-zinc-500 sm:flex">
+      <i class="fa-solid fa-lock text-amber-400" aria-hidden="true"></i> 100% local
+    </div>
+  </div>
+</nav>
+
+<!-- ================= MÓDULO 1: ENCARTE ================= -->
+<section id="moduloEncarte" class="modulo active" role="tabpanel" aria-labelledby="tabEncarte">
+  <div class="grid grid-cols-1 lg:grid-cols-[380px_1fr]">
+    <aside id="painel" class="order-2 border-zinc-800 bg-zinc-950 lg:order-1 lg:h-[calc(100vh-57px)] lg:overflow-y-auto lg:border-r lg:sticky lg:top-[57px]" aria-label="Painel de controle do encarte">
+      <header class="sticky top-0 z-10 border-b border-zinc-800 bg-zinc-950/95 px-5 py-4 backdrop-blur lg:hidden">
+        <h1 class="flex items-center gap-2.5 font-display text-xl uppercase tracking-wide">
+          <i class="fa-solid fa-bolt text-amber-400" aria-hidden="true"></i> Encarte<span class="text-amber-400">Studio</span>
+        </h1>
+        <p class="mt-1 text-[11px] font-medium text-zinc-500">Gerador de ofertas · Export 1350×1800px</p>
+      </header>
+
+      <form id="controlForm" class="space-y-4 p-5" novalidate>
+        <fieldset class="ui-panel">
+          <legend class="ui-legend"><i class="fa-solid fa-bookmark text-amber-400" aria-hidden="true"></i> Anúncios salvos</legend>
+          <div class="mb-3 flex gap-2">
+            <button type="button" id="btnSaveAnuncio" class="btn-ghost flex-1"><i class="fa-solid fa-floppy-disk" aria-hidden="true"></i> Salvar atual</button>
+            <button type="button" id="btnNewAnuncio" class="btn-ghost flex-1"><i class="fa-solid fa-plus" aria-hidden="true"></i> Novo</button>
+          </div>
+          <div id="anunciosList" class="grid grid-cols-3 gap-3">
+            <p class="col-span-3 text-center text-[11px] font-medium text-zinc-600 py-4">Nenhum anúncio salvo ainda.</p>
+          </div>
+          <p class="ui-hint mt-2"><i class="fa-solid fa-database" aria-hidden="true"></i> Armazenamento local robusto (IndexedDB).</p>
+        </fieldset>
+
+        <fieldset class="ui-panel">
+          <legend class="ui-legend"><i class="fa-solid fa-store text-amber-400" aria-hidden="true"></i> Logo da loja (Global)</legend>
+          <input id="logoFile" type="file" accept="image/*" class="peer sr-only">
+          <label for="logoFile" class="flex cursor-pointer flex-col items-center gap-2 rounded-xl border-2 border-dashed border-zinc-700 bg-zinc-950/60 px-4 py-4 text-center transition hover:border-amber-400/70 hover:bg-zinc-900 peer-focus-visible:border-amber-400 peer-focus-visible:ring-2 peer-focus-visible:ring-amber-400/30">
+            <i class="fa-solid fa-image text-xl text-amber-400" aria-hidden="true"></i>
+            <span class="text-xs font-bold text-zinc-200">Enviar logo da loja</span>
+            <span class="text-[9px] font-medium uppercase tracking-wider text-zinc-500">PNG · JPG · SVG</span>
+          </label>
+          <div class="mt-3 flex items-center gap-2">
+            <label class="flex flex-1 items-center gap-2 text-xs font-bold text-zinc-300">
+              <input type="checkbox" id="showLogo" class="toggle-switch" checked>
+              <span>Mostrar no encarte atual</span>
+            </label>
+            <button type="button" id="btnRemoveLogo" class="btn-ghost"><i class="fa-solid fa-trash" aria-hidden="true"></i></button>
+          </div>
+          <p id="logoName" class="ui-hint truncate">Nenhuma logo enviada.</p>
+        </fieldset>
+
+        <fieldset class="ui-panel">
+          <legend class="ui-legend"><i class="fa-solid fa-image text-amber-400" aria-hidden="true"></i> Imagem do produto</legend>
+          <input id="productFile" type="file" accept="image/*" class="peer sr-only">
+          <label for="productFile" class="flex cursor-pointer flex-col items-center gap-2 rounded-xl border-2 border-dashed border-zinc-700 bg-zinc-950/60 px-4 py-6 text-center transition hover:border-amber-400/70 hover:bg-zinc-900 peer-focus-visible:border-amber-400 peer-focus-visible:ring-2 peer-focus-visible:ring-amber-400/30">
+            <i class="fa-solid fa-cloud-arrow-up text-2xl text-amber-400" aria-hidden="true"></i>
+            <span class="text-sm font-bold text-zinc-200">Enviar foto do produto</span>
+            <span class="text-[10px] font-medium uppercase tracking-wider text-zinc-500">JPG · PNG · WEBP — recorte fixo 3:4</span>
+          </label>
+          <div class="mt-3 flex items-center gap-2">
+            <button type="button" id="btnRecrop" class="btn-ghost flex-1" disabled><i class="fa-solid fa-crop-simple" aria-hidden="true"></i> Reenquadrar</button>
+            <button type="button" id="btnResetImage" class="btn-ghost flex-1"><i class="fa-solid fa-rotate-left" aria-hidden="true"></i> Exemplo</button>
+          </div>
+          <p id="fileName" class="ui-hint truncate">Nenhum arquivo enviado — usando arte de demonstração.</p>
+        </fieldset>
+
+        <fieldset class="ui-panel">
+          <legend class="ui-legend"><i class="fa-solid fa-tags text-amber-400" aria-hidden="true"></i> Preços</legend>
+          <div class="grid grid-cols-2 gap-3">
+            <div class="col-span-2">
+              <label class="ui-label" for="priceBase"><i class="fa-solid fa-tag" aria-hidden="true"></i> Preço normal <span class="ml-auto text-[9px] font-semibold normal-case tracking-normal text-zinc-500">(De:)</span></label>
+              <input class="ui-input" id="priceBase" data-field="priceBase" data-mask="currency" type="text" inputmode="numeric" maxlength="150" value="599,90" autocomplete="off">
+            </div>
+            <div>
+              <label class="ui-label" for="price3x"><i class="fa-solid fa-credit-card" aria-hidden="true"></i> 3x cartão <span class="text-[9px] font-semibold normal-case tracking-normal text-emerald-400">−20%</span></label>
+              <input class="ui-input" id="price3x" data-field="price3x" data-mask="currency" type="text" inputmode="numeric" maxlength="150" value="479,92" autocomplete="off">
+            </div>
+            <div>
+              <label class="ui-label" for="pricePix"><i class="fa-solid fa-qrcode" aria-hidden="true"></i> PIX <span class="text-[9px] font-semibold normal-case tracking-normal text-amber-400">−25%</span></label>
+              <input class="ui-input" id="pricePix" data-field="pricePix" data-mask="currency" type="text" inputmode="numeric" maxlength="150" value="449,90" autocomplete="off">
+            </div>
+            <div class="col-span-2">
+              <button type="button" id="btnCalcPrices" class="btn-ghost w-full"><i class="fa-solid fa-calculator" aria-hidden="true"></i> Calcular 3x (−20%) e PIX (−25%) automaticamente</button>
+              <p class="ui-hint">O valor em destaque no encarte será o <strong class="text-amber-300">PIX</strong> (maior desconto).</p>
+            </div>
+          </div>
+        </fieldset>
+
+        <fieldset class="ui-panel">
+          <legend class="ui-legend"><i class="fa-solid fa-tag text-amber-400" aria-hidden="true"></i> Selo de desconto</legend>
+          <div class="grid grid-cols-2 gap-3">
+            <div class="col-span-2">
+              <label class="flex items-center gap-2 text-xs font-bold text-zinc-300">
+                <input type="checkbox" id="showSeal" class="toggle-switch">
+                <span>Mostrar selo no encarte</span>
+              </label>
+            </div>
+            <div class="col-span-2">
+              <label class="ui-label" for="sealTop"><i class="fa-solid fa-heading" aria-hidden="true"></i> Texto do topo do selo</label>
+              <input class="ui-input" id="sealTop" data-field="sealTop" type="text" maxlength="150" value="OFERTA" autocomplete="off">
+            </div>
+            <div>
+              <label class="ui-label" for="ribbon"><i class="fa-solid fa-ribbon" aria-hidden="true"></i> Faixa</label>
+              <input class="ui-input" id="ribbon" data-field="ribbon" type="text" maxlength="150" value="DESCONTO" autocomplete="off">
+            </div>
+            <div>
+              <label class="ui-label" for="discount"><i class="fa-solid fa-percent" aria-hidden="true"></i> % do selo</label>
+              <input class="ui-input" id="discount" data-field="discount" data-mask="int" type="text" inputmode="numeric" maxlength="150" value="25" autocomplete="off">
+            </div>
+          </div>
+        </fieldset>
+
+        <fieldset class="ui-panel">
+          <legend class="ui-legend"><i class="fa-solid fa-box-open text-amber-400" aria-hidden="true"></i> Banner de rodapé</legend>
+          <div class="space-y-3">
+            <div>
+              <label class="ui-label" for="title"><i class="fa-solid fa-font" aria-hidden="true"></i> Título do produto</label>
+              <input class="ui-input" id="title" data-field="title" type="text" maxlength="150" value="Perfume Noir Intense" autocomplete="off">
+            </div>
+            <div>
+              <label class="ui-label" for="subtitle"><i class="fa-solid fa-align-center" aria-hidden="true"></i> Subtítulo técnico</label>
+              <input class="ui-input" id="subtitle" data-field="subtitle" type="text" maxlength="150" value="Eau de Parfum · 100ml · Alta fixação" autocomplete="off">
+            </div>
+            <div>
+              <label class="ui-label" for="legalLeft"><i class="fa-solid fa-scale-balanced" aria-hidden="true"></i> Legal · esquerda</label>
+              <input class="ui-input" id="legalLeft" data-field="legalLeft" type="text" maxlength="150" value="Válido enquanto durar o estoque. Poucas Unidades!" autocomplete="off">
+            </div>
+            <div>
+              <label class="ui-label" for="legalRight"><i class="fa-solid fa-circle-info" aria-hidden="true"></i> Legal · direita</label>
+              <input class="ui-input" id="legalRight" data-field="legalRight" type="text" maxlength="150" value="Estoque limitado · Imagem ilustrativa" autocomplete="off">
+            </div>
+          </div>
+        </fieldset>
+
+        <fieldset class="ui-panel">
+          <legend class="ui-legend"><i class="fa-solid fa-palette text-amber-400" aria-hidden="true"></i> Tema visual</legend>
+          <div class="grid grid-cols-3 gap-2">
+            <div>
+              <input class="theme-radio sr-only" type="radio" name="theme" id="themePadrao" value="padrao" checked>
+              <label class="theme-card" for="themePadrao">
+                <span class="h-6 w-6 rounded-full border-2 border-amber-300 bg-gradient-to-br from-red-500 to-red-900"></span>
+                <span class="text-[10px] font-extrabold uppercase leading-tight tracking-wide">Padrão<br>Foto</span>
+              </label>
+            </div>
+            <div>
+              <input class="theme-radio sr-only" type="radio" name="theme" id="themeBlack" value="black">
+              <label class="theme-card" for="themeBlack">
+                <span class="h-6 w-6 rounded-full border-2 border-yellow-300 bg-gradient-to-br from-zinc-700 to-black"></span>
+                <span class="text-[10px] font-extrabold uppercase leading-tight tracking-wide">Black<br>Friday</span>
+              </label>
+            </div>
+            <div>
+              <input class="theme-radio sr-only" type="radio" name="theme" id="themeNatal" value="natal">
+              <label class="theme-card" for="themeNatal">
+                <span class="h-6 w-6 rounded-full border-2 border-amber-200 bg-gradient-to-br from-red-600 to-emerald-700"></span>
+                <span class="text-[10px] font-extrabold uppercase leading-tight tracking-wide">Especial<br>Natal</span>
+              </label>
+            </div>
+          </div>
+        </fieldset>
+
+        <div class="space-y-2.5 pb-8">
+          <button type="button" id="btnDownloadJpg" class="btn-primary w-full"><i class="fa-solid fa-download" aria-hidden="true"></i> Baixar encarte JPG</button>
+          <button type="button" id="btnDownloadZip" class="btn-secondary w-full"><i class="fa-solid fa-file-zipper" aria-hidden="true"></i> Baixar combo (3 temas · ZIP)</button>
+          <p class="pt-1 text-center text-[10px] font-medium text-zinc-600"><i class="fa-solid fa-lock" aria-hidden="true"></i> Nenhum dado sai do seu navegador.</p>
+        </div>
+      </form>
+    </aside>
+
+    <main id="previewArea" class="order-1 flex min-h-[560px] flex-col items-center justify-center gap-4 bg-[radial-gradient(circle_at_50%_0%,#27272a_0%,#09090b_60%)] p-6 lg:order-2 lg:sticky lg:top-[57px] lg:h-[calc(100vh-57px)]">
+      <p class="flex items-center gap-2 text-[11px] font-bold uppercase tracking-[0.2em] text-zinc-500">
+        <i class="fa-solid fa-eye text-amber-400" aria-hidden="true"></i> Pré-visualização em tempo real
+      </p>
+      <div id="stageFrame" class="stage-frame">
+        <div class="stage-scaler">
+          <article id="flyer" class="flyer theme-padrao" aria-label="Pré-visualização do encarte de oferta">
+            <img id="flyerImage" class="flyer__media" src="" alt="Foto do produto em destaque no encarte" crossorigin="anonymous">
+            <div class="flyer__scrim" aria-hidden="true"></div>
+            <img id="flyerLogo" class="logo logo--hidden" src="" alt="Logo da loja" crossorigin="anonymous">
+            <section class="seal" aria-label="Selo de desconto">
+              <div class="seal__disc">
+                <span class="seal__top" data-bind="sealTop">OFERTA</span>
+                <span class="seal__value"><span data-bind="discount">25</span><span class="seal__pct">%</span></span>
+              </div>
+              <p class="seal__ribbon"><span class="seal__ribbon-text" data-bind="ribbon">DESCONTO</span></p>
+            </section>
+            <section class="pricebox" id="priceBox" data-digits="3" aria-label="Preços da oferta">
+              <p class="pricebox__old">De: <s data-bind="priceBase">R$ 599,90</s></p>
+              <p class="pricebox__new">
+                <span class="pricebox__cur">R$</span>
+                <span class="pricebox__int" data-bind="pricePixInt">449</span>
+                <span class="pricebox__cents" data-bind="pricePixCents">,90</span>
+              </p>
+              <p><br></p>
+              <p class="pricebox__terms">- no PIX -</p>
+              <div class="pricebox__list">
+                <div class="pricebox__row">
+                  <span class="pricebox__row-label">3x cartão</span>
+                  <span class="pricebox__row-value" data-bind="price3x">R$ 479,92</span>
+                </div>
+              </div>
+            </section>
+            <footer class="plate">
+              <h2 class="plate__title" data-bind="title">PERFUME NOIR INTENSE</h2>
+              <p class="plate__subtitle" data-bind="subtitle">Eau de Parfum · 100ml · Alta fixação</p>
+              <div class="plate__rule" aria-hidden="true"></div>
+              <p class="plate__legal">
+                <span data-bind="legalLeft">Oferta válida até 30/11/2026</span>
+                <span data-bind="legalRight">Estoque limitado · Imagem ilustrativa</span>
+              </p>
+            </footer>
+          </article>
+        </div>
+      </div>
+      <p class="rounded-full border border-zinc-800 bg-zinc-900/70 px-4 py-1.5 text-[10px] font-bold uppercase tracking-widest text-zinc-400">
+        3:4 · 450×600 pt · Export <span class="text-amber-400">1350×1800 px</span> (scale 3)
+      </p>
+    </main>
+  </div>
+</section>
+
+<!-- ================= MÓDULO 2: CATÁLOGO PDF ================= -->
+<section id="moduloCatalogo" class="modulo" role="tabpanel" aria-labelledby="tabCatalogo">
+  <div class="grid grid-cols-1 lg:grid-cols-[300px_1fr]">
+
+    <!-- Sidebar de Categorias -->
+    <aside class="order-2 border-zinc-800 bg-zinc-950 lg:order-1 lg:h-[calc(100vh-57px)] lg:overflow-y-auto lg:border-r lg:sticky lg:top-[57px]">
+      <header class="sticky top-0 z-10 border-b border-zinc-800 bg-zinc-950/95 px-5 py-4 backdrop-blur">
+        <h2 class="flex items-center gap-2 font-display text-lg uppercase tracking-wide">
+          <i class="fa-solid fa-layer-group text-amber-400" aria-hidden="true"></i> Categorias
+        </h2>
+        <p class="mt-1 text-[10px] font-medium text-zinc-500">Organize seu catálogo em seções</p>
+      </header>
+
+      <div class="space-y-4 p-5">
+        <div class="ui-panel">
+          <label class="ui-label" for="novaCategoriaNome"><i class="fa-solid fa-plus" aria-hidden="true"></i> Nova categoria</label>
+          <div class="flex gap-2">
+            <input class="ui-input flex-1" id="novaCategoriaNome" type="text" maxlength="60" placeholder="Ex: Lustres" autocomplete="off">
+            <button type="button" id="btnAddCategoria" class="btn-primary !px-3 !py-2.5" aria-label="Adicionar categoria">
+              <i class="fa-solid fa-plus" aria-hidden="true"></i>
+            </button>
+          </div>
+          <p class="ui-hint">Crie categorias como Lustres, Pendentes, Arandelas...</p>
+        </div>
+
+        <div class="ui-panel">
+          <legend class="ui-legend"><i class="fa-solid fa-list" aria-hidden="true"></i> Categorias existentes</legend>
+          <div id="categoriasList" class="flex flex-col gap-2">
+            <p class="text-center text-[11px] font-medium text-zinc-600 py-3">Nenhuma categoria criada.</p>
+          </div>
+        </div>
+      </div>
+    </aside>
+
+    <!-- Conteúdo Principal do Catálogo -->
+    <main class="order-1 lg:order-2 p-5 lg:p-6">
+      <header class="mb-5 flex flex-wrap items-center justify-between gap-3">
+        <div>
+          <h2 class="flex items-center gap-2 font-display text-2xl uppercase tracking-wide">
+            <i class="fa-solid fa-book-open text-amber-400" aria-hidden="true"></i> Catálogo de Produtos
+          </h2>
+          <p id="catHeaderSubtitle" class="mt-1 text-xs font-medium text-zinc-500">Selecione ou crie uma categoria para começar.</p>
+        </div>
+        <div class="flex flex-wrap items-center gap-2">
+          <button type="button" id="btnPreviewPdf" class="btn-secondary">
+            <i class="fa-solid fa-eye" aria-hidden="true"></i> Pré-visualizar PDF
+          </button>
+          <button type="button" id="btnDownloadPdf" class="btn-primary">
+            <i class="fa-solid fa-file-pdf" aria-hidden="true"></i> Baixar Catálogo PDF
+          </button>
+        </div>
+      </header>
+
+      <!-- Formulário de Produto -->
+      <div id="catProdutoFormHost" class="mb-5">
+        <div class="ui-panel">
+          <legend class="ui-legend"><i class="fa-solid fa-circle-info text-amber-400" aria-hidden="true"></i> Status</legend>
+          <p id="catStatusMsg" class="text-xs font-medium text-zinc-400">Crie uma categoria para habilitar o cadastro de produtos.</p>
+        </div>
+      </div>
+
+      <!-- Grid de Produtos -->
+      <div id="produtosArea" class="hidden">
+        <div class="ui-panel mb-5">
+          <legend class="ui-legend"><i class="fa-solid fa-plus-circle text-amber-400" aria-hidden="true"></i> Adicionar produto à categoria <span id="catProdutoCategoriaLabel" class="text-amber-300"></span></legend>
+          <div class="grid grid-cols-1 gap-3 md:grid-cols-[160px_1fr]">
+            <div>
+              <label class="ui-label" for="produtoFile"><i class="fa-solid fa-image" aria-hidden="true"></i> Foto</label>
+              <input id="produtoFile" type="file" accept="image/*" class="peer sr-only">
+              <label for="produtoFile" class="flex cursor-pointer flex-col items-center justify-center gap-1 rounded-xl border-2 border-dashed border-zinc-700 bg-zinc-950/60 aspect-square text-center transition hover:border-amber-400/70 hover:bg-zinc-900 peer-focus-visible:border-amber-400 peer-focus-visible:ring-2 peer-focus-visible:ring-amber-400/30">
+                <i id="produtoFileIcon" class="fa-solid fa-cloud-arrow-up text-xl text-amber-400" aria-hidden="true"></i>
+                <span class="text-[10px] font-bold text-zinc-300">Enviar</span>
+              </label>
+              <img id="produtoPreview" class="mt-2 hidden w-full aspect-square rounded-lg border border-zinc-700 object-cover" alt="Preview do produto">
+            </div>
+            <div class="space-y-3">
+              <div>
+                <label class="ui-label" for="produtoNome"><i class="fa-solid fa-font" aria-hidden="true"></i> Nome do produto</label>
+                <input class="ui-input" id="produtoNome" type="text" maxlength="120" placeholder="Ex: Lustre Versailles Cristal" autocomplete="off">
+              </div>
+              <div>
+                <label class="ui-label" for="produtoDescricao"><i class="fa-solid fa-align-left" aria-hidden="true"></i> Descrição</label>
+                <textarea class="ui-textarea" id="produtoDescricao" rows="3" maxlength="400" placeholder="Ex: 8 braços · cristal premium · acabamento dourado · bocal E14"></textarea>
+              </div>
+              <div class="flex gap-2">
+                <button type="button" id="btnSalvarProduto" class="btn-primary flex-1">
+                  <i class="fa-solid fa-floppy-disk" aria-hidden="true"></i> Adicionar produto
+                </button>
+                <button type="button" id="btnLimparProduto" class="btn-ghost">
+                  <i class="fa-solid fa-rotate-left" aria-hidden="true"></i> Limpar
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="ui-panel">
+          <legend class="ui-legend">
+            <i class="fa-solid fa-boxes-stacked text-amber-400" aria-hidden="true"></i>
+            Produtos em <span id="catProdutosCategoriaLabel" class="text-amber-300"></span>
+            <span id="catProdutosCount" class="ml-auto text-[10px] font-bold text-zinc-500"></span>
+          </legend>
+          <div id="produtosList" class="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5">
+            <p class="col-span-full text-center text-[11px] font-medium text-zinc-600 py-4">Nenhum produto cadastrado nesta categoria.</p>
+          </div>
+        </div>
+      </div>
+    </main>
+  </div>
+</section>
+
+<!-- MODAL DE RECORTE -->
+<dialog id="cropDialog" aria-labelledby="cropTitle">
+  <div class="w-[min(94vw,880px)] overflow-hidden rounded-2xl border border-zinc-800 bg-zinc-950 shadow-2xl">
+    <header class="flex items-center justify-between border-b border-zinc-800 px-5 py-4">
+      <h2 id="cropTitle" class="flex items-center gap-2 font-display text-lg uppercase tracking-wide">
+        <i class="fa-solid fa-crop-simple text-amber-400" aria-hidden="true"></i> Enquadrar foto · 3:4
+      </h2>
+      <button type="button" id="btnCropClose" class="btn-ghost" aria-label="Fechar janela de recorte"><i class="fa-solid fa-xmark" aria-hidden="true"></i></button>
+    </header>
+    <div class="crop-stage"><img id="cropImage" src="" alt="Imagem original aguardando recorte"></div>
+    <div class="flex flex-wrap items-center justify-center gap-2 border-t border-zinc-800 px-5 py-3">
+      <button type="button" class="btn-ghost" data-crop-action="zoom-in"><i class="fa-solid fa-magnifying-glass-plus" aria-hidden="true"></i> Zoom +</button>
+      <button type="button" class="btn-ghost" data-crop-action="zoom-out"><i class="fa-solid fa-magnifying-glass-minus" aria-hidden="true"></i> Zoom −</button>
+      <button type="button" class="btn-ghost" data-crop-action="rotate"><i class="fa-solid fa-rotate-right" aria-hidden="true"></i> Girar 90°</button>
+      <button type="button" class="btn-ghost" data-crop-action="flip"><i class="fa-solid fa-left-right" aria-hidden="true"></i> Espelhar</button>
+      <button type="button" class="btn-ghost" data-crop-action="reset"><i class="fa-solid fa-arrows-rotate" aria-hidden="true"></i> Resetar</button>
+    </div>
+    <footer class="flex flex-col gap-2 border-t border-zinc-800 bg-zinc-900/60 px-5 py-4 sm:flex-row sm:justify-end">
+      <button type="button" id="btnCropCancel" class="btn-secondary sm:w-40">Cancelar</button>
+      <button type="button" id="btnCropApply" class="btn-primary sm:w-56"><i class="fa-solid fa-check" aria-hidden="true"></i> Aplicar recorte</button>
+    </footer>
+  </div>
+</dialog>
+
+<!-- MODAL PREVIEW PDF -->
+<dialog id="pdfPreviewDialog" aria-labelledby="pdfPreviewTitle">
+  <div class="w-[min(96vw,900px)] overflow-hidden rounded-2xl border border-zinc-800 bg-zinc-950 shadow-2xl">
+    <header class="flex items-center justify-between border-b border-zinc-800 px-5 py-4">
+      <h2 id="pdfPreviewTitle" class="flex items-center gap-2 font-display text-lg uppercase tracking-wide">
+        <i class="fa-solid fa-file-pdf text-amber-400" aria-hidden="true"></i> Pré-visualização do Catálogo
+      </h2>
+      <button type="button" id="btnPdfPreviewClose" class="btn-ghost" aria-label="Fechar pré-visualização"><i class="fa-solid fa-xmark" aria-hidden="true"></i></button>
+    </header>
+    <div class="max-h-[75vh] overflow-y-auto bg-zinc-900 p-5">
+      <div id="pdfPreviewContent" class="mx-auto flex flex-col gap-4"></div>
+    </div>
+    <footer class="flex flex-col gap-2 border-t border-zinc-800 bg-zinc-900/60 px-5 py-4 sm:flex-row sm:justify-end">
+      <button type="button" id="btnPdfPreviewDownload" class="btn-primary sm:w-56"><i class="fa-solid fa-download" aria-hidden="true"></i> Baixar PDF</button>
+    </footer>
+  </div>
+</dialog>
+
+<!-- OVERLAY DE PROCESSAMENTO -->
+<div id="progressOverlay" class="fixed inset-0 z-50 hidden place-items-center bg-zinc-950/90 p-6 backdrop-blur-sm">
+  <div class="w-[min(92vw,420px)] rounded-2xl border border-zinc-800 bg-zinc-900 p-6 text-center shadow-2xl" role="status" aria-live="polite">
+    <i class="fa-solid fa-circle-notch fa-spin text-3xl text-amber-400" aria-hidden="true"></i>
+    <p id="progressLabel" class="mt-4 text-sm font-bold text-zinc-100">Renderizando…</p>
+    <div class="mt-4 h-2 w-full overflow-hidden rounded-full bg-zinc-800">
+      <div id="progressFill" class="progress-fill h-full rounded-full bg-gradient-to-r from-amber-400 to-amber-500"></div>
+    </div>
+    <p id="progressHint" class="mt-3 text-[10px] font-medium uppercase tracking-widest text-zinc-500">Aguarde…</p>
+  </div>
+</div>
+
+<div id="exportHost" class="export-host" aria-hidden="true"></div>
+<div id="pdfHost" aria-hidden="true"></div>
+<div id="toastArea" class="pointer-events-none fixed bottom-5 right-5 z-[60] flex flex-col gap-2" aria-live="polite" aria-atomic="false"></div>
+
+<!-- ================= CDN: SCRIPTS ================= -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.6.2/cropper.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+
+<script>
+(() => {
+  'use strict';
+
+  const $  = (sel, ctx = document) => ctx.querySelector(sel);
+  const $$ = (sel, ctx = document) => Array.from(ctx.querySelectorAll(sel));
+
+  // ================= CONSTANTES GLOBAIS =================
+  const CANVAS_W = 450;
+  const CANVAS_H = 600;
+  const EXPORT_SCALE = 3;
+  const DB_CONFIG = {
+    name: 'EncarteStudioDB',
+    version: 2, // Incrementado para novas stores
+    stores: { anuncios: 'anuncios', config: 'config', categorias: 'categorias', produtos: 'produtos' }
+  };
+
+  const THEMES = [
+    { id: 'padrao', label: 'Padrão Foto',       file: '01-padrao-foto' },
+    { id: 'black',  label: 'Black Friday',      file: '02-black-friday' },
+    { id: 'natal',  label: 'Especial de Natal', file: '03-especial-natal' }
+  ];
+
+  // ================= UTILITÁRIOS =================
+  const sanitize = (value, max = 120) => String(value ?? '').replace(/[\u0000-\u001F\u007F<>]/g, '').slice(0, max);
+  const onlyDigits = (value) => String(value ?? '').replace(/\D+/g, '');
+  const slugify = (value) => sanitize(value, 60).normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '').slice(0, 40) || 'encarte';
+  const yieldToUI = () => new Promise((resolve) => requestAnimationFrame(() => setTimeout(resolve, 0)));
+
+  const formatCurrencyMask = (raw) => {
+    const digits = onlyDigits(raw).slice(0, 9);
+    if (!digits) return '';
+    const padded = digits.padStart(3, '0');
+    const cents = padded.slice(-2);
+    const integer = padded.slice(0, -2).replace(/^0+(?=\d)/, '');
+    return `${integer.replace(/\B(?=(\d{3})+(?!\d))/g, '.')},${cents}`;
+  };
+  const splitPrice = (masked) => {
+    const digits = onlyDigits(masked).slice(0, 9).padStart(3, '0');
+    const cents = digits.slice(-2);
+    const integer = digits.slice(0, -2).replace(/^0+(?=\d)/, '');
+    return { int: integer.replace(/\B(?=(\d{3})+(?!\d))/g, '.'), cents };
+  };
+  const priceToNumber = (masked) => {
+    const digits = onlyDigits(masked);
+    return digits ? Number(digits) / 100 : 0;
+  };
+  const numberToCurrency = (value) => {
+    if (!Number.isFinite(value) || value < 0) value = 0;
+    const fixed = value.toFixed(2);
+    const [intPart, centsPart] = fixed.split('.');
+    const intFormatted = intPart.replace(/\B(?=(\d{3})+(?!\d))/g, '.');
+    return `${intFormatted},${centsPart}`;
+  };
+
+  const DEMO_IMAGE = (() => {
+    const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="900" height="1200" viewBox="0 0 900 1200">
+      <defs>
+        <linearGradient id="bg" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#43312a"/><stop offset=".55" stop-color="#1c1512"/><stop offset="1" stop-color="#090707"/></linearGradient>
+        <radialGradient id="spot" cx=".5" cy=".36" r=".58"><stop offset="0" stop-color="#ffd9a0" stop-opacity=".55"/><stop offset="1" stop-color="#ffd9a0" stop-opacity="0"/></radialGradient>
+        <linearGradient id="glass" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#5d3313"/><stop offset=".22" stop-color="#c78a3c"/><stop offset=".48" stop-color="#f7d79a"/><stop offset=".74" stop-color="#b8752c"/><stop offset="1" stop-color="#4a2810"/></linearGradient>
+        <linearGradient id="cap" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#7a5c1c"/><stop offset=".5" stop-color="#f6e3a6"/><stop offset="1" stop-color="#6d5017"/></linearGradient>
+      </defs>
+      <rect width="900" height="1200" fill="url(#bg)"/>
+      <rect width="900" height="1200" fill="url(#spot)"/>
+      <circle cx="150" cy="240" r="70" fill="#ffcf8a" opacity=".08"/>
+      <circle cx="770" cy="330" r="110" fill="#ffcf8a" opacity=".06"/>
+      <circle cx="690" cy="150" r="46" fill="#ffcf8a" opacity=".10"/>
+      <ellipse cx="450" cy="975" rx="290" ry="56" fill="#000" opacity=".6"/>
+      <rect x="405" y="300" width="90" height="150" fill="url(#glass)"/>
+      <rect x="392" y="228" width="116" height="84" rx="12" fill="url(#cap)"/>
+      <rect x="310" y="430" width="280" height="524" rx="42" fill="url(#glass)"/>
+      <rect x="340" y="452" width="26" height="470" rx="13" fill="#ffffff" opacity=".22"/>
+      <rect x="340" y="580" width="220" height="196" rx="10" fill="#f6efdf" opacity=".94"/>
+      <rect x="368" y="622" width="164" height="12" rx="6" fill="#2b2b2f" opacity=".85"/>
+      <rect x="392" y="654" width="116" height="8" rx="4" fill="#8a6a2a"/>
+      <rect x="368" y="694" width="164" height="6" rx="3" fill="#6b6b73" opacity=".7"/>
+      <rect x="398" y="716" width="104" height="6" rx="3" fill="#6b6b73" opacity=".5"/>
+      <rect x="0" y="960" width="900" height="240" fill="#000" opacity=".35"/>
+    </svg>`;
+    return `data:image/svg+xml;charset=utf-8,${encodeURIComponent(svg)}`;
+  })();
+
+  // ================= STATE =================
+  const state = {
+    currentAnuncioId: null,
+    createdAt: null,
+    theme: 'padrao',
+    image: DEMO_IMAGE,
+    source: null,
+    logo: null,
+    logoName: '',
+    showLogo: true,
+    showSeal: false,
+    fields: {
+      sealTop: 'OFERTA', ribbon: 'DESCONTO', discount: '25',
+      priceBase: '599,90', price3x: '479,92', pricePix: '449,90',
+      title: 'Perfume Noir Intense', subtitle: 'Eau de Parfum · 100ml · Alta fixação',
+      legalLeft: 'Válido enquanto durar o estoque. Poucas Unidades!',
+      legalRight: 'Valores com lâmpadas não inclusas.'
+    },
+    // Catálogo
+    cat: {
+      categoriaAtivaId: null,
+      produtoImagem: null,
+      editandoProdutoId: null
+    }
+  };
+
+  // ================= DOM =================
+  const dom = {
+    form: $('#controlForm'), flyer: $('#flyer'), flyerImage: $('#flyerImage'), flyerLogo: $('#flyerLogo'),
+    priceBox: $('#priceBox'), seal: $('.seal'), previewArea: $('#previewArea'), stageFrame: $('#stageFrame'),
+    fileInput: $('#productFile'), fileName: $('#fileName'), btnRecrop: $('#btnRecrop'), btnResetImg: $('#btnResetImage'),
+    btnCalc: $('#btnCalcPrices'), btnJpg: $('#btnDownloadJpg'), btnZip: $('#btnDownloadZip'),
+    cropDialog: $('#cropDialog'), cropImage: $('#cropImage'), exportHost: $('#exportHost'),
+    overlay: $('#progressOverlay'), progressLbl: $('#progressLabel'), progressFill: $('#progressFill'),
+    progressHint: $('#progressHint'), toastArea: $('#toastArea'), logoInput: $('#logoFile'), logoName: $('#logoName'),
+    showLogo: $('#showLogo'), btnRemoveLogo: $('#btnRemoveLogo'), showSeal: $('#showSeal'), anunciosList: $('#anunciosList'),
+    btnSaveAnuncio: $('#btnSaveAnuncio'), btnNewAnuncio: $('#btnNewAnuncio'),
+    // Catálogo
+    categoriasList: $('#categoriasList'), novaCategoriaNome: $('#novaCategoriaNome'), btnAddCategoria: $('#btnAddCategoria'),
+    produtosArea: $('#produtosArea'), catHeaderSubtitle: $('#catHeaderSubtitle'), catStatusMsg: $('#catStatusMsg'),
+    catProdutoFormHost: $('#catProdutoFormHost'), catProdutoCategoriaLabel: $('#catProdutoCategoriaLabel'),
+    catProdutosCategoriaLabel: $('#catProdutosCategoriaLabel'), catProdutosCount: $('#catProdutosCount'),
+    produtoFile: $('#produtoFile'), produtoFileIcon: $('#produtoFileIcon'), produtoPreview: $('#produtoPreview'),
+    produtoNome: $('#produtoNome'), produtoDescricao: $('#produtoDescricao'),
+    btnSalvarProduto: $('#btnSalvarProduto'), btnLimparProduto: $('#btnLimparProduto'),
+    produtosList: $('#produtosList'),
+    btnDownloadPdf: $('#btnDownloadPdf'), btnPreviewPdf: $('#btnPreviewPdf'),
+    pdfHost: $('#pdfHost'),
+    pdfPreviewDialog: $('#pdfPreviewDialog'), pdfPreviewContent: $('#pdfPreviewContent'),
+    btnPdfPreviewClose: $('#btnPdfPreviewClose'), btnPdfPreviewDownload: $('#btnPdfPreviewDownload')
+  };
+
+  // ================= BINDINGS ENCARTE =================
+  const bindings = new Map();
+  $$('[data-bind]', dom.flyer).forEach((node) => {
+    const key = node.dataset.bind;
+    if (!bindings.has(key)) bindings.set(key, []);
+    bindings.get(key).push(node);
+  });
+  const painted = new Map();
+
+  const formatters = {
+    sealTop: (f) => f.sealTop.toUpperCase(), ribbon: (f) => f.ribbon.toUpperCase(), discount: (f) => f.discount || '0',
+    priceBase: (f) => `R$ ${f.priceBase || '0,00'}`, price3x: (f) => `R$ ${f.price3x || '0,00'}`,
+    pricePixInt: (f) => splitPrice(f.pricePix).int, pricePixCents: (f) => `,${splitPrice(f.pricePix).cents}`,
+    title: (f) => f.title.toUpperCase(), subtitle: (f) => f.subtitle, legalLeft: (f) => f.legalLeft, legalRight: (f) => f.legalRight
+  };
+
+  let renderQueued = false;
+  const scheduleRender = () => {
+    if (renderQueued) return;
+    renderQueued = true;
+    requestAnimationFrame(() => { renderQueued = false; render(); });
+  };
+
+  const render = () => {
+    const { fields } = state;
+    bindings.forEach((nodes, key) => {
+      const value = formatters[key] ? formatters[key](fields) : '';
+      if (painted.get(key) === value) return;
+      painted.set(key, value);
+      nodes.forEach((node) => { node.textContent = value; });
+    });
+    dom.priceBox.dataset.digits = String(splitPrice(fields.pricePix).int.replace(/\./g, '').length);
+  };
+
+  const applyTheme = (themeId) => {
+    state.theme = themeId;
+    dom.flyer.classList.remove(...THEMES.map((t) => `theme-${t.id}`));
+    dom.flyer.classList.add(`theme-${themeId}`);
+  };
+
+  const toggleSeal = (visible) => {
+    state.showSeal = visible;
+    dom.seal.classList.toggle('seal--hidden', !visible);
+  };
+
+  const toggleLogo = (visible) => {
+    state.showLogo = visible;
+    dom.flyerLogo.classList.toggle('logo--hidden', !visible || !state.logo);
+  };
+
+  // ================= NAVBAR / TABS =================
+  const initTabs = () => {
+    const tabs = $$('.nav-tab');
+    tabs.forEach((tab) => {
+      tab.addEventListener('click', () => {
+        const target = tab.dataset.modulo;
+        tabs.forEach((t) => {
+          const isActive = t.dataset.modulo === target;
+          t.classList.toggle('active', isActive);
+          t.setAttribute('aria-selected', String(isActive));
+        });
+        $$('.modulo').forEach((m) => m.classList.remove('active'));
+        const panel = $(`#modulo${target.charAt(0).toUpperCase() + target.slice(1)}`);
+        if (panel) panel.classList.add('active');
+        if (target === 'encarte') fitPreview();
+      });
+    });
+  };
+
+  // ================= INDEXEDDB =================
+  const DB = {
+    _db: null,
+    async init() {
+      if (this._db) return this._db;
+      return new Promise((resolve, reject) => {
+        const request = indexedDB.open(DB_CONFIG.name, DB_CONFIG.version);
+        request.onerror = () => reject(new Error(`Falha ao abrir DB: ${request.error}`));
+        request.onsuccess = () => { this._db = request.result; resolve(this._db); };
+        request.onupgradeneeded = (event) => {
+          const db = event.target.result;
+          if (!db.objectStoreNames.contains(DB_CONFIG.stores.anuncios)) db.createObjectStore(DB_CONFIG.stores.anuncios, { keyPath: 'id' });
+          if (!db.objectStoreNames.contains(DB_CONFIG.stores.config)) db.createObjectStore(DB_CONFIG.stores.config, { keyPath: 'key' });
+          if (!db.objectStoreNames.contains(DB_CONFIG.stores.categorias)) {
+            const cs = db.createObjectStore(DB_CONFIG.stores.categorias, { keyPath: 'id' });
+            cs.createIndex('ordem', 'ordem', { unique: false });
+          }
+          if (!db.objectStoreNames.contains(DB_CONFIG.stores.produtos)) {
+            const ps = db.createObjectStore(DB_CONFIG.stores.produtos, { keyPath: 'id' });
+            ps.createIndex('categoriaId', 'categoriaId', { unique: false });
+            ps.createIndex('ordem', 'ordem', { unique: false });
+          }
+        };
+      });
+    },
+    _tx(storeName, mode) {
+      return this._db.transaction([storeName], mode).objectStore(storeName);
+    },
+    async getAll(storeName) {
+      const db = await this.init();
+      return new Promise((resolve, reject) => {
+        const req = db.transaction([storeName], 'readonly').objectStore(storeName).getAll();
+        req.onsuccess = () => resolve(req.result || []);
+        req.onerror = () => reject(req.error);
+      });
+    },
+    async put(storeName, record) {
+      const db = await this.init();
+      return new Promise((resolve, reject) => {
+        const req = db.transaction([storeName], 'readwrite').objectStore(storeName).put(record);
+        req.onsuccess = () => resolve(true);
+        req.onerror = () => reject(req.error);
+      });
+    },
+    async delete(storeName, id) {
+      const db = await this.init();
+      return new Promise((resolve, reject) => {
+        const req = db.transaction([storeName], 'readwrite').objectStore(storeName).delete(id);
+        req.onsuccess = () => resolve(true);
+        req.onerror = () => reject(req.error);
+      });
+    },
+    async getByIndex(storeName, indexName, value) {
+      const db = await this.init();
+      return new Promise((resolve, reject) => {
+        const store = db.transaction([storeName], 'readonly').objectStore(storeName);
+        const req = store.index(indexName).getAll(value);
+        req.onsuccess = () => resolve(req.result || []);
+        req.onerror = () => reject(req.error);
+      });
+    },
+    async getConfig(key) {
+      const db = await this.init();
+      return new Promise((resolve, reject) => {
+        const req = db.transaction([DB_CONFIG.stores.config], 'readonly').objectStore(DB_CONFIG.stores.config).get(key);
+        req.onsuccess = () => resolve(req.result ? req.result.value : null);
+        req.onerror = () => reject(req.error);
+      });
+    },
+    async setConfig(key, value) {
+      const db = await this.init();
+      return new Promise((resolve, reject) => {
+        const req = db.transaction([DB_CONFIG.stores.config], 'readwrite').objectStore(DB_CONFIG.stores.config).put({ key, value });
+        req.onsuccess = () => resolve(true);
+        req.onerror = () => reject(req.error);
+      });
+    },
+    async migrateFromLocalStorage() {
+      try {
+        const oldAnuncios = localStorage.getItem('encarte-studio-anuncios');
+        if (oldAnuncios) {
+          const anuncios = JSON.parse(oldAnuncios);
+          if (Array.isArray(anuncios)) {
+            for (const a of anuncios) await this.put(DB_CONFIG.stores.anuncios, a);
+            localStorage.removeItem('encarte-studio-anuncios');
+          }
+        }
+        const oldLogo = localStorage.getItem('encarte-studio-logo-global');
+        if (oldLogo) {
+          await this.setConfig('logo', { data: oldLogo, name: localStorage.getItem('encarte-studio-logo-name-global') || 'Logo' });
+          localStorage.removeItem('encarte-studio-logo-global');
+          localStorage.removeItem('encarte-studio-logo-name-global');
+        }
+        return true;
+      } catch (e) { console.warn('Falha na migração:', e); return false; }
+    }
+  };
+
+  // ================= PROCESSADOR DE IMAGEM =================
+  const ImageProcessor = {
+    compress(dataUrl, maxWidth = 800, quality = 0.85) {
+      return new Promise((resolve, reject) => {
+        const img = new Image();
+        img.onload = () => {
+          const canvas = document.createElement('canvas');
+          const scale = Math.min(1, maxWidth / img.width);
+          canvas.width = Math.floor(img.width * scale);
+          canvas.height = Math.floor(img.height * scale);
+          const ctx = canvas.getContext('2d');
+          ctx.imageSmoothingEnabled = true;
+          ctx.imageSmoothingQuality = 'high';
+          ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+          resolve(canvas.toDataURL('image/jpeg', quality));
+        };
+        img.onerror = () => reject(new Error('Falha ao processar imagem'));
+        img.src = dataUrl;
+      });
+    }
+  };
+
+  // ================= STORAGE ENCARTE =================
+  const StorageManager = {
+    getCurrentState() {
+      return {
+        id: state.currentAnuncioId || Date.now(),
+        name: state.fields.title || 'Sem nome',
+        createdAt: state.currentAnuncioId ? state.createdAt : new Date().toISOString(),
+        theme: state.theme,
+        fields: { ...state.fields },
+        image: state.image,
+        showSeal: state.showSeal
+      };
+    },
+    async saveCurrent() {
+      try {
+        const record = this.getCurrentState();
+        if (record.image && !record.image.startsWith('data:image/svg')) {
+          record.image = await ImageProcessor.compress(record.image, 1000, 0.90);
+        }
+        await DB.put(DB_CONFIG.stores.anuncios, record);
+        return true;
+      } catch (error) {
+        console.error('Erro ao salvar:', error);
+        toast('Falha crítica ao salvar anúncio.', 'error');
+        return false;
+      }
+    },
+    async loadAll() {
+      try { return await DB.getAll(DB_CONFIG.stores.anuncios); }
+      catch (error) { console.error('Erro ao carregar:', error); return []; }
+    },
+    async deleteRecord(id) {
+      try { return await DB.delete(DB_CONFIG.stores.anuncios, id); }
+      catch (error) { console.error('Erro ao excluir:', error); return false; }
+    },
+    applyToState(anuncio) {
+      state.currentAnuncioId = anuncio.id;
+      state.createdAt = anuncio.createdAt;
+      state.theme = anuncio.theme;
+      state.fields = { ...anuncio.fields };
+      state.image = anuncio.image || DEMO_IMAGE;
+      state.showSeal = anuncio.showSeal ?? false;
+
+      dom.flyerImage.src = state.image;
+      if (state.logo) {
+        dom.flyerLogo.src = state.logo;
+        dom.logoName.textContent = state.logoName || 'Logo carregada.';
+      } else {
+        dom.flyerLogo.src = '';
+        dom.logoName.textContent = 'Nenhuma logo enviada.';
+      }
+
+      Object.keys(state.fields).forEach((key) => {
+        const input = $(`[data-field="${key}"]`);
+        if (input) input.value = state.fields[key];
+      });
+
+      const themeRadio = $(`input[name="theme"][value="${state.theme}"]`);
+      if (themeRadio) themeRadio.checked = true;
+
+      dom.showLogo.checked = state.showLogo;
+      dom.showSeal.checked = state.showSeal;
+
+      applyTheme(state.theme);
+      toggleLogo(state.showLogo);
+      toggleSeal(state.showSeal);
+      scheduleRender();
+    }
+  };
+
+  // ================= LOGO GLOBAL =================
+  const loadGlobalLogo = async () => {
+    try {
+      const config = await DB.getConfig('logo');
+      if (config && config.data) {
+        state.logo = config.data;
+        state.logoName = config.name || 'Logo da loja';
+        dom.flyerLogo.src = config.data;
+        dom.logoName.textContent = state.logoName;
+      }
+    } catch (e) { console.error('Erro ao carregar logo global', e); }
+  };
+
+  const setLogo = async (dataUrl, name) => {
+    try {
+      const compressed = await ImageProcessor.compress(dataUrl, 300, 0.85);
+      state.logo = compressed;
+      state.logoName = name || 'Logo da loja';
+      await DB.setConfig('logo', { data: compressed, name: state.logoName });
+      dom.flyerLogo.src = compressed;
+      dom.logoName.textContent = state.logoName;
+      toggleLogo(state.showLogo);
+    } catch (e) {
+      console.error(e);
+      toast('Erro ao processar e salvar a logo.', 'error');
+    }
+  };
+
+  const removeLogo = async () => {
+    state.logo = null;
+    state.logoName = '';
+    await DB.setConfig('logo', null);
+    dom.flyerLogo.src = '';
+    dom.logoName.textContent = 'Nenhuma logo enviada.';
+    toggleLogo(false);
+    toast('Logo removida globalmente.', 'info');
+  };
+
+  // ================= TOAST / PROGRESS =================
+  const toast = (message, type = 'info') => {
+    const palette = { info: 'border-zinc-700 bg-zinc-900 text-zinc-100', success: 'border-emerald-500/50 bg-emerald-950 text-emerald-100', error: 'border-red-500/50 bg-red-950 text-red-100' };
+    const icons = { info: 'fa-circle-info', success: 'fa-circle-check', error: 'fa-triangle-exclamation' };
+    const el = document.createElement('p');
+    el.className = `pointer-events-auto flex max-w-xs items-center gap-2.5 rounded-xl border px-4 py-3 text-xs font-bold shadow-xl ${palette[type]}`;
+    const icon = document.createElement('i');
+    icon.className = `fa-solid ${icons[type]}`;
+    icon.setAttribute('aria-hidden', 'true');
+    const text = document.createElement('span');
+    text.textContent = sanitize(message, 160);
+    el.append(icon, text);
+    dom.toastArea.appendChild(el);
+    setTimeout(() => el.remove(), 4200);
+  };
+
+  const setProgress = (percent, label, hint) => {
+    dom.progressFill.style.setProperty('--progress', `${Math.min(100, Math.max(0, percent))}%`);
+    if (label) dom.progressLbl.textContent = label;
+    if (hint) dom.progressHint.textContent = hint;
+  };
+
+  const toggleOverlay = (visible, label = 'Renderizando…', hint = 'Aguarde…') => {
+    dom.overlay.classList.toggle('hidden', !visible);
+    dom.overlay.classList.toggle('grid', visible);
+    if (visible) setProgress(0, label, hint);
+  };
+
+  const lockActions = (locked) => {
+    [dom.btnJpg, dom.btnZip, dom.btnRecrop, dom.btnResetImg].forEach((btn) => { btn.disabled = locked; });
+    if (!locked) dom.btnRecrop.disabled = !state.source;
+  };
+
+  const fitPreview = () => {
+    const { width, height } = dom.previewArea.getBoundingClientRect();
+    const scale = Math.max(0.35, Math.min((width - 56) / CANVAS_W, (height - 140) / CANVAS_H, 1.25));
+    dom.stageFrame.style.setProperty('--ps', String(scale));
+    dom.stageFrame.style.setProperty('--pw', `${CANVAS_W * scale}px`);
+    dom.stageFrame.style.setProperty('--ph', `${CANVAS_H * scale}px`);
+  };
+
+  // ================= CROPPER =================
+  let cropper = null;
+  let scaleX = 1;
+
+  const destroyCropper = () => {
+    if (cropper) { cropper.destroy(); cropper = null; }
+    dom.cropImage.removeAttribute('src');
+    scaleX = 1;
+  };
+
+  const openCropper = (dataUrl) => {
+    if (typeof Cropper === 'undefined') { toast('Cropper.js não carregou. Verifique sua conexão.', 'error'); return; }
+    dom.cropDialog.showModal();
+    dom.cropImage.src = dataUrl;
+    requestAnimationFrame(() => {
+      cropper = new Cropper(dom.cropImage, {
+        aspectRatio: 3 / 4, viewMode: 1, dragMode: 'move', autoCropArea: 0.96, responsive: true,
+        restore: false, guides: true, center: true, highlight: false, background: true,
+        checkOrientation: true, toggleDragModeOnDblclick: false, cropBoxMovable: false, cropBoxResizable: false
+      });
+    });
+  };
+
+  const closeCropper = () => { if (dom.cropDialog.open) dom.cropDialog.close(); };
+
+  const handleCropAction = (action) => {
+    if (!cropper) return;
+    const actions = {
+      'zoom-in': () => cropper.zoom(0.12), 'zoom-out': () => cropper.zoom(-0.12),
+      'rotate': () => cropper.rotate(90), 'flip': () => { scaleX = -scaleX; cropper.scaleX(scaleX); },
+      'reset': () => { cropper.reset(); scaleX = 1; }
+    };
+    actions[action]?.();
+  };
+
+  const applyCrop = () => {
+    if (!cropper) return;
+    try {
+      const canvas = cropper.getCroppedCanvas({
+        width: CANVAS_W * EXPORT_SCALE, height: CANVAS_H * EXPORT_SCALE, fillColor: '#0b0b0d',
+        imageSmoothingEnabled: true, imageSmoothingQuality: 'high'
+      });
+      if (!canvas) throw new Error('Canvas vazio');
+      state.image = canvas.toDataURL('image/jpeg', 0.94);
+      state.source = state.image;
+      dom.flyerImage.src = state.image;
+      dom.btnRecrop.disabled = false;
+      closeCropper();
+      toast('Recorte aplicado em alta resolução.', 'success');
+    } catch (error) {
+      console.error(error);
+      toast('Não foi possível recortar esta imagem.', 'error');
+    }
+  };
+
+  const readFileAsDataURL = (file) => new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => resolve(String(reader.result));
+    reader.onerror = () => reject(new Error('Falha na leitura do arquivo'));
+    reader.readAsDataURL(file);
+  });
+
+  const ingestFile = async (file) => {
+    if (!file) return;
+    if (!file.type.startsWith('image/')) { toast('Envie um arquivo de imagem válido.', 'error'); return; }
+    if (file.size > 20 * 1024 * 1024) { toast('Imagem muito grande (máx. 20MB).', 'error'); return; }
+    try {
+      const dataUrl = await readFileAsDataURL(file);
+      state.source = dataUrl;
+      dom.fileName.textContent = sanitize(file.name, 60);
+      openCropper(dataUrl);
+    } catch (error) {
+      console.error(error);
+      toast('Erro ao ler o arquivo.', 'error');
+    }
+  };
+
+  const ingestLogo = async (file) => {
+    if (!file || !file.type.startsWith('image/')) { toast('Envie um arquivo de imagem válido.', 'error'); return; }
+    if (file.size > 5 * 1024 * 1024) { toast('Logo muito grande (máx. 5MB).', 'error'); return; }
+    try {
+      const dataUrl = await readFileAsDataURL(file);
+      await setLogo(dataUrl, sanitize(file.name, 60));
+      toast('Logo da loja otimizada e atualizada.', 'success');
+    } catch (error) {
+      console.error(error);
+      toast('Erro ao processar a logo.', 'error');
+    }
+  };
+
+  // ================= EXPORT ENCARTE =================
+  const buildExportNode = (themeId) => {
+    const clone = dom.flyer.cloneNode(true);
+    clone.removeAttribute('id');
+    $$('[id]', clone).forEach((node) => node.removeAttribute('id'));
+    clone.classList.remove(...THEMES.map((t) => `theme-${t.id}`));
+    clone.classList.add(`theme-${themeId}`);
+    return clone;
+  };
+
+  const renderThemeToCanvas = async (themeId) => {
+    const node = buildExportNode(themeId);
+    dom.exportHost.appendChild(node);
+    try {
+      const images = $$('img', node);
+      await Promise.all(images.map((img) => img.decode?.().catch(() => {})));
+      await yieldToUI();
+      return await html2canvas(node, {
+        scale: EXPORT_SCALE, width: CANVAS_W, height: CANVAS_H, backgroundColor: '#000000',
+        useCORS: true, allowTaint: false, logging: false, removeContainer: true, imageTimeout: 15000
+      });
+    } finally { node.remove(); }
+  };
+
+  const canvasToBlob = (canvas) => new Promise((resolve, reject) => {
+    canvas.toBlob((blob) => { if (blob) resolve(blob); else reject(new Error('Falha ao gerar JPG')); }, 'image/jpeg', 0.95);
+  });
+
+  const triggerDownload = (blob, filename) => {
+    const url = URL.createObjectURL(blob);
+    const anchor = document.createElement('a');
+    anchor.href = url; anchor.download = filename;
+    document.body.appendChild(anchor); anchor.click(); anchor.remove();
+    setTimeout(() => URL.revokeObjectURL(url), 5000);
+  };
+
+  const ensureLibs = (...libs) => {
+    const missing = libs.filter((lib) => typeof window[lib] === 'undefined');
+    if (missing.length) { toast(`Biblioteca indisponível: ${missing.join(', ')}`, 'error'); return false; }
+    return true;
+  };
+
+  const exportSingle = async () => {
+    if (!ensureLibs('html2canvas')) return;
+    lockActions(true);
+    const currentTheme = THEMES.find((t) => t.id === state.theme);
+    toggleOverlay(true, `Renderizando ${currentTheme.label}…`, 'Alta resolução · scale 3×');
+    try {
+      await document.fonts.ready;
+      setProgress(30, 'Compondo camadas em 3×…');
+      const canvas = await renderThemeToCanvas(state.theme);
+      setProgress(80, 'Codificando JPG…');
+      const blob = await canvasToBlob(canvas);
+      triggerDownload(blob, `${slugify(state.fields.title)}.jpg`);
+      setProgress(100, 'Concluído!');
+      toast('Encarte JPG baixado (1350×1800).', 'success');
+    } catch (error) {
+      console.error(error);
+      toast('Falha na exportação do encarte.', 'error');
+    } finally { toggleOverlay(false); lockActions(false); }
+  };
+
+  const exportBatchZip = async () => {
+    if (!ensureLibs('html2canvas', 'JSZip')) return;
+    lockActions(true);
+    toggleOverlay(true, 'Iniciando lote…', '3 temas em alta resolução');
+    try {
+      await document.fonts.ready;
+      const zip = new JSZip();
+      const slug = slugify(state.fields.title);
+      for (const [index, theme] of THEMES.entries()) {
+        setProgress((index / THEMES.length) * 75, `Renderizando ${theme.label} (${index + 1}/3)…`);
+        await yieldToUI();
+        const canvas = await renderThemeToCanvas(theme.id);
+        const base64 = canvas.toDataURL('image/jpeg', 0.95).split(',')[1];
+        zip.file(`${theme.file}-${slug}.jpg`, base64, { base64: true });
+      }
+      zip.file('LEIA-ME.txt', `Encarte Studio — pacote de ofertas\r\nProduto: ${state.fields.title}\r\nGerado em: ${new Date().toLocaleString('pt-BR')}\r\nResolução: ${CANVAS_W * EXPORT_SCALE}x${CANVAS_H * EXPORT_SCALE}px\r\nFormato: JPG qualidade 95%\r\n`);
+      const blob = await zip.generateAsync({ type: 'blob', compression: 'STORE' }, (meta) => setProgress(75 + meta.percent * 0.25, `Compactando ZIP… ${meta.percent.toFixed(0)}%`));
+      triggerDownload(blob, `encartes-${slug}-combo.zip`);
+      setProgress(100, 'Pacote pronto!');
+      toast('Combo com 3 temas baixado em .ZIP.', 'success');
+    } catch (error) {
+      console.error(error);
+      toast('Falha ao gerar o pacote ZIP.', 'error');
+    } finally { toggleOverlay(false); lockActions(false); }
+  };
+
+  // ================= HANDLERS ENCARTE =================
+  const renderAnunciosList = async () => {
+    const anuncios = await StorageManager.loadAll();
+    if (anuncios.length === 0) {
+      dom.anunciosList.innerHTML = '<p class="col-span-3 text-center text-[11px] font-medium text-zinc-600 py-4">Nenhum anúncio salvo ainda.</p>';
+      return;
+    }
+    anuncios.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+    dom.anunciosList.innerHTML = anuncios.map((anuncio) => `
+      <div class="anuncio-item group" data-anuncio-id="${anuncio.id}">
+        <img class="anuncio-item__thumb" src="${anuncio.image}" alt="Thumbnail do anúncio" loading="lazy">
+        <div class="anuncio-item__info">
+          <p class="anuncio-item__name" title="${sanitize(anuncio.name, 40)}">${sanitize(anuncio.name, 40)}</p>
+          <p class="anuncio-item__meta">${new Date(anuncio.createdAt).toLocaleDateString('pt-BR')}</p>
+        </div>
+        <div class="anuncio-item__actions">
+          <button type="button" class="btn-action-mini" data-action="load" data-id="${anuncio.id}" aria-label="Carregar anúncio" title="Carregar"><i class="fa-solid fa-folder-open" aria-hidden="true"></i></button>
+          <button type="button" class="btn-action-mini danger" data-action="delete" data-id="${anuncio.id}" aria-label="Excluir anúncio" title="Excluir"><i class="fa-solid fa-trash" aria-hidden="true"></i></button>
+        </div>
+      </div>
+    `).join('');
+  };
+
+  const saveCurrentAnuncio = async () => {
+    dom.btnSaveAnuncio.disabled = true;
+    dom.btnSaveAnuncio.innerHTML = '<i class="fa-solid fa-circle-notch fa-spin" aria-hidden="true"></i> Salvando...';
+    try {
+      const success = await StorageManager.saveCurrent();
+      if (success) { await renderAnunciosList(); toast('Anúncio salvo com alta qualidade.', 'success'); }
+    } finally {
+      dom.btnSaveAnuncio.disabled = false;
+      dom.btnSaveAnuncio.innerHTML = '<i class="fa-solid fa-floppy-disk" aria-hidden="true"></i> Salvar atual';
+    }
+  };
+
+  const loadAnuncio = async (id) => {
+    const anuncios = await StorageManager.loadAll();
+    const anuncio = anuncios.find((a) => a.id === id);
+    if (!anuncio) { toast('Anúncio não encontrado.', 'error'); return; }
+    StorageManager.applyToState(anuncio);
+    toast('Anúncio carregado.', 'success');
+  };
+
+  const deleteAnuncio = async (id) => {
+    if (!confirm('Excluir este anúncio permanentemente?')) return;
+    const success = await StorageManager.deleteRecord(id);
+    if (success) {
+      await renderAnunciosList();
+      if (state.currentAnuncioId === id) newAnuncio();
+      toast('Anúncio excluído.', 'info');
+    } else { toast('Falha ao excluir anúncio.', 'error'); }
+  };
+
+  const newAnuncio = async () => {
+    state.currentAnuncioId = null;
+    state.image = DEMO_IMAGE;
+    state.source = null;
+    state.showLogo = true;
+    state.showSeal = false;
+    state.fields = {
+      sealTop: 'OFERTA', ribbon: 'DESCONTO', discount: '25', priceBase: '599,90', price3x: '479,92', pricePix: '449,90',
+      title: 'Novo Produto', subtitle: 'Descrição do produto',
+      legalLeft: 'Válido enquanto durar o estoque. Poucas Unidades!', legalRight: 'Valores com lâmpadas não inclusas.'
+    };
+    dom.flyerImage.src = DEMO_IMAGE;
+    if (state.logo) {
+      dom.flyerLogo.src = state.logo;
+      dom.logoName.textContent = state.logoName || 'Logo carregada.';
+    } else {
+      dom.flyerLogo.src = '';
+      dom.logoName.textContent = 'Nenhuma logo enviada.';
+    }
+    dom.fileName.textContent = 'Nenhum arquivo enviado — usando arte de demonstração.';
+    dom.btnRecrop.disabled = true;
+    Object.keys(state.fields).forEach((key) => {
+      const input = $(`[data-field="${key}"]`);
+      if (input) input.value = state.fields[key];
+    });
+    dom.showLogo.checked = state.showLogo;
+    dom.showSeal.checked = state.showSeal;
+    toggleLogo(state.showLogo);
+    toggleSeal(state.showSeal);
+    scheduleRender();
+    toast('Novo anúncio criado.', 'info');
+  };
+
+  // ================= MÓDULO CATÁLOGO =================
+  const CatalogoManager = {
+    // ---------- CATEGORIAS ----------
+    async loadCategorias() {
+      try {
+        const cats = await DB.getAll(DB_CONFIG.stores.categorias);
+        return cats.sort((a, b) => (a.ordem || 0) - (b.ordem || 0));
+      } catch (e) { console.error(e); return []; }
+    },
+
+    async addCategoria(nome) {
+      const cleanName = sanitize(nome, 60).trim();
+      if (!cleanName) { toast('Informe um nome válido.', 'error'); return null; }
+      try {
+        const existing = await this.loadCategorias();
+        const duplicate = existing.some((c) => c.nome.toLowerCase() === cleanName.toLowerCase());
+        if (duplicate) { toast('Já existe uma categoria com esse nome.', 'error'); return null; }
+        const record = {
+          id: Date.now(),
+          nome: cleanName,
+          ordem: existing.length,
+          createdAt: new Date().toISOString()
+        };
+        await DB.put(DB_CONFIG.stores.categorias, record);
+        toast('Categoria criada.', 'success');
+        return record;
+      } catch (e) {
+        console.error(e);
+        toast('Falha ao criar categoria.', 'error');
+        return null;
+      }
+    },
+
+    async deleteCategoria(id) {
+      if (!confirm('Excluir esta categoria e TODOS os seus produtos?')) return false;
+      try {
+        const produtos = await DB.getByIndex(DB_CONFIG.stores.produtos, 'categoriaId', id);
+        for (const p of produtos) await DB.delete(DB_CONFIG.stores.produtos, p.id);
+        await DB.delete(DB_CONFIG.stores.categorias, id);
+        if (state.cat.categoriaAtivaId === id) state.cat.categoriaAtivaId = null;
+        toast('Categoria e produtos excluídos.', 'info');
+        return true;
+      } catch (e) {
+        console.error(e);
+        toast('Falha ao excluir categoria.', 'error');
+        return false;
+      }
+    },
+
+    async renderCategoriasList() {
+      const cats = await this.loadCategorias();
+      if (cats.length === 0) {
+        dom.categoriasList.innerHTML = '<p class="text-center text-[11px] font-medium text-zinc-600 py-3">Nenhuma categoria criada.</p>';
+        this.updateUIForNoCategoria();
+        return;
+      }
+      dom.categoriasList.innerHTML = cats.map((cat) => `
+        <div class="cat-categoria-item ${cat.id === state.cat.categoriaAtivaId ? 'active' : ''}" data-cat-id="${cat.id}" tabindex="0" role="button" aria-pressed="${cat.id === state.cat.categoriaAtivaId}">
+          <span class="flex items-center gap-2 min-w-0">
+            <i class="fa-solid fa-folder${cat.id === state.cat.categoriaAtivaId ? '-open' : ''} text-amber-400" aria-hidden="true"></i>
+            <span class="truncate">${sanitize(cat.nome, 40)}</span>
+          </span>
+          <button type="button" class="btn-action-mini danger" data-action="delete-cat" data-id="${cat.id}" aria-label="Excluir categoria ${sanitize(cat.nome, 30)}" title="Excluir">
+            <i class="fa-solid fa-trash" aria-hidden="true"></i>
+          </button>
+        </div>
+      `).join('');
+    },
+
+    updateUIForNoCategoria() {
+      dom.produtosArea.classList.add('hidden');
+      dom.catHeaderSubtitle.textContent = 'Selecione ou crie uma categoria para começar.';
+      dom.catStatusMsg.textContent = 'Crie uma categoria para habilitar o cadastro de produtos.';
+      dom.catStatusMsg.parentElement.classList.remove('hidden');
+    },
+
+    updateUIForCategoria(cat) {
+      dom.produtosArea.classList.remove('hidden');
+      dom.catHeaderSubtitle.innerHTML = `Categoria ativa: <strong class="text-amber-300">${sanitize(cat.nome, 40)}</strong>`;
+      dom.catProdutoCategoriaLabel.textContent = sanitize(cat.nome, 40);
+      dom.catProdutosCategoriaLabel.textContent = sanitize(cat.nome, 40);
+      dom.catStatusMsg.parentElement.classList.add('hidden');
+    },
+
+    async selectCategoria(id) {
+      state.cat.categoriaAtivaId = id;
+      state.cat.editandoProdutoId = null;
+      this.resetProdutoForm();
+      await this.renderCategoriasList();
+      const cats = await this.loadCategorias();
+      const cat = cats.find((c) => c.id === id);
+      if (cat) {
+        this.updateUIForCategoria(cat);
+        await this.renderProdutosList(id);
+      } else {
+        this.updateUIForNoCategoria();
+      }
+    },
+
+    // ---------- PRODUTOS ----------
+    async loadProdutosByCategoria(categoriaId) {
+      try {
+        const prods = await DB.getByIndex(DB_CONFIG.stores.produtos, 'categoriaId', categoriaId);
+        return prods.sort((a, b) => (a.ordem || 0) - (b.ordem || 0));
+      } catch (e) { console.error(e); return []; }
+    },
+
+    async addOrUpdateProduto({ id, categoriaId, nome, descricao, imagem }) {
+      try {
+        const existing = id ? await this._getProduto(id) : null;
+        const record = {
+          id: id || Date.now(),
+          categoriaId,
+          nome: sanitize(nome, 120).trim(),
+          descricao: sanitize(descricao, 400).trim(),
+          imagem: imagem || (existing ? existing.imagem : null),
+          ordem: existing ? existing.ordem : Date.now(),
+          createdAt: existing ? existing.createdAt : new Date().toISOString(),
+          updatedAt: new Date().toISOString()
+        };
+        if (!record.nome) { toast('Informe o nome do produto.', 'error'); return false; }
+        await DB.put(DB_CONFIG.stores.produtos, record);
+        toast(id ? 'Produto atualizado.' : 'Produto adicionado.', 'success');
+        return true;
+      } catch (e) {
+        console.error(e);
+        toast('Falha ao salvar produto.', 'error');
+        return false;
+      }
+    },
+
+    async _getProduto(id) {
+      const db = await DB.init();
+      return new Promise((resolve, reject) => {
+        const req = db.transaction([DB_CONFIG.stores.produtos], 'readonly').objectStore(DB_CONFIG.stores.produtos).get(id);
+        req.onsuccess = () => resolve(req.result || null);
+        req.onerror = () => reject(req.error);
+      });
+    },
+
+    async deleteProduto(id) {
+      if (!confirm('Excluir este produto?')) return false;
+      try {
+        await DB.delete(DB_CONFIG.stores.produtos, id);
+        toast('Produto excluído.', 'info');
+        return true;
+      } catch (e) {
+        console.error(e);
+        toast('Falha ao excluir produto.', 'error');
+        return false;
+      }
+    },
+
+    async editProduto(id) {
+      const prod = await this._getProduto(id);
+      if (!prod) return;
+      state.cat.editandoProdutoId = id;
+      dom.produtoNome.value = prod.nome || '';
+      dom.produtoDescricao.value = prod.descricao || '';
+      if (prod.imagem) {
+        state.cat.produtoImagem = prod.imagem;
+        dom.produtoPreview.src = prod.imagem;
+        dom.produtoPreview.classList.remove('hidden');
+        dom.produtoFileIcon.className = 'fa-solid fa-rotate-right text-xl text-amber-400';
+      }
+      dom.btnSalvarProduto.innerHTML = '<i class="fa-solid fa-floppy-disk" aria-hidden="true"></i> Atualizar produto';
+      dom.produtoNome.focus();
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    },
+
+    resetProdutoForm() {
+      state.cat.editandoProdutoId = null;
+      state.cat.produtoImagem = null;
+      dom.produtoNome.value = '';
+      dom.produtoDescricao.value = '';
+      dom.produtoPreview.classList.add('hidden');
+      dom.produtoPreview.removeAttribute('src');
+      dom.produtoFileIcon.className = 'fa-solid fa-cloud-arrow-up text-xl text-amber-400';
+      dom.btnSalvarProduto.innerHTML = '<i class="fa-solid fa-floppy-disk" aria-hidden="true"></i> Adicionar produto';
+    },
+
+    async renderProdutosList(categoriaId) {
+      const prods = await this.loadProdutosByCategoria(categoriaId);
+      dom.catProdutosCount.textContent = prods.length ? `${prods.length} ${prods.length === 1 ? 'item' : 'itens'}` : '';
+      if (prods.length === 0) {
+        dom.produtosList.innerHTML = '<p class="col-span-full text-center text-[11px] font-medium text-zinc-600 py-4">Nenhum produto cadastrado nesta categoria.</p>';
+        return;
+      }
+      dom.produtosList.innerHTML = prods.map((p) => `
+        <article class="cat-produto-card" data-produto-id="${p.id}">
+          ${p.imagem
+            ? `<img class="cat-produto-thumb" src="${p.imagem}" alt="${sanitize(p.nome, 60)}" loading="lazy">`
+            : `<div class="cat-produto-thumb flex items-center justify-center text-zinc-600"><i class="fa-solid fa-image text-2xl" aria-hidden="true"></i></div>`}
+          <div class="min-w-0">
+            <h3 class="truncate text-[12px] font-bold text-zinc-100" title="${sanitize(p.nome, 80)}">${sanitize(p.nome, 60)}</h3>
+            <p class="mt-0.5 line-clamp-2 text-[10px] font-medium text-zinc-500 leading-tight" title="${sanitize(p.descricao, 200)}">${sanitize(p.descricao || 'Sem descrição', 100)}</p>
+          </div>
+          <div class="flex items-center justify-end gap-1 pt-1 border-t border-zinc-800/50">
+            <button type="button" class="btn-action-mini" data-action="edit-prod" data-id="${p.id}" aria-label="Editar produto" title="Editar">
+              <i class="fa-solid fa-pen" aria-hidden="true"></i>
+            </button>
+            <button type="button" class="btn-action-mini danger" data-action="delete-prod" data-id="${p.id}" aria-label="Excluir produto" title="Excluir">
+              <i class="fa-solid fa-trash" aria-hidden="true"></i>
+            </button>
+          </div>
+        </article>
+      `).join('');
+    },
+
+    // ---------- PDF ----------
+    async buildPdfStructure() {
+      const cats = await this.loadCategorias();
+      const structure = [];
+      for (const cat of cats) {
+        const prods = await this.loadProdutosByCategoria(cat.id);
+        if (prods.length > 0) structure.push({ categoria: cat, produtos: prods });
+      }
+      return structure;
+    },
+
+    async renderPdfHost(structure, catalogTitle = 'Catálogo') {
+      dom.pdfHost.innerHTML = '';
+
+      // CAPA
+      const cover = document.createElement('section');
+      cover.className = 'pdf-cover';
+      cover.innerHTML = `
+        <div class="pdf-cover__brand">Encarte Studio</div>
+        <h1 class="pdf-cover__title">${sanitize(catalogTitle, 60)}</h1>
+        <p class="pdf-cover__sub">Coleção Completa</p>
+        <p class="pdf-cover__year">${new Date().getFullYear()}</p>
+      `;
+      dom.pdfHost.appendChild(cover);
+
+      // PÁGINAS POR CATEGORIA
+      const ITEMS_PER_PAGE = 6; // 2 colunas x 3 linhas
+      for (const { categoria, produtos } of structure) {
+        for (let i = 0; i < produtos.length; i += ITEMS_PER_PAGE) {
+          const chunk = produtos.slice(i, i + ITEMS_PER_PAGE);
+          const page = document.createElement('section');
+          page.className = 'pdf-page';
+          const isFirstOfCategory = i === 0;
+          const headerHtml = isFirstOfCategory
+            ? `<h2 class="pdf-cat-title">${sanitize(categoria.nome, 60)}</h2>`
+            : `<h2 class="pdf-cat-title" style="font-size:28px;">${sanitize(categoria.nome, 60)} <span style="font-size:14px;color:#71717a;font-weight:500;letter-spacing:2px;">(continuação)</span></h2>`;
+          page.innerHTML = `
+            ${headerHtml}
+            <div class="pdf-grid">
+              ${chunk.map((p) => `
+                <article class="pdf-item">
+                  ${p.imagem
+                    ? `<img class="pdf-item__img" src="${p.imagem}" alt="${sanitize(p.nome, 60)}">`
+                    : `<div class="pdf-item__img" style="display:flex;align-items:center;justify-content:center;color:#a1a1aa;"><i class="fa-solid fa-image" style="font-size:48px;"></i></div>`}
+                  <div class="pdf-item__body">
+                    <h3 class="pdf-item__name">${sanitize(p.nome, 80)}</h3>
+                    <p class="pdf-item__desc">${sanitize(p.descricao || '', 300)}</p>
+                  </div>
+                </article>
+              `).join('')}
+            </div>
+          `;
+          dom.pdfHost.appendChild(page);
+        }
+      }
+    },
+
+    async generatePdf() {
+      if (!ensureLibs('html2canvas', 'jsPDF')) return null;
+      const { jsPDF } = window.jspdf;
+
+      const structure = await this.buildPdfStructure();
+      if (structure.length === 0) {
+        toast('Cadastre produtos em pelo menos uma categoria.', 'error');
+        return null;
+      }
+
+      const totalProdutos = structure.reduce((acc, s) => acc + s.produtos.length, 0);
+      await this.renderPdfHost(structure);
+      await yieldToUI();
+
+      const pages = $$('.pdf-cover, .pdf-page', dom.pdfHost);
+      const pdf = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
+      const pageWidth = 210;
+      const pageHeight = 297;
+
+      for (let i = 0; i < pages.length; i++) {
+        setProgress((i / pages.length) * 90, `Renderizando página ${i + 1} de ${pages.length}…`, `${totalProdutos} produtos no total`);
+        const canvas = await html2canvas(pages[i], {
+          scale: 2,
+          backgroundColor: '#ffffff',
+          useCORS: true,
+          allowTaint: false,
+          logging: false,
+          width: 794,
+          windowWidth: 794
+        });
+        const imgData = canvas.toDataURL('image/jpeg', 0.92);
+        if (i > 0) pdf.addPage();
+        pdf.addImage(imgData, 'JPEG', 0, 0, pageWidth, pageHeight, undefined, 'FAST');
+        await yieldToUI();
+      }
+
+      return pdf;
+    },
+
+    async previewPdf() {
+      const structure = await this.buildPdfStructure();
+      if (structure.length === 0) {
+        toast('Cadastre produtos em pelo menos uma categoria.', 'error');
+        return;
+      }
+      await this.renderPdfHost(structure);
+      dom.pdfPreviewContent.innerHTML = '';
+      const pages = $$('.pdf-cover, .pdf-page', dom.pdfHost);
+      pages.forEach((page) => {
+        const wrapper = document.createElement('div');
+        wrapper.className = 'rounded-lg border border-zinc-700 bg-white shadow-2xl overflow-hidden';
+        wrapper.style.width = '100%';
+        wrapper.style.maxWidth = '600px';
+        wrapper.style.margin = '0 auto';
+        wrapper.style.aspectRatio = '794 / 1123';
+        wrapper.style.position = 'relative';
+        const clone = page.cloneNode(true);
+        clone.style.transform = 'scale(0.755)';
+        clone.style.transformOrigin = 'top left';
+        clone.style.width = '794px';
+        clone.style.minHeight = '1123px';
+        clone.style.position = 'absolute';
+        clone.style.top = '0';
+        clone.style.left = '0';
+        wrapper.appendChild(clone);
+        dom.pdfPreviewContent.appendChild(wrapper);
+      });
+      dom.pdfPreviewDialog.showModal();
+    }
+  };
+
+  // ================= EVENT LISTENERS ENCARTE =================
+  dom.form.addEventListener('input', (event) => {
+    const input = event.target.closest('[data-field]');
+    if (!input) return;
+    const key = input.dataset.field;
+    if (input.dataset.mask === 'currency') {
+      const masked = formatCurrencyMask(input.value);
+      input.value = masked;
+      state.fields[key] = masked;
+    } else if (input.dataset.mask === 'int') {
+      const value = String(Math.min(100, Number(onlyDigits(input.value).slice(0, 3) || 0)));
+      input.value = onlyDigits(input.value) ? value : '';
+      state.fields[key] = input.value;
+    } else {
+      state.fields[key] = sanitize(input.value, Number(input.maxLength) > 0 ? input.maxLength : 150);
+    }
+    scheduleRender();
+  });
+
+  dom.form.addEventListener('change', (event) => {
+    const radio = event.target.closest('input[name="theme"]');
+    if (radio) applyTheme(radio.value);
+  });
+  dom.form.addEventListener('submit', (event) => event.preventDefault());
+
+  dom.btnCalc.addEventListener('click', () => {
+    const base = priceToNumber(state.fields.priceBase);
+    if (base <= 0) { toast('Informe o preço normal primeiro.', 'error'); return; }
+    const price3x = Math.round(base * 0.80 * 100) / 100;
+    const pricePix = Math.round(base * 0.75 * 100) / 100;
+    state.fields.price3x = numberToCurrency(price3x);
+    state.fields.pricePix = numberToCurrency(pricePix);
+    $('#price3x').value = state.fields.price3x;
+    $('#pricePix').value = state.fields.pricePix;
+    scheduleRender();
+    toast(`3x: R$ ${state.fields.price3x} · PIX: R$ ${state.fields.pricePix}`, 'success');
+  });
+
+  dom.fileInput.addEventListener('change', (event) => { ingestFile(event.target.files[0]); event.target.value = ''; });
+  dom.btnRecrop.addEventListener('click', () => { if (state.source) openCropper(state.source); });
+  dom.btnResetImg.addEventListener('click', () => {
+    state.image = DEMO_IMAGE; state.source = null; dom.flyerImage.src = DEMO_IMAGE;
+    dom.fileName.textContent = 'Nenhum arquivo enviado — usando arte de demonstração.';
+    dom.btnRecrop.disabled = true;
+    toast('Arte de demonstração restaurada.', 'info');
+  });
+
+  dom.logoInput.addEventListener('change', (event) => { ingestLogo(event.target.files[0]); event.target.value = ''; });
+  dom.showLogo.addEventListener('change', () => toggleLogo(dom.showLogo.checked));
+  dom.btnRemoveLogo.addEventListener('click', removeLogo);
+  dom.showSeal.addEventListener('change', () => toggleSeal(dom.showSeal.checked));
+
+  $$('[data-crop-action]').forEach((btn) => btn.addEventListener('click', () => handleCropAction(btn.dataset.cropAction)));
+  $('#btnCropApply').addEventListener('click', applyCrop);
+  $('#btnCropCancel').addEventListener('click', closeCropper);
+  $('#btnCropClose').addEventListener('click', closeCropper);
+  dom.cropDialog.addEventListener('close', destroyCropper);
+
+  dom.btnJpg.addEventListener('click', exportSingle);
+  dom.btnZip.addEventListener('click', exportBatchZip);
+  dom.btnSaveAnuncio.addEventListener('click', saveCurrentAnuncio);
+  dom.btnNewAnuncio.addEventListener('click', newAnuncio);
+
+  dom.anunciosList.addEventListener('click', (event) => {
+    const btn = event.target.closest('[data-action]');
+    if (!btn) return;
+    const id = Number(btn.dataset.id);
+    if (btn.dataset.action === 'load') loadAnuncio(id);
+    else if (btn.dataset.action === 'delete') deleteAnuncio(id);
+  });
+
+  ['dragenter', 'dragover'].forEach((type) => {
+    dom.previewArea.addEventListener(type, (event) => { event.preventDefault(); dom.stageFrame.classList.add('dropzone-active'); });
+  });
+  ['dragleave', 'drop'].forEach((type) => {
+    dom.previewArea.addEventListener(type, (event) => { event.preventDefault(); dom.stageFrame.classList.remove('dropzone-active'); });
+  });
+  dom.previewArea.addEventListener('drop', (event) => {
+    const [file] = event.dataTransfer?.files ?? [];
+    ingestFile(file);
+  });
+
+  // ================= EVENT LISTENERS CATÁLOGO =================
+  dom.btnAddCategoria.addEventListener('click', async () => {
+    const nome = dom.novaCategoriaNome.value;
+    const cat = await CatalogoManager.addCategoria(nome);
+    if (cat) {
+      dom.novaCategoriaNome.value = '';
+      await CatalogoManager.renderCategoriasList();
+      await CatalogoManager.selectCategoria(cat.id);
+    }
+  });
+
+  dom.novaCategoriaNome.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter') {
+      e.preventDefault();
+      dom.btnAddCategoria.click();
+    }
+  });
+
+  dom.categoriasList.addEventListener('click', async (event) => {
+    const deleteBtn = event.target.closest('[data-action="delete-cat"]');
+    if (deleteBtn) {
+      event.stopPropagation();
+      const id = Number(deleteBtn.dataset.id);
+      const success = await CatalogoManager.deleteCategoria(id);
+      if (success) {
+        await CatalogoManager.renderCategoriasList();
+        if (state.cat.categoriaAtivaId) {
+          await CatalogoManager.selectCategoria(state.cat.categoriaAtivaId);
+        } else {
+          CatalogoManager.updateUIForNoCategoria();
+        }
+      }
+      return;
+    }
+    const item = event.target.closest('.cat-categoria-item');
+    if (item) {
+      const id = Number(item.dataset.catId);
+      await CatalogoManager.selectCategoria(id);
+    }
+  });
+
+  dom.categoriasList.addEventListener('keydown', async (event) => {
+    if (event.key !== 'Enter' && event.key !== ' ') return;
+    const item = event.target.closest('.cat-categoria-item');
+    if (item) {
+      event.preventDefault();
+      const id = Number(item.dataset.catId);
+      await CatalogoManager.selectCategoria(id);
+    }
+  });
+
+  dom.produtoFile.addEventListener('change', async (event) => {
+    const file = event.target.files[0];
+    event.target.value = '';
+    if (!file) return;
+    if (!file.type.startsWith('image/')) { toast('Envie uma imagem válida.', 'error'); return; }
+    if (file.size > 10 * 1024 * 1024) { toast('Imagem muito grande (máx. 10MB).', 'error'); return; }
+    try {
+      const raw = await readFileAsDataURL(file);
+      const compressed = await ImageProcessor.compress(raw, 800, 0.88);
+      state.cat.produtoImagem = compressed;
+      dom.produtoPreview.src = compressed;
+      dom.produtoPreview.classList.remove('hidden');
+      dom.produtoFileIcon.className = 'fa-solid fa-rotate-right text-xl text-amber-400';
+    } catch (e) {
+      console.error(e);
+      toast('Erro ao processar imagem.', 'error');
+    }
+  });
+
+  dom.btnSalvarProduto.addEventListener('click', async () => {
+    if (!state.cat.categoriaAtivaId) { toast('Selecione uma categoria.', 'error'); return; }
+    const nome = dom.produtoNome.value;
+    const descricao = dom.produtoDescricao.value;
+    if (!nome.trim()) { toast('Informe o nome do produto.', 'error'); return; }
+
+    const success = await CatalogoManager.addOrUpdateProduto({
+      id: state.cat.editandoProdutoId,
+      categoriaId: state.cat.categoriaAtivaId,
+      nome,
+      descricao,
+      imagem: state.cat.produtoImagem
+    });
+
+    if (success) {
+      CatalogoManager.resetProdutoForm();
+      await CatalogoManager.renderProdutosList(state.cat.categoriaAtivaId);
+    }
+  });
+
+  dom.btnLimparProduto.addEventListener('click', () => {
+    CatalogoManager.resetProdutoForm();
+  });
+
+  dom.produtosList.addEventListener('click', async (event) => {
+    const btn = event.target.closest('[data-action]');
+    if (!btn) return;
+    const id = Number(btn.dataset.id);
+    if (btn.dataset.action === 'edit-prod') {
+      await CatalogoManager.editProduto(id);
+    } else if (btn.dataset.action === 'delete-prod') {
+      const success = await CatalogoManager.deleteProduto(id);
+      if (success) await CatalogoManager.renderProdutosList(state.cat.categoriaAtivaId);
+    }
+  });
+
+  dom.btnPreviewPdf.addEventListener('click', () => CatalogoManager.previewPdf());
+  dom.btnPdfPreviewClose.addEventListener('click', () => {
+    if (dom.pdfPreviewDialog.open) dom.pdfPreviewDialog.close();
+  });
+  dom.btnPdfPreviewDownload.addEventListener('click', async () => {
+    if (dom.pdfPreviewDialog.open) dom.pdfPreviewDialog.close();
+    await downloadPdfFlow();
+  });
+
+  dom.btnDownloadPdf.addEventListener('click', downloadPdfFlow);
+
+  async function downloadPdfFlow() {
+    if (!ensureLibs('html2canvas', 'jsPDF')) return;
+    toggleOverlay(true, 'Preparando catálogo…', 'Montando estrutura do PDF');
+    try {
+      await document.fonts.ready;
+      const pdf = await CatalogoManager.generatePdf();
+      if (!pdf) { toggleOverlay(false); return; }
+      setProgress(95, 'Finalizando PDF…');
+      const filename = `catalogo-${slugify('produtos')}-${Date.now()}.pdf`;
+      pdf.save(filename);
+      setProgress(100, 'Concluído!');
+      toast('Catálogo PDF baixado com sucesso.', 'success');
+    } catch (error) {
+      console.error(error);
+      toast('Falha ao gerar o catálogo PDF.', 'error');
+    } finally {
+      toggleOverlay(false);
+    }
+  }
+
+  // ================= INICIALIZAÇÃO =================
+  const init = async () => {
+    try {
+      await DB.init();
+      await DB.migrateFromLocalStorage();
+      await loadGlobalLogo();
+
+      // Encarte
+      dom.flyerImage.src = state.image;
+      applyTheme(state.theme);
+      toggleLogo(state.showLogo);
+      toggleSeal(state.showSeal);
+      render();
+      fitPreview();
+      await renderAnunciosList();
+
+      if ('ResizeObserver' in window) {
+        new ResizeObserver(fitPreview).observe(dom.previewArea);
+      } else {
+        window.addEventListener('resize', fitPreview);
+      }
+      document.fonts?.ready.then(fitPreview);
+
+      // Catálogo
+      initTabs();
+      await CatalogoManager.renderCategoriasList();
+      const cats = await CatalogoManager.loadCategorias();
+      if (cats.length > 0) {
+        await CatalogoManager.selectCategoria(cats[0].id);
+      } else {
+        CatalogoManager.updateUIForNoCategoria();
+      }
+    } catch (error) {
+      console.error('Falha crítica na inicialização:', error);
+      toast('Erro ao inicializar o sistema. Verifique o console.', 'error');
+    }
+  };
+
+  init();
+})();
+</script>
+</body>
+</html>
