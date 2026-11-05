@@ -206,6 +206,14 @@
     @apply aspect-square w-full rounded-lg border border-zinc-700 bg-zinc-800 object-cover;
   }
 
+  /* ================= IMPORTAR ANÚNCIO ================= */
+  .import-anuncio-card{
+    @apply flex cursor-pointer flex-col gap-2 rounded-xl border border-zinc-800 bg-zinc-900/60 p-3 transition hover:border-amber-400/60 hover:bg-zinc-800/80 focus:outline-none focus:ring-2 focus:ring-amber-400/40;
+  }
+  .import-anuncio-card__thumb{
+    @apply aspect-[3/4] w-full rounded-lg border border-zinc-700 bg-zinc-800 object-cover;
+  }
+
   /* ================= TEMPLATE PDF (oculto) ================= */
   #pdfHost{
     position:fixed; top:0; left:-10000px; width:794px; pointer-events:none; z-index:-1;
@@ -554,7 +562,20 @@
       <!-- Grid de Produtos -->
       <div id="produtosArea" class="hidden">
         <div class="ui-panel mb-5">
-          <legend class="ui-legend"><i class="fa-solid fa-plus-circle text-amber-400" aria-hidden="true"></i> Adicionar produto à categoria <span id="catProdutoCategoriaLabel" class="text-amber-300"></span></legend>
+          <legend class="ui-legend">
+            <i class="fa-solid fa-plus-circle text-amber-400" aria-hidden="true"></i>
+            Adicionar produto à categoria <span id="catProdutoCategoriaLabel" class="text-amber-300"></span>
+          </legend>
+
+          <!-- NOVO: Botão de Importar de Anúncios -->
+          <div class="mb-4 flex flex-wrap items-center gap-2 rounded-xl border border-dashed border-amber-400/40 bg-amber-400/5 px-3 py-2.5">
+            <i class="fa-solid fa-recycle text-amber-400" aria-hidden="true"></i>
+            <span class="flex-1 text-[11px] font-bold text-zinc-300">Reutilize dados dos anúncios já criados</span>
+            <button type="button" id="btnImportarAnuncio" class="btn-ghost !py-1.5 !text-[11px]">
+              <i class="fa-solid fa-file-import" aria-hidden="true"></i> Usar de anúncio
+            </button>
+          </div>
+
           <div class="grid grid-cols-1 gap-3 md:grid-cols-[160px_1fr]">
             <div>
               <label class="ui-label" for="produtoFile"><i class="fa-solid fa-image" aria-hidden="true"></i> Foto</label>
@@ -625,6 +646,32 @@
   </div>
 </dialog>
 
+<!-- MODAL: IMPORTAR DE ANÚNCIO -->
+<dialog id="importarAnuncioDialog" aria-labelledby="importarAnuncioTitle">
+  <div class="w-[min(96vw,900px)] overflow-hidden rounded-2xl border border-zinc-800 bg-zinc-950 shadow-2xl">
+    <header class="flex items-center justify-between border-b border-zinc-800 px-5 py-4">
+      <h2 id="importarAnuncioTitle" class="flex items-center gap-2 font-display text-lg uppercase tracking-wide">
+        <i class="fa-solid fa-recycle text-amber-400" aria-hidden="true"></i> Importar de Anúncio Salvo
+      </h2>
+      <button type="button" id="btnImportarClose" class="btn-ghost" aria-label="Fechar modal de importação"><i class="fa-solid fa-xmark" aria-hidden="true"></i></button>
+    </header>
+
+    <div class="max-h-[70vh] overflow-y-auto bg-zinc-900/60 p-5">
+      <p class="mb-4 text-xs font-medium text-zinc-400">
+        <i class="fa-solid fa-circle-info text-amber-400" aria-hidden="true"></i>
+        Selecione um anúncio. O <strong class="text-zinc-200">nome</strong>, <strong class="text-zinc-200">descrição</strong> e <strong class="text-zinc-200">foto</strong> serão preenchidos automaticamente no formulário. Você pode editar antes de salvar.
+      </p>
+      <div id="importarAnuncioList" class="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4">
+        <p class="col-span-full text-center text-[11px] font-medium text-zinc-600 py-4">Carregando anúncios…</p>
+      </div>
+    </div>
+
+    <footer class="flex justify-end border-t border-zinc-800 bg-zinc-900/60 px-5 py-4">
+      <button type="button" id="btnImportarCancelar" class="btn-secondary sm:w-40">Fechar</button>
+    </footer>
+  </div>
+</dialog>
+
 <!-- MODAL PREVIEW PDF -->
 <dialog id="pdfPreviewDialog" aria-labelledby="pdfPreviewTitle">
   <div class="w-[min(96vw,900px)] overflow-hidden rounded-2xl border border-zinc-800 bg-zinc-950 shadow-2xl">
@@ -678,7 +725,7 @@
   const EXPORT_SCALE = 3;
   const DB_CONFIG = {
     name: 'EncarteStudioDB',
-    version: 2, // Incrementado para novas stores
+    version: 2,
     stores: { anuncios: 'anuncios', config: 'config', categorias: 'categorias', produtos: 'produtos' }
   };
 
@@ -766,7 +813,6 @@
       legalLeft: 'Válido enquanto durar o estoque. Poucas Unidades!',
       legalRight: 'Valores com lâmpadas não inclusas.'
     },
-    // Catálogo
     cat: {
       categoriaAtivaId: null,
       produtoImagem: null,
@@ -797,7 +843,13 @@
     btnDownloadPdf: $('#btnDownloadPdf'), btnPreviewPdf: $('#btnPreviewPdf'),
     pdfHost: $('#pdfHost'),
     pdfPreviewDialog: $('#pdfPreviewDialog'), pdfPreviewContent: $('#pdfPreviewContent'),
-    btnPdfPreviewClose: $('#btnPdfPreviewClose'), btnPdfPreviewDownload: $('#btnPdfPreviewDownload')
+    btnPdfPreviewClose: $('#btnPdfPreviewClose'), btnPdfPreviewDownload: $('#btnPdfPreviewDownload'),
+    // Importar anúncio
+    btnImportarAnuncio: $('#btnImportarAnuncio'),
+    importarAnuncioDialog: $('#importarAnuncioDialog'),
+    importarAnuncioList: $('#importarAnuncioList'),
+    btnImportarClose: $('#btnImportarClose'),
+    btnImportarCancelar: $('#btnImportarCancelar')
   };
 
   // ================= BINDINGS ENCARTE =================
@@ -894,14 +946,19 @@
         };
       });
     },
-    _tx(storeName, mode) {
-      return this._db.transaction([storeName], mode).objectStore(storeName);
-    },
     async getAll(storeName) {
       const db = await this.init();
       return new Promise((resolve, reject) => {
         const req = db.transaction([storeName], 'readonly').objectStore(storeName).getAll();
         req.onsuccess = () => resolve(req.result || []);
+        req.onerror = () => reject(req.error);
+      });
+    },
+    async get(storeName, id) {
+      const db = await this.init();
+      return new Promise((resolve, reject) => {
+        const req = db.transaction([storeName], 'readonly').objectStore(storeName).get(id);
+        req.onsuccess = () => resolve(req.result || null);
         req.onerror = () => reject(req.error);
       });
     },
@@ -1511,7 +1568,7 @@
 
     async addOrUpdateProduto({ id, categoriaId, nome, descricao, imagem }) {
       try {
-        const existing = id ? await this._getProduto(id) : null;
+        const existing = id ? await DB.get(DB_CONFIG.stores.produtos, id) : null;
         const record = {
           id: id || Date.now(),
           categoriaId,
@@ -1533,15 +1590,6 @@
       }
     },
 
-    async _getProduto(id) {
-      const db = await DB.init();
-      return new Promise((resolve, reject) => {
-        const req = db.transaction([DB_CONFIG.stores.produtos], 'readonly').objectStore(DB_CONFIG.stores.produtos).get(id);
-        req.onsuccess = () => resolve(req.result || null);
-        req.onerror = () => reject(req.error);
-      });
-    },
-
     async deleteProduto(id) {
       if (!confirm('Excluir este produto?')) return false;
       try {
@@ -1556,7 +1604,7 @@
     },
 
     async editProduto(id) {
-      const prod = await this._getProduto(id);
+      const prod = await DB.get(DB_CONFIG.stores.produtos, id);
       if (!prod) return;
       state.cat.editandoProdutoId = id;
       dom.produtoNome.value = prod.nome || '';
@@ -1611,6 +1659,82 @@
       `).join('');
     },
 
+    // ---------- IMPORTAR DE ANÚNCIO ----------
+    async abrirModalImportarAnuncio() {
+      if (!state.cat.categoriaAtivaId) {
+        toast('Selecione uma categoria antes de importar.', 'error');
+        return;
+      }
+      const anuncios = await StorageManager.loadAll();
+      if (anuncios.length === 0) {
+        toast('Nenhum anúncio salvo ainda. Crie um anúncio no módulo "Encarte" primeiro.', 'info');
+        return;
+      }
+
+      // Ordena por data mais recente
+      anuncios.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+
+      dom.importarAnuncioList.innerHTML = anuncios.map((anuncio) => {
+        const nome = sanitize(anuncio.fields?.title || anuncio.name || 'Sem nome', 60);
+        const descricao = sanitize(anuncio.fields?.subtitle || '', 100);
+        const imagem = anuncio.image || DEMO_IMAGE;
+        const data = new Date(anuncio.createdAt).toLocaleDateString('pt-BR');
+        return `
+          <button type="button" class="import-anuncio-card text-left" data-import-id="${anuncio.id}" aria-label="Importar anúncio ${nome}">
+            <img class="import-anuncio-card__thumb" src="${imagem}" alt="${nome}" loading="lazy">
+            <div class="min-w-0">
+              <h3 class="truncate text-[12px] font-bold text-zinc-100" title="${nome}">${nome}</h3>
+              <p class="mt-0.5 line-clamp-2 text-[10px] font-medium text-zinc-500 leading-tight" title="${descricao}">${descricao || 'Sem descrição'}</p>
+              <p class="mt-1 text-[9px] font-bold uppercase tracking-wider text-zinc-600">${data}</p>
+            </div>
+          </button>
+        `;
+      }).join('');
+
+      dom.importarAnuncioDialog.showModal();
+    },
+
+    async importarAnuncio(anuncioId) {
+      const anuncio = await DB.get(DB_CONFIG.stores.anuncios, anuncioId);
+      if (!anuncio) {
+        toast('Anúncio não encontrado.', 'error');
+        return;
+      }
+
+      // Preenche o formulário com os dados do anúncio
+      const nome = anuncio.fields?.title || anuncio.name || '';
+      const descricao = anuncio.fields?.subtitle || '';
+      const imagem = anuncio.image || null;
+
+      dom.produtoNome.value = nome;
+      dom.produtoDescricao.value = descricao;
+
+      if (imagem && !imagem.startsWith('data:image/svg')) {
+        state.cat.produtoImagem = imagem;
+        dom.produtoPreview.src = imagem;
+        dom.produtoPreview.classList.remove('hidden');
+        dom.produtoFileIcon.className = 'fa-solid fa-rotate-right text-xl text-amber-400';
+      } else {
+        state.cat.produtoImagem = null;
+        dom.produtoPreview.classList.add('hidden');
+        dom.produtoPreview.removeAttribute('src');
+        dom.produtoFileIcon.className = 'fa-solid fa-cloud-arrow-up text-xl text-amber-400';
+      }
+
+      // Limpa estado de edição (será um novo produto)
+      state.cat.editandoProdutoId = null;
+      dom.btnSalvarProduto.innerHTML = '<i class="fa-solid fa-floppy-disk" aria-hidden="true"></i> Adicionar produto';
+
+      // Fecha o modal
+      if (dom.importarAnuncioDialog.open) dom.importarAnuncioDialog.close();
+
+      toast(`Dados do anúncio "${sanitize(nome, 30)}" importados. Revise antes de salvar.`, 'success');
+
+      // Rola até o formulário
+      dom.produtoNome.focus();
+      dom.produtoNome.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    },
+
     // ---------- PDF ----------
     async buildPdfStructure() {
       const cats = await this.loadCategorias();
@@ -1625,7 +1749,6 @@
     async renderPdfHost(structure, catalogTitle = 'Catálogo') {
       dom.pdfHost.innerHTML = '';
 
-      // CAPA
       const cover = document.createElement('section');
       cover.className = 'pdf-cover';
       cover.innerHTML = `
@@ -1636,8 +1759,7 @@
       `;
       dom.pdfHost.appendChild(cover);
 
-      // PÁGINAS POR CATEGORIA
-      const ITEMS_PER_PAGE = 6; // 2 colunas x 3 linhas
+      const ITEMS_PER_PAGE = 6;
       for (const { categoria, produtos } of structure) {
         for (let i = 0; i < produtos.length; i += ITEMS_PER_PAGE) {
           const chunk = produtos.slice(i, i + ITEMS_PER_PAGE);
@@ -1957,6 +2079,23 @@
       toggleOverlay(false);
     }
   }
+
+  // ================= EVENT LISTENERS: IMPORTAR ANÚNCIO =================
+  dom.btnImportarAnuncio.addEventListener('click', () => CatalogoManager.abrirModalImportarAnuncio());
+
+  dom.btnImportarClose.addEventListener('click', () => {
+    if (dom.importarAnuncioDialog.open) dom.importarAnuncioDialog.close();
+  });
+  dom.btnImportarCancelar.addEventListener('click', () => {
+    if (dom.importarAnuncioDialog.open) dom.importarAnuncioDialog.close();
+  });
+
+  dom.importarAnuncioList.addEventListener('click', (event) => {
+    const card = event.target.closest('[data-import-id]');
+    if (!card) return;
+    const id = Number(card.dataset.importId);
+    CatalogoManager.importarAnuncio(id);
+  });
 
   // ================= INICIALIZAÇÃO =================
   const init = async () => {
