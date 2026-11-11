@@ -3,687 +3,764 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Encarte Studio · Gerador Profissional de Ofertas e Catálogos</title>
-<meta name="description" content="Gerador client-side de encartes e catálogos em PDF com categorias, em alta resolução.">
+<title>Encarte Studio · Workspace Profissional</title>
+<meta name="description" content="Gerador client-side de encartes e catálogos em PDF com layout profissional tipo Canva/Photoshop.">
 
-<!-- ================= FONTES ================= -->
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800;900&family=Oswald:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Oswald:wght@400;500;600;700&display=swap" rel="stylesheet">
 
-<!-- ================= CDN: ÍCONES / CROPPER ================= -->
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.6.2/cropper.min.css">
 
-<!-- ================= CDN: TAILWIND ================= -->
 <script src="https://cdn.tailwindcss.com"></script>
 <script>
   tailwind.config = {
     theme: {
       extend: {
         fontFamily: {
-          sans: ['Montserrat', 'system-ui', 'sans-serif'],
+          sans: ['Inter', 'system-ui', 'sans-serif'],
           display: ['Oswald', 'Impact', 'sans-serif']
+        },
+        colors: {
+          workspace: {
+            bg: '#121214',
+            panel: '#1c1c1f',
+            border: '#2a2a2e',
+            accent: '#fbbf24',
+            accentHover: '#f59e0b'
+          }
         }
       }
     }
   }
 </script>
 
-<!-- ================= COMPONENTES DE UI ================= -->
 <style type="text/tailwindcss">
   @layer components {
-    .ui-panel      { @apply rounded-2xl border border-zinc-800/80 bg-zinc-900/60 p-4; }
-    .ui-legend     { @apply mb-3 flex items-center gap-2 text-[11px] font-extrabold uppercase tracking-[0.16em] text-zinc-400; }
-    .ui-label      { @apply mb-1.5 flex items-center gap-2 text-[11px] font-bold uppercase tracking-wider text-zinc-400; }
-    .ui-input      { @apply w-full rounded-lg border border-zinc-700/80 bg-zinc-950/70 px-3 py-2.5 text-sm font-medium text-zinc-100 placeholder-zinc-600 outline-none transition focus:border-amber-400/80 focus:ring-2 focus:ring-amber-400/25; }
-    .ui-textarea   { @apply w-full rounded-lg border border-zinc-700/80 bg-zinc-950/70 px-3 py-2.5 text-sm font-medium text-zinc-100 placeholder-zinc-600 outline-none transition focus:border-amber-400/80 focus:ring-2 focus:ring-amber-400/25 resize-none; }
-    .ui-hint       { @apply mt-1 text-[10px] font-medium text-zinc-500; }
-    .btn           { @apply inline-flex items-center justify-center gap-2 rounded-xl px-4 py-3 text-sm font-extrabold uppercase tracking-wide transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-offset-zinc-950 disabled:cursor-not-allowed disabled:opacity-50; }
-    .btn-primary   { @apply btn bg-gradient-to-r from-amber-400 to-amber-500 text-zinc-950 shadow-lg shadow-amber-500/20 hover:from-amber-300 hover:to-amber-400 focus-visible:ring-amber-300; }
-    .btn-secondary { @apply btn border border-zinc-700 bg-zinc-800/70 text-zinc-100 hover:border-zinc-500 hover:bg-zinc-800 focus-visible:ring-zinc-400; }
-    .btn-ghost     { @apply inline-flex items-center justify-center gap-2 rounded-lg border border-zinc-700 bg-zinc-900 px-3 py-2 text-xs font-bold text-zinc-300 transition hover:border-amber-400/60 hover:text-amber-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-400/40 disabled:opacity-40; }
-    .btn-danger    { @apply inline-flex items-center justify-center gap-2 rounded-lg border border-red-700/60 bg-red-950/40 px-3 py-2 text-xs font-bold text-red-300 transition hover:border-red-500 hover:text-red-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-400/40; }
-    .theme-card    { @apply flex cursor-pointer flex-col items-center gap-1.5 rounded-xl border border-zinc-700/80 bg-zinc-950/60 px-2 py-3 text-center transition hover:border-zinc-500; }
-    .theme-radio:checked + .theme-card { @apply border-amber-400 bg-amber-400/10 ring-2 ring-amber-400/30; }
-    .theme-radio:focus-visible + .theme-card { @apply ring-2 ring-amber-300; }
-    .toggle-switch { @apply relative h-6 w-11 cursor-pointer rounded-full bg-zinc-700 transition focus-visible:ring-2 focus-visible:ring-amber-400/40; }
-    .toggle-switch::after { @apply absolute left-0.5 top-0.5 h-5 w-5 rounded-full bg-zinc-300 transition-transform content-['']; }
-    .toggle-switch:checked { @apply bg-amber-400; }
-    .toggle-switch:checked::after { @apply translate-x-5 bg-zinc-950; }
+    .app-shell { @apply flex flex-col h-screen bg-workspace-bg text-zinc-100 font-sans overflow-hidden; }
+    .app-header { @apply h-14 flex items-center justify-between px-4 border-b border-workspace-border bg-workspace-panel z-30 flex-shrink-0; }
+    .app-body { @apply flex flex-1 overflow-hidden; }
+    
+    .sidebar { @apply flex flex-col border-r border-workspace-border bg-workspace-panel w-72 flex-shrink-0; }
+    .sidebar-right { @apply border-r-0 border-l w-80; }
+    .sidebar-header { @apply px-4 py-3 border-b border-workspace-border flex items-center justify-between flex-shrink-0; }
+    .sidebar-content { @apply flex-1 overflow-y-auto p-4 space-y-5 custom-scrollbar; }
+    
+    .canvas-area { @apply flex-1 relative bg-[#0a0a0c] overflow-auto flex items-center justify-center p-8; 
+      background-image: radial-gradient(#2a2a2e 1px, transparent 1px); background-size: 20px 20px; }
+    
+    .ui-section { @apply space-y-3; }
+    .ui-label { @apply flex items-center gap-2 text-[11px] font-semibold uppercase tracking-wider text-zinc-400 mb-1.5; }
+    .ui-input { @apply w-full rounded-md border border-workspace-border bg-zinc-950 px-3 py-2 text-sm text-zinc-100 placeholder-zinc-600 outline-none transition focus:border-workspace-accent focus:ring-1 focus:ring-workspace-accent/30; }
+    .ui-hint { @apply text-[10px] text-zinc-500 mt-1; }
+    
+    .btn { @apply inline-flex items-center justify-center gap-2 rounded-md px-3 py-2 text-xs font-bold uppercase tracking-wide transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-workspace-accent disabled:opacity-50 disabled:cursor-not-allowed; }
+    .btn-primary { @apply btn bg-workspace-accent text-zinc-950 hover:bg-workspace-accentHover; }
+    .btn-secondary { @apply btn border border-workspace-border bg-zinc-800 text-zinc-200 hover:border-zinc-600 hover:bg-zinc-700; }
+    .btn-ghost { @apply btn border border-transparent text-zinc-400 hover:text-zinc-100 hover:bg-zinc-800; }
+    .btn-icon { @apply inline-flex items-center justify-center w-8 h-8 rounded-md text-zinc-400 hover:text-zinc-100 hover:bg-zinc-800 transition; }
+
+    .toggle-switch { @apply relative h-5 w-9 cursor-pointer rounded-full bg-zinc-700 transition; }
+    .toggle-switch::after { @apply absolute left-0.5 top-0.5 h-4 w-4 rounded-full bg-zinc-300 transition-transform content-['']; }
+    .toggle-switch:checked { @apply bg-workspace-accent; }
+    .toggle-switch:checked::after { @apply translate-x-4 bg-zinc-950; }
+
+    .theme-card { @apply flex cursor-pointer flex-col items-center gap-2 rounded-lg border border-workspace-border bg-zinc-900 p-3 text-center transition hover:border-workspace-accent/50; }
+    .theme-radio:checked + .theme-card { @apply border-workspace-accent bg-workspace-accent/10 ring-1 ring-workspace-accent; }
+    .theme-radio { @apply sr-only; }
+
+    .custom-scrollbar::-webkit-scrollbar { @apply w-1.5; }
+    .custom-scrollbar::-webkit-scrollbar-track { @apply bg-transparent; }
+    .custom-scrollbar::-webkit-scrollbar-thumb { @apply bg-zinc-700 rounded-full hover:bg-zinc-600; }
+
+    .tab-btn { @apply flex-1 py-2 text-xs font-bold uppercase tracking-wider text-zinc-500 border-b-2 border-transparent transition hover:text-zinc-300; }
+    .tab-btn.active { @apply text-workspace-accent border-workspace-accent; }
+
+    .autosave-indicator {
+      @apply flex items-center gap-1.5 rounded-full px-2.5 py-1 text-[10px] font-bold uppercase tracking-wider transition-all duration-300 opacity-0 pointer-events-none;
+    }
+    .autosave-indicator.is-saving {
+      @apply bg-amber-950/40 border border-amber-700/50 text-amber-300 opacity-100;
+    }
+    .autosave-indicator.is-saved {
+      @apply bg-emerald-950/40 border border-emerald-700/50 text-emerald-400 opacity-100;
+    }
+    .autosave-indicator.is-error {
+      @apply bg-red-950/40 border border-red-700/50 text-red-400 opacity-100;
+    }
+
+    .shortcut-hint {
+      @apply inline-flex items-center gap-1 rounded border border-workspace-border bg-zinc-900 px-1.5 py-0.5 text-[9px] font-mono font-bold text-zinc-400;
+    }
   }
 </style>
 
-<!-- ================= ARTE DO ENCARTE ================= -->
 <style>
-  .flyer{
-    position:relative; width:450px; height:600px; overflow:hidden;
-    background:#0a0a0b; color:#fff; font-family:'Montserrat',sans-serif;
-    -webkit-font-smoothing:antialiased; user-select:none;
+  .flyer {
+    position: relative; width: 450px; height: 600px; overflow: hidden;
+    background: #0a0a0b; color: #fff; font-family: 'Inter', sans-serif;
+    -webkit-font-smoothing: antialiased; user-select: none;
+    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.8);
   }
-  .flyer__media{ position:absolute; inset:0; width:100%; height:100%; object-fit:cover; object-position:center; display:block; }
-  .flyer__scrim{ position:absolute; inset:0;}
-  .logo{ position:absolute; top:20px; left:20%; transform:translateX(-50%); width:175px; object-fit:contain; z-index:10; filter:drop-shadow(0 4px 12px rgba(0,0,0,.6)); }
-  .logo--hidden{ display:none; }
-  .seal{ position:absolute; top:80px; left:16px; width:132px; height:132px; }
-  .seal--hidden{ display:none; }
-  .seal__disc{
-    position:absolute; inset:0; border-radius:50%;
-    display:flex; flex-direction:column; align-items:center; justify-content:center; padding-bottom:30px;
-    background:radial-gradient(circle at 34% 26%, var(--seal-hi) 0%, var(--seal-a) 36%, var(--seal-b) 76%, var(--seal-c) 100%);
-    border:3px dashed var(--seal-border);
-    box-shadow:0 10px 24px rgba(0,0,0,.55), inset 0 -9px 18px rgba(0,0,0,.45), inset 0 8px 16px rgba(255,255,255,.20);
-  }
-  .seal__top{ font-size:9px; font-weight:800; letter-spacing:2.4px; text-transform:uppercase; color:var(--seal-top); }
-  .seal__value{ display:flex; align-items:flex-start; justify-content:center; margin-top:4px; font-family:'Oswald',sans-serif; font-weight:700; font-size:46px; line-height:1; color:var(--seal-value); text-shadow:0 3px 7px rgba(0,0,0,.55); }
-  .seal__pct{ font-size:22px; margin-top:4px; margin-left:1px; }
-  .seal__ribbon{
-    position:absolute; left:-16px; top:92px; width:164px; height:30px;
-    display:flex; align-items:center; justify-content:center; transform:rotate(-5deg);
-    background:linear-gradient(180deg, var(--ribbon-hi) 0%, var(--ribbon-a) 46%, var(--ribbon-b) 100%);
-    border-top:1px solid rgba(255,255,255,.40); border-bottom:1px solid rgba(0,0,0,.28);
-    box-shadow:0 6px 14px rgba(0,0,0,.5), inset 0 1px 0 rgba(255,255,255,.5);
-  }
-  .seal__ribbon::before, .seal__ribbon::after{ content:''; position:absolute; top:100%; width:0; height:0; border-style:solid; }
-  .seal__ribbon::before{ left:0; border-width:7px 9px 0 0; border-color:var(--ribbon-fold) transparent transparent transparent; }
-  .seal__ribbon::after{ right:0; border-width:7px 0 0 9px; border-color:var(--ribbon-fold) transparent transparent transparent; }
-  .seal__ribbon-text{ font-family:'Oswald',sans-serif; font-weight:600; font-size:13px; letter-spacing:3px; text-transform:uppercase; color:var(--ribbon-text); }
-  .pricebox{
-    position:absolute; left:16px; bottom:112px; padding:11px 14px 10px; border-radius:12px;
-    background:var(--price-bg); border:1px solid var(--price-border);
-    box-shadow:0 14px 30px rgba(0,0,0,.55); text-align:right;
-  }
-  .pricebox::before{ content:''; position:absolute; inset:5px; border:1px solid var(--price-inner); border-radius:8px; pointer-events:none; }
-  .pricebox__old{ font-size:10.5px; font-weight:600; letter-spacing:.6px; color:var(--price-old); text-transform:uppercase; }
-  .pricebox__old s{ text-decoration:line-through; }
-  .pricebox__new{ display:flex; align-items:flex-start; justify-content:flex-end; margin-top:1px; font-family:'Oswald',sans-serif; color:var(--price-text); text-shadow:0 4px 14px rgba(0,0,0,.6); }
-  .pricebox__cur{ font-size:18px; font-weight:600; margin-top:10px; margin-right:3px; }
-  .pricebox__int{ font-size:62px; font-weight:700; line-height:.86; letter-spacing:-1.5px; }
-  .pricebox__cents{ font-size:24px; font-weight:600; margin-top:5px; }
-  .pricebox__terms{ margin-top:8px; font-size:9.5px; font-weight:800; letter-spacing:1.6px; text-transform:uppercase; color:var(--price-accent);}
-  .pricebox[data-digits="4"] .pricebox__int{ font-size:52px; }
-  .pricebox[data-digits="5"] .pricebox__int{ font-size:44px; }
-  .pricebox[data-digits="6"] .pricebox__int{ font-size:38px; }
-  .pricebox__list{ margin-top:8px; padding-top:7px; border-top:1px dashed var(--price-inner); display:flex; flex-direction:column; gap:2px; }
-  .pricebox__row{ display:flex; align-items:center; justify-content:space-between; gap:6px; font-family:'Montserrat',sans-serif; font-size:9.5px; font-weight:700; letter-spacing:.4px; }
-  .pricebox__row-label{ color:var(--price-row-label); text-transform:uppercase; letter-spacing:1px; }
-  .pricebox__row-value{ color:var(--price-row-value); font-family:'Oswald',sans-serif; font-weight:600; font-size:11px; letter-spacing:.3px; }
-  .plate{ position:absolute; left:16px; right:16px; bottom:14px; padding:12px 16px 10px; background:var(--plate-bg); border:1px solid var(--plate-border); box-shadow:0 14px 28px rgba(0,0,0,.55); }
-  .plate::before{ content:''; position:absolute; inset:4px; border:1px solid var(--plate-inner); pointer-events:none; }
-  .plate__title{ font-family:'Oswald',sans-serif; font-weight:700; font-size:25px; line-height:1.06; letter-spacing:.6px; text-transform:uppercase; text-align:center; color:var(--plate-title); word-break:break-word; }
-  .plate__subtitle{ margin-top:3px; font-size:9px; font-weight:700; letter-spacing:1.5px; text-transform:uppercase; text-align:center; color:var(--plate-sub); }
-  .plate__rule{ height:1px; margin:8px 0 6px; background:var(--plate-inner); }
-  .plate__legal{ display:flex; justify-content:space-between; gap:12px; font-size:6.6px; font-weight:700; letter-spacing:.55px; text-transform:uppercase; color:var(--plate-legal); }
-  .plate__legal span:last-child{ text-align:right; }
-
-  .theme-padrao{
-    --scrim:linear-gradient(180deg, rgba(0,0,0,.55) 0%, rgba(0,0,0,.04) 30%, rgba(0,0,0,.28) 62%, rgba(0,0,0,.85) 100%);
-    --seal-hi:#ff8a7a; --seal-a:#e4231d; --seal-b:#9c0d0d; --seal-c:#5c0505;
-    --seal-border:#ffd54a; --seal-top:#ffe9a8; --seal-value:#ffffff;
-    --ribbon-hi:#ffe89a; --ribbon-a:#f5c33b; --ribbon-b:#c98f10; --ribbon-text:#7a1010; --ribbon-fold:#8a5f08;
-    --price-bg:rgba(14,14,16,.84); --price-border:rgba(255,255,255,.30); --price-inner:rgba(255,255,255,.18);
-    --price-text:#ffffff; --price-old:#d8d8dc; --price-accent:#ffd54a;
-    --price-row-label:#b8b8bf; --price-row-value:#ffffff;
-    --plate-bg:linear-gradient(160deg,#fbf5e9 0%,#f2e7d2 48%,#e6d7ba 100%);
-    --plate-border:#b9975b; --plate-inner:rgba(155,124,66,.55);
-    --plate-title:#17171b; --plate-sub:#5b5347; --plate-legal:#7b7264;
-  }
-  .theme-black{
-    --scrim:linear-gradient(180deg, rgba(0,0,0,.84) 0%, rgba(0,0,0,.56) 35%, rgba(0,0,0,.78) 70%, rgba(0,0,0,.97) 100%);
-    --seal-hi:#4d4d4d; --seal-a:#1f1f1f; --seal-b:#0a0a0a; --seal-c:#000000;
-    --seal-border:#f5ff00; --seal-top:#f5ff00; --seal-value:#f5ff00;
-    --ribbon-hi:#fbff7a; --ribbon-a:#f5ff00; --ribbon-b:#c2cc00; --ribbon-text:#0a0a0a; --ribbon-fold:#7d8400;
-    --price-bg:rgba(0,0,0,.93); --price-border:#f5ff00; --price-inner:rgba(245,255,0,.35);
-    --price-text:#ffffff; --price-old:#a1a1aa; --price-accent:#f5ff00;
-    --price-row-label:#8a8a8a; --price-row-value:#ffffff;
-    --plate-bg:linear-gradient(160deg,#171717 0%,#0a0a0a 55%,#000000 100%);
-    --plate-border:#f5ff00; --plate-inner:rgba(245,255,0,.35);
-    --plate-title:#ffffff; --plate-sub:#f5ff00; --plate-legal:#8a8a8a;
-  }
-  .theme-natal{
-    --scrim:linear-gradient(180deg, rgba(60,6,10,.62) 0%, rgba(20,4,6,.12) 32%, rgba(40,6,8,.44) 66%, rgba(24,3,5,.92) 100%);
-    --seal-hi:#ff7a6e; --seal-a:#d21f26; --seal-b:#8c0f16; --seal-c:#4d060b;
-    --seal-border:#f4d68a; --seal-top:#f7e6bb; --seal-value:#fff8e6;
-    --ribbon-hi:#3fd08a; --ribbon-a:#0f8a55; --ribbon-b:#075334; --ribbon-text:#f8e9bf; --ribbon-fold:#04321f;
-    --price-bg:rgba(48,8,11,.90); --price-border:rgba(244,214,138,.75); --price-inner:rgba(244,214,138,.35);
-    --price-text:#ffffff; --price-old:#e8cfcf; --price-accent:#f4d68a;
-    --price-row-label:#d8bfbf; --price-row-value:#ffffff;
-    --plate-bg:linear-gradient(160deg,#fdf7ea 0%,#f6e9cf 50%,#ecd9b4 100%);
-    --plate-border:#b08d3f; --plate-inner:rgba(176,141,63,.60);
-    --plate-title:#8f1418; --plate-sub:#1f6b48; --plate-legal:#7a6a4f;
-  }
-
-  .stage-frame{ width:var(--pw,450px); height:var(--ph,600px); }
-  .stage-scaler{ width:450px; height:600px; transform:scale(var(--ps,1)); transform-origin:top left; box-shadow:0 30px 70px rgba(0,0,0,.65); }
-  .export-host{ position:fixed; top:0; left:-10000px; width:450px; height:600px; pointer-events:none; z-index:-1; }
-  .dropzone-active{ outline:2px dashed #fbbf24; outline-offset:8px; }
-
-  #cropDialog{ border:none; padding:0; background:transparent; max-width:none; max-height:none; }
-  #cropDialog::backdrop{ background:rgba(2,6,23,.88); }
-  .crop-stage{ height:min(58vh,540px); background:#09090b; }
-  .crop-stage img{ display:block; max-width:100%; }
-  .cropper-view-box, .cropper-face{ outline:1px solid #fbbf24; }
-  .cropper-line, .cropper-point{ background-color:#fbbf24; }
-
-  .progress-fill{ width:var(--progress,0%); transition:width .25s ease; }
-
-  .anuncio-item{ @apply flex flex-col gap-2 rounded-xl border border-zinc-800 bg-zinc-900/60 p-2 transition hover:border-amber-400/50 hover:bg-zinc-800/80; }
-  .anuncio-item__thumb{ @apply w-full h-20 flex-shrink-0 rounded-lg border border-zinc-700 bg-zinc-800 object-cover; }
-  .anuncio-item__info{ @apply min-w-0 flex-1 flex flex-col justify-center; }
-  .anuncio-item__name{ @apply truncate text-[11px] font-bold text-zinc-100 leading-tight; }
-  .anuncio-item__meta{ @apply truncate text-[9px] font-medium text-zinc-500 mt-0.5; }
-  .anuncio-item__actions{ @apply flex items-center justify-end gap-1 mt-1 pt-1 border-t border-zinc-800/50; }
-  .btn-action-mini{ @apply inline-flex items-center justify-center rounded-md border border-zinc-700 bg-zinc-900 px-1.5 py-1 text-[10px] font-bold text-zinc-400 transition hover:border-amber-400/60 hover:text-amber-300 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-amber-400/40; }
-  .btn-action-mini.danger{ @apply hover:border-red-500/60 hover:text-red-400 focus-visible:ring-red-400/40; }
-
-  /* ================= NAVBAR ================= */
-  .app-nav{ @apply sticky top-0 z-40 border-b border-zinc-800 bg-zinc-950/95 backdrop-blur; }
-  .nav-tab{ @apply relative inline-flex items-center gap-2 px-4 py-3 text-sm font-bold uppercase tracking-wider text-zinc-400 transition hover:text-zinc-100; }
-  .nav-tab.active{ @apply text-amber-400; }
-  .nav-tab.active::after{ @apply absolute bottom-0 left-2 right-2 h-0.5 rounded-t bg-amber-400 content-['']; }
-  .nav-tab:focus-visible{ @apply outline-none ring-2 ring-amber-400/40 ring-inset rounded; }
-
-  .modulo{ display:none; }
-  .modulo.active{ display:block; }
-
-  /* ================= CATÁLOGO ================= */
-  .cat-categoria-item{ @apply flex items-center justify-between gap-2 rounded-lg border border-zinc-800 bg-zinc-900/60 px-3 py-2 text-sm font-bold text-zinc-200 transition cursor-pointer hover:border-amber-400/50 hover:bg-zinc-800; }
-  .cat-categoria-item.active{ @apply border-amber-400 bg-amber-400/10 text-amber-300; }
-  .cat-produto-card{ @apply flex flex-col gap-2 rounded-xl border border-zinc-800 bg-zinc-900/60 p-3 transition hover:border-amber-400/40 hover:bg-zinc-800/80; }
+  .flyer__media { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; object-position: center; display: block; z-index: 1; }
+  .flyer__scrim { position: absolute; inset: 0; z-index: 2; pointer-events: none; }
   
-  /* CORREÇÃO: aspect-[3/4] para acomodar imagens verticais (lustres, pendentes) sem cortar */
-  .cat-produto-thumb-wrap{ @apply relative aspect-[3/4] w-full overflow-hidden rounded-lg border border-zinc-700 bg-zinc-800; }
-  .cat-produto-thumb{ @apply h-full w-full object-cover; }
-  .cat-produto-photos-badge{ @apply absolute bottom-1.5 right-1.5 flex items-center gap-1 rounded-md bg-zinc-950/85 px-1.5 py-0.5 text-[9px] font-bold text-zinc-200 backdrop-blur; }
+  .draggable {
+    cursor: grab;
+    transition: outline 0.15s ease, box-shadow 0.15s ease;
+    touch-action: none;
+    position: absolute;
+  }
+  .draggable:hover {
+    outline: 2px dashed rgba(251, 191, 36, 0.5);
+    outline-offset: 2px;
+  }
+  .draggable.is-dragging,
+  .draggable.is-resizing {
+    cursor: grabbing;
+    outline: 2px solid #fbbf24;
+    outline-offset: 2px;
+    box-shadow: 0 0 0 4px rgba(251, 191, 36, 0.2), 0 20px 40px rgba(0, 0, 0, 0.5);
+    z-index: 100 !important;
+  }
+  .draggable::before {
+    content: '\f7c4';
+    font-family: 'Font Awesome 6 Free';
+    font-weight: 900;
+    position: absolute;
+    top: -24px;
+    right: -4px;
+    background: #fbbf24;
+    color: #18181b;
+    width: 18px;
+    height: 18px;
+    border-radius: 4px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 9px;
+    opacity: 0;
+    transition: opacity 0.15s ease;
+    pointer-events: none;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.4);
+    z-index: 25;
+  }
+  .draggable:hover::before {
+    opacity: 1;
+  }
+  .draggable.is-dragging::before,
+  .draggable.is-resizing::before {
+    opacity: 0;
+  }
 
-  /* ================= FORMULÁRIO DE FOTOS MÚLTIPLAS ================= */
-  .fotos-grid{ @apply grid grid-cols-3 gap-2 sm:grid-cols-4 md:grid-cols-5; }
-  .foto-item{ @apply relative aspect-square overflow-hidden rounded-lg border-2 border-zinc-700 bg-zinc-800 transition hover:border-amber-400/60; }
-  .foto-item.is-principal{ @apply border-amber-400 ring-2 ring-amber-400/40; }
-  .foto-item__img{ @apply h-full w-full object-cover; }
-  .foto-item__principal-badge{ @apply absolute left-1 top-1 flex items-center gap-1 rounded-md bg-amber-400 px-1.5 py-0.5 text-[9px] font-extrabold uppercase tracking-wider text-zinc-950 shadow-lg; }
-  .foto-item__actions{ @apply absolute inset-x-0 bottom-0 flex items-center justify-between gap-1 bg-gradient-to-t from-zinc-950/90 to-transparent p-1.5 opacity-0 transition group-hover:opacity-100; }
-  .foto-item__btn{ @apply inline-flex h-6 w-6 items-center justify-center rounded-md bg-zinc-900/80 text-[10px] font-bold text-zinc-200 transition hover:bg-amber-400 hover:text-zinc-950 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-400/50; }
-  .foto-item__btn.danger{ @apply hover:bg-red-500 hover:text-white; }
-  .foto-add-btn{ @apply flex aspect-square cursor-pointer flex-col items-center justify-center gap-1 rounded-lg border-2 border-dashed border-zinc-700 bg-zinc-950/60 text-center transition hover:border-amber-400/70 hover:bg-zinc-900 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-400/40; }
+  .resize-handle {
+    position: absolute;
+    width: 11px;
+    height: 11px;
+    background: #fbbf24;
+    border: 1.5px solid #18181b;
+    border-radius: 2px;
+    bottom: -6px;
+    right: -6px;
+    cursor: nwse-resize;
+    opacity: 0;
+    transition: opacity 0.15s ease, transform 0.15s ease;
+    z-index: 30;
+    pointer-events: auto;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.4);
+  }
+  .draggable:hover .resize-handle,
+  .draggable.is-dragging .resize-handle,
+  .draggable.is-resizing .resize-handle {
+    opacity: 1;
+  }
+  .draggable.is-resizing .resize-handle {
+    transform: scale(1.2);
+    background: #f59e0b;
+  }
 
-  /* ================= IMPORTAR ANÚNCIO ================= */
-  .import-anuncio-card{ @apply flex cursor-pointer flex-col gap-2 rounded-xl border border-zinc-800 bg-zinc-900/60 p-3 transition hover:border-amber-400/60 hover:bg-zinc-800/80 focus:outline-none focus:ring-2 focus:ring-amber-400/40; }
-  .import-anuncio-card__thumb{ @apply aspect-[3/4] w-full rounded-lg border border-zinc-700 bg-zinc-800 object-cover; }
-
-  /* ================= TEMPLATE PDF (oculto) ================= */
-  #pdfHost{ position:fixed; top:0; left:-10000px; width:794px; pointer-events:none; z-index:-1; background:#fff; color:#111; font-family:'Montserrat',sans-serif; }
-  .pdf-page{ width:794px; min-height:1123px; padding:48px 44px; background:#fff; color:#111; box-sizing:border-box; page-break-after:always; }
-  .pdf-page:last-child{ page-break-after:auto; }
-  .pdf-cover{ width:794px; height:1123px; background:linear-gradient(160deg,#0a0a0b 0%,#1c1917 55%,#292524 100%); color:#fff; display:flex; flex-direction:column; justify-content:center; align-items:center; text-align:center; padding:60px; box-sizing:border-box; page-break-after:always; }
-  .pdf-cover__brand{ font-family:'Oswald',sans-serif; font-size:22px; letter-spacing:8px; color:#fbbf24; text-transform:uppercase; margin-bottom:24px; }
-  .pdf-cover__title{ font-family:'Oswald',sans-serif; font-size:84px; font-weight:800; line-height:1; letter-spacing:-1px; text-transform:uppercase; margin-bottom:20px; }
-  .pdf-cover__sub{ font-size:18px; color:#d4d4d8; letter-spacing:2px; text-transform:uppercase; }
-  .pdf-cover__year{ margin-top:60px; font-size:14px; color:#71717a; letter-spacing:4px; }
-
-  .pdf-cat-title{ font-family:'Oswald',sans-serif; font-size:42px; font-weight:700; text-transform:uppercase; color:#18181b; letter-spacing:1px; border-bottom:3px solid #fbbf24; padding-bottom:12px; margin-bottom:28px; }
-  .pdf-grid{ display:grid; grid-template-columns:repeat(2, 1fr); gap:22px; }
-  .pdf-item{ border:1px solid #e4e4e7; border-radius:10px; overflow:hidden; background:#fafafa; display:flex; flex-direction:column; }
+  .logo { 
+    object-fit: contain; 
+    z-index: 10; 
+    filter: drop-shadow(0 4px 12px rgba(0,0,0,.6)); 
+  }
+  .logo--hidden { display: none; }
   
-  /* CORREÇÃO: aspect-ratio 3/4 no PDF para combinar com as miniaturas e respeitar formatos verticais */
-  .pdf-item__img{ width:100%; aspect-ratio: 3/4; object-fit:cover; background:#f4f4f5; display:block; }
+  .seal { z-index: 10; }
+  .seal--hidden { display: none; }
+  .seal__disc {
+    position: absolute; inset: 0; border-radius: 50%;
+    display: flex; flex-direction: column; align-items: center; justify-content: center; padding-bottom: 30px;
+    background: radial-gradient(circle at 34% 26%, var(--seal-hi) 0%, var(--seal-a) 36%, var(--seal-b) 76%, var(--seal-c) 100%);
+    border: 3px dashed var(--seal-border);
+    box-shadow: 0 10px 24px rgba(0,0,0,.55), inset 0 -9px 18px rgba(0,0,0,.45), inset 0 8px 16px rgba(255,255,255,.20);
+  }
+  .seal__top { font-size: 9px; font-weight: 800; letter-spacing: 2.4px; text-transform: uppercase; color: var(--seal-top); }
+  .seal__value { display: flex; align-items: flex-start; justify-content: center; margin-top: 4px; font-family: 'Oswald', sans-serif; font-weight: 700; font-size: 46px; line-height: 1; color: var(--seal-value); text-shadow: 0 3px 7px rgba(0,0,0,.55); }
+  .seal__pct { font-size: 22px; margin-top: 4px; margin-left: 1px; }
+  .seal__ribbon {
+    position: absolute; left: -16px; top: 92px; width: 164px; height: 30px;
+    display: flex; align-items: center; justify-content: center; transform: rotate(-5deg);
+    background: linear-gradient(180deg, var(--ribbon-hi) 0%, var(--ribbon-a) 46%, var(--ribbon-b) 100%);
+    border-top: 1px solid rgba(255,255,255,.40); border-bottom: 1px solid rgba(0,0,0,.28);
+    box-shadow: 0 6px 14px rgba(0,0,0,.5), inset 0 1px 0 rgba(255,255,255,.5);
+  }
+  .seal__ribbon::before, .seal__ribbon::after { content: ''; position: absolute; top: 100%; width: 0; height: 0; border-style: solid; }
+  .seal__ribbon::before { left: 0; border-width: 7px 9px 0 0; border-color: var(--ribbon-fold) transparent transparent transparent; }
+  .seal__ribbon::after { right: 0; border-width: 7px 0 0 9px; border-color: var(--ribbon-fold) transparent transparent transparent; }
+  .seal__ribbon-text { font-family: 'Oswald', sans-serif; font-weight: 600; font-size: 13px; letter-spacing: 3px; text-transform: uppercase; color: var(--ribbon-text); }
   
-  .pdf-item__body{ padding:14px 16px; }
-  .pdf-item__name{ font-family:'Oswald',sans-serif; font-size:18px; font-weight:700; text-transform:uppercase; color:#18181b; letter-spacing:.5px; line-height:1.15; margin-bottom:6px; }
-  .pdf-item__desc{ font-size:11px; color:#52525b; line-height:1.45; letter-spacing:.2px; }
+  .pricebox {
+    padding: 11px 14px 10px; border-radius: 12px;
+    background: var(--price-bg); border: 1px solid var(--price-border);
+    box-shadow: 0 14px 30px rgba(0,0,0,.55); text-align: right;
+    z-index: 10;
+  }
+  .pricebox::before { content: ''; position: absolute; inset: 5px; border: 1px solid var(--price-inner); border-radius: 8px; pointer-events: none; }
+  .pricebox__old { font-size: 10.5px; font-weight: 600; letter-spacing: .6px; color: var(--price-old); text-transform: uppercase; }
+  .pricebox__old s { text-decoration: line-through; }
+  .pricebox__new { display: flex; align-items: flex-start; justify-content: flex-end; margin-top: 1px; font-family: 'Oswald', sans-serif; color: var(--price-text); text-shadow: 0 4px 14px rgba(0,0,0,.6); }
+  .pricebox__cur { font-size: 18px; font-weight: 600; margin-top: 10px; margin-right: 3px; }
+  .pricebox__int { font-size: 62px; font-weight: 700; line-height: .86; letter-spacing: -1.5px; }
+  .pricebox__cents { font-size: 24px; font-weight: 600; margin-top: 5px; }
+  .pricebox__terms { margin-top: 8px; font-size: 9.5px; font-weight: 800; letter-spacing: 1.6px; text-transform: uppercase; color: var(--price-accent); }
+  .pricebox[data-digits="4"] .pricebox__int { font-size: 52px; }
+  .pricebox[data-digits="5"] .pricebox__int { font-size: 44px; }
+  .pricebox[data-digits="6"] .pricebox__int { font-size: 38px; }
+  .pricebox__list { margin-top: 8px; padding-top: 7px; border-top: 1px dashed var(--price-inner); display: flex; flex-direction: column; gap: 2px; }
+  .pricebox__row { display: flex; align-items: center; justify-content: space-between; gap: 6px; font-family: 'Inter', sans-serif; font-size: 9.5px; font-weight: 700; letter-spacing: .4px; }
+  .pricebox__row-label { color: var(--price-row-label); text-transform: uppercase; letter-spacing: 1px; }
+  .pricebox__row-value { color: var(--price-row-value); font-family: 'Oswald', sans-serif; font-weight: 600; font-size: 11px; letter-spacing: .3px; }
+  
+  .plate { 
+    padding: 12px 16px 10px; 
+    background: var(--plate-bg); 
+    border: 1px solid var(--plate-border); 
+    box-shadow: 0 14px 28px rgba(0,0,0,.55); 
+    z-index: 10;
+  }
+  .plate::before { content: ''; position: absolute; inset: 4px; border: 1px solid var(--plate-inner); pointer-events: none; }
+  .plate__title { font-family: 'Oswald', sans-serif; font-weight: 700; font-size: 25px; line-height: 1.06; letter-spacing: .6px; text-transform: uppercase; text-align: center; color: var(--plate-title); word-break: break-word; }
+  .plate__subtitle { margin-top: 3px; font-size: 9px; font-weight: 700; letter-spacing: 1.5px; text-transform: uppercase; text-align: center; color: var(--plate-sub); }
+  .plate__rule { height: 1px; margin: 8px 0 6px; background: var(--plate-inner); }
+  .plate__legal { display: flex; justify-content: space-between; gap: 12px; font-size: 6.6px; font-weight: 700; letter-spacing: .55px; text-transform: uppercase; color: var(--plate-legal); }
+  .plate__legal span:last-child { text-align: right; }
 
-  @media (prefers-reduced-motion: reduce){ .progress-fill{ transition:none; } }
+  .theme-padrao {
+    --scrim: linear-gradient(180deg, rgba(0,0,0,.55) 0%, rgba(0,0,0,.04) 30%, rgba(0,0,0,.28) 62%, rgba(0,0,0,.85) 100%);
+    --seal-hi: #ff8a7a; --seal-a: #e4231d; --seal-b: #9c0d0d; --seal-c: #5c0505;
+    --seal-border: #ffd54a; --seal-top: #ffe9a8; --seal-value: #ffffff;
+    --ribbon-hi: #ffe89a; --ribbon-a: #f5c33b; --ribbon-b: #c98f10; --ribbon-text: #7a1010; --ribbon-fold: #8a5f08;
+    --price-bg: rgba(14,14,16,.84); --price-border: rgba(255,255,255,.30); --price-inner: rgba(255,255,255,.18);
+    --price-text: #ffffff; --price-old: #d8d8dc; --price-accent: #ffd54a;
+    --price-row-label: #b8b8bf; --price-row-value: #ffffff;
+    --plate-bg: linear-gradient(160deg, #fbf5e9 0%, #f2e7d2 48%, #e6d7ba 100%);
+    --plate-border: #b9975b; --plate-inner: rgba(155,124,66,.55);
+    --plate-title: #17171b; --plate-sub: #5b5347; --plate-legal: #7b7264;
+  }
+  .theme-black {
+    --scrim: linear-gradient(180deg, rgba(0,0,0,.84) 0%, rgba(0,0,0,.56) 35%, rgba(0,0,0,.78) 70%, rgba(0,0,0,.97) 100%);
+    --seal-hi: #4d4d4d; --seal-a: #1f1f1f; --seal-b: #0a0a0a; --seal-c: #000000;
+    --seal-border: #f5ff00; --seal-top: #f5ff00; --seal-value: #f5ff00;
+    --ribbon-hi: #fbff7a; --ribbon-a: #f5ff00; --ribbon-b: #c2cc00; --ribbon-text: #0a0a0a; --ribbon-fold: #7d8400;
+    --price-bg: rgba(0,0,0,.93); --price-border: #f5ff00; --price-inner: rgba(245,255,0,.35);
+    --price-text: #ffffff; --price-old: #a1a1aa; --price-accent: #f5ff00;
+    --price-row-label: #8a8a8a; --price-row-value: #ffffff;
+    --plate-bg: linear-gradient(160deg, #171717 0%, #0a0a0a 55%, #000000 100%);
+    --plate-border: #f5ff00; --plate-inner: rgba(245,255,0,.35);
+    --plate-title: #ffffff; --plate-sub: #f5ff00; --plate-legal: #8a8a8a;
+  }
+  .theme-natal {
+    --scrim: linear-gradient(180deg, rgba(60,6,10,.62) 0%, rgba(20,4,6,.12) 32%, rgba(40,6,8,.44) 66%, rgba(24,3,5,.92) 100%);
+    --seal-hi: #ff7a6e; --seal-a: #d21f26; --seal-b: #8c0f16; --seal-c: #4d060b;
+    --seal-border: #f4d68a; --seal-top: #f7e6bb; --seal-value: #fff8e6;
+    --ribbon-hi: #3fd08a; --ribbon-a: #0f8a55; --ribbon-b: #075334; --ribbon-text: #f8e9bf; --ribbon-fold: #04321f;
+    --price-bg: rgba(48,8,11,.90); --price-border: rgba(244,214,138,.75); --price-inner: rgba(244,214,138,.35);
+    --price-text: #ffffff; --price-old: #e8cfcf; --price-accent: #f4d68a;
+    --price-row-label: #d8bfbf; --price-row-value: #ffffff;
+    --plate-bg: linear-gradient(160deg, #fdf7ea 0%, #f6e9cf 50%, #ecd9b4 100%);
+    --plate-border: #b08d3f; --plate-inner: rgba(176,141,63,.60);
+    --plate-title: #8f1418; --plate-sub: #1f6b48; --plate-legal: #7a6a4f;
+  }
+
+  .stage-scaler { width: 450px; height: 600px; transform: scale(var(--ps, 1)); transform-origin: center center; transition: transform 0.2s ease; }
+  
+  dialog { border: none; padding: 0; background: transparent; max-width: none; max-height: none; }
+  dialog::backdrop { background: rgba(0,0,0,0.85); backdrop-filter: blur(4px); }
+  .modal-content { @apply w-[min(94vw,880px)] overflow-hidden rounded-xl border border-workspace-border bg-workspace-panel shadow-2xl; }
+  
+  .anuncio-item { @apply flex flex-col gap-2 rounded-lg border border-workspace-border bg-zinc-900 p-2 transition hover:border-workspace-accent/50 hover:bg-zinc-800 cursor-pointer; }
+  .anuncio-item__thumb { @apply w-full h-20 flex-shrink-0 rounded-md border border-workspace-border bg-zinc-800 object-cover; }
+  
+  .cat-categoria-item { @apply flex items-center justify-between gap-2 rounded-lg border border-workspace-border bg-zinc-900 px-3 py-2.5 text-sm font-semibold text-zinc-200 transition cursor-pointer hover:border-workspace-accent/50 hover:bg-zinc-800; }
+  .cat-categoria-item.active { @apply border-workspace-accent bg-workspace-accent/10 text-workspace-accent; }
+  .cat-produto-card { @apply flex flex-col gap-2 rounded-lg border border-workspace-border bg-zinc-900 p-3 transition hover:border-workspace-accent/40 hover:bg-zinc-800; }
+  .cat-produto-thumb-wrap { @apply relative aspect-[3/4] w-full overflow-hidden rounded-md border border-workspace-border bg-zinc-800; }
+  .cat-produto-thumb { @apply h-full w-full object-cover; }
+  .fotos-grid { @apply grid grid-cols-3 gap-2; }
+  .foto-item { @apply relative aspect-square overflow-hidden rounded-md border-2 border-workspace-border bg-zinc-800 transition hover:border-workspace-accent/60; }
+  .foto-item.is-principal { @apply border-workspace-accent ring-1 ring-workspace-accent/40; }
+  .foto-item__img { @apply h-full w-full object-cover; }
+  .foto-item__principal-badge { @apply absolute left-1 top-1 flex items-center gap-1 rounded bg-workspace-accent px-1.5 py-0.5 text-[9px] font-extrabold uppercase text-zinc-950; }
+  .foto-item__actions { @apply absolute inset-x-0 bottom-0 flex items-center justify-between gap-1 bg-gradient-to-t from-zinc-950/90 to-transparent p-1.5 opacity-0 transition group-hover:opacity-100; }
+  .foto-item__btn { @apply inline-flex h-6 w-6 items-center justify-center rounded bg-zinc-900/80 text-[10px] font-bold text-zinc-200 transition hover:bg-workspace-accent hover:text-zinc-950; }
+  .foto-item__btn.danger { @apply hover:bg-red-500 hover:text-white; }
+  .foto-add-btn { @apply flex aspect-square cursor-pointer flex-col items-center justify-center gap-1 rounded-md border-2 border-dashed border-workspace-border bg-zinc-950/60 text-center transition hover:border-workspace-accent/70 hover:bg-zinc-900; }
+
+  #pdfHost { position: fixed; top: 0; left: -10000px; width: 794px; pointer-events: none; z-index: -1; background: #fff; color: #111; font-family: 'Inter', sans-serif; }
+  .pdf-page { width: 794px; min-height: 1123px; padding: 48px 44px; background: #fff; color: #111; box-sizing: border-box; page-break-after: always; }
+  .pdf-cover { width: 794px; height: 1123px; background: linear-gradient(160deg, #0a0a0b 0%, #1c1917 55%, #292524 100%); color: #fff; display: flex; flex-direction: column; justify-content: center; align-items: center; text-align: center; padding: 60px; box-sizing: border-box; page-break-after: always; }
+  .pdf-cover__brand { font-family: 'Oswald', sans-serif; font-size: 22px; letter-spacing: 8px; color: #fbbf24; text-transform: uppercase; margin-bottom: 24px; }
+  .pdf-cover__title { font-family: 'Oswald', sans-serif; font-size: 84px; font-weight: 800; line-height: 1; letter-spacing: -1px; text-transform: uppercase; margin-bottom: 20px; }
+  .pdf-cover__sub { font-size: 18px; color: #d4d4d8; letter-spacing: 2px; text-transform: uppercase; }
+  .pdf-cover__year { margin-top: 60px; font-size: 14px; color: #71717a; letter-spacing: 4px; }
+  .pdf-cat-title { font-family: 'Oswald', sans-serif; font-size: 42px; font-weight: 700; text-transform: uppercase; color: #18181b; letter-spacing: 1px; border-bottom: 3px solid #fbbf24; padding-bottom: 12px; margin-bottom: 28px; }
+  .pdf-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 22px; }
+  .pdf-item { border: 1px solid #e4e4e7; border-radius: 10px; overflow: hidden; background: #fafafa; display: flex; flex-direction: column; }
+  .pdf-item__img { width: 100%; aspect-ratio: 3/4; object-fit: cover; background: #f4f4f5; display: block; }
+  .pdf-item__body { padding: 14px 16px; }
+  .pdf-item__name { font-family: 'Oswald', sans-serif; font-size: 18px; font-weight: 700; text-transform: uppercase; color: #18181b; letter-spacing: .5px; line-height: 1.15; margin-bottom: 6px; }
+  .pdf-item__desc { font-size: 11px; color: #52525b; line-height: 1.45; letter-spacing: .2px; }
+
+  .modulo { display: none; }
+  .modulo.active { display: flex; }
 </style>
 </head>
 
-<body class="min-h-screen bg-zinc-950 font-sans text-zinc-100 antialiased">
+<body class="app-shell">
 
-<!-- ================= NAVBAR SUPERIOR ================= -->
-<nav class="app-nav" aria-label="Navegação principal de módulos">
-  <div class="mx-auto flex max-w-[1600px] items-center justify-between px-5">
-    <a href="#" class="flex items-center gap-2.5 py-3">
-      <i class="fa-solid fa-bolt text-amber-400 text-lg" aria-hidden="true"></i>
-      <span class="font-display text-lg uppercase tracking-wide">Encarte<span class="text-amber-400">Studio</span></span>
-    </a>
-    <div class="flex items-center gap-1" role="tablist" aria-label="Módulos">
-      <button type="button" class="nav-tab active" data-modulo="encarte" role="tab" aria-selected="true" aria-controls="moduloEncarte">
-        <i class="fa-solid fa-bolt" aria-hidden="true"></i> Encarte
-      </button>
-      <button type="button" class="nav-tab" data-modulo="catalogo" role="tab" aria-selected="false" aria-controls="moduloCatalogo">
-        <i class="fa-solid fa-book-open" aria-hidden="true"></i> Catálogo PDF
-      </button>
-    </div>
-    <div class="hidden items-center gap-2 text-[10px] font-bold uppercase tracking-widest text-zinc-500 sm:flex">
-      <i class="fa-solid fa-lock text-amber-400" aria-hidden="true"></i> 100% local
-    </div>
+<header class="app-header" role="banner">
+  <div class="flex items-center gap-3">
+    <i class="fa-solid fa-bolt text-workspace-accent text-lg" aria-hidden="true"></i>
+    <span class="font-display text-lg uppercase tracking-wide">Encarte<span class="text-workspace-accent">Studio</span></span>
+    <span class="mx-2 h-4 w-px bg-workspace-border"></span>
+    <input type="text" id="docTitle" value="Novo Encarte" class="bg-transparent text-sm font-medium text-zinc-300 outline-none focus:text-zinc-100 w-40 border-b border-transparent focus:border-workspace-accent transition" aria-label="Título do documento">
+    
+    <span id="autoSaveIndicator" class="autosave-indicator" role="status" aria-live="polite">
+      <i class="fa-solid fa-circle-check text-[10px]"></i>
+      <span id="autoSaveText">Salvo</span>
+    </span>
   </div>
-</nav>
+  
+  <div class="flex items-center gap-2">
+    <div class="flex items-center gap-1 bg-zinc-900 rounded-lg p-1 mr-4" role="tablist">
+      <button type="button" class="tab-btn active" data-modulo="encarte" role="tab" aria-selected="true">Encarte</button>
+      <button type="button" class="tab-btn" data-modulo="catalogo" role="tab" aria-selected="false">Catálogo PDF</button>
+    </div>
+    
+    <button type="button" id="btnSaveAnuncio" class="btn-secondary" title="Salvar (Ctrl+S)">
+      <i class="fa-solid fa-floppy-disk" aria-hidden="true"></i> <span class="hidden sm:inline">Salvar</span>
+      <span class="shortcut-hint hidden md:inline-flex">⌘S</span>
+    </button>
+    <button type="button" id="btnDownloadJpg" class="btn-primary">
+      <i class="fa-solid fa-download" aria-hidden="true"></i> Exportar JPG
+    </button>
+    <button type="button" id="btnDownloadZip" class="btn-secondary" title="Baixar 3 temas em ZIP">
+      <i class="fa-solid fa-file-zipper" aria-hidden="true"></i>
+    </button>
+  </div>
+</header>
 
-<!-- ================= MÓDULO 1: ENCARTE ================= -->
-<section id="moduloEncarte" class="modulo active" role="tabpanel" aria-labelledby="tabEncarte">
-  <div class="grid grid-cols-1 lg:grid-cols-[380px_1fr]">
-    <aside id="painel" class="order-2 border-zinc-800 bg-zinc-950 lg:order-1 lg:h-[calc(100vh-57px)] lg:overflow-y-auto lg:border-r lg:sticky lg:top-[57px]" aria-label="Painel de controle do encarte">
-      <header class="sticky top-0 z-10 border-b border-zinc-800 bg-zinc-950/95 px-5 py-4 backdrop-blur lg:hidden">
-        <h1 class="flex items-center gap-2.5 font-display text-xl uppercase tracking-wide">
-          <i class="fa-solid fa-bolt text-amber-400" aria-hidden="true"></i> Encarte<span class="text-amber-400">Studio</span>
-        </h1>
-        <p class="mt-1 text-[11px] font-medium text-zinc-500">Gerador de ofertas · Export 1350×1800px</p>
-      </header>
+<div class="app-body">
 
-      <form id="controlForm" class="space-y-4 p-5" novalidate>
-        <fieldset class="ui-panel">
-          <legend class="ui-legend"><i class="fa-solid fa-bookmark text-amber-400" aria-hidden="true"></i> Anúncios salvos</legend>
-          <div class="mb-3 flex gap-2">
-            <button type="button" id="btnSaveAnuncio" class="btn-ghost flex-1"><i class="fa-solid fa-floppy-disk" aria-hidden="true"></i> Salvar atual</button>
-            <button type="button" id="btnNewAnuncio" class="btn-ghost flex-1"><i class="fa-solid fa-plus" aria-hidden="true"></i> Novo</button>
+  <div id="moduloEncarte" class="modulo active w-full h-full" role="tabpanel">
+    
+    <aside class="sidebar" aria-label="Biblioteca de ativos">
+      <div class="sidebar-header">
+        <h2 class="text-xs font-bold uppercase tracking-wider text-zinc-400">Ativos</h2>
+        <button type="button" id="btnNewAnuncio" class="btn-icon" title="Novo encarte"><i class="fa-solid fa-plus"></i></button>
+      </div>
+      <div class="sidebar-content custom-scrollbar">
+        <section class="ui-section">
+          <h3 class="ui-label"><i class="fa-solid fa-folder-open text-workspace-accent"></i> Salvos</h3>
+          <div id="anunciosList" class="grid grid-cols-2 gap-2">
+            <p class="col-span-2 text-center text-[10px] text-zinc-600 py-4">Nenhum encarte salvo.</p>
           </div>
-          <div id="anunciosList" class="grid grid-cols-3 gap-3">
-            <p class="col-span-3 text-center text-[11px] font-medium text-zinc-600 py-4">Nenhum anúncio salvo ainda.</p>
-          </div>
-          <p class="ui-hint mt-2"><i class="fa-solid fa-database" aria-hidden="true"></i> Armazenamento local robusto (IndexedDB).</p>
-        </fieldset>
+        </section>
 
-        <fieldset class="ui-panel">
-          <legend class="ui-legend"><i class="fa-solid fa-store text-amber-400" aria-hidden="true"></i> Logo da loja (Global)</legend>
-          <input id="logoFile" type="file" accept="image/*" class="peer sr-only">
-          <label for="logoFile" class="flex cursor-pointer flex-col items-center gap-2 rounded-xl border-2 border-dashed border-zinc-700 bg-zinc-950/60 px-4 py-4 text-center transition hover:border-amber-400/70 hover:bg-zinc-900 peer-focus-visible:border-amber-400 peer-focus-visible:ring-2 peer-focus-visible:ring-amber-400/30">
-            <i class="fa-solid fa-image text-xl text-amber-400" aria-hidden="true"></i>
-            <span class="text-xs font-bold text-zinc-200">Enviar logo da loja</span>
-            <span class="text-[9px] font-medium uppercase tracking-wider text-zinc-500">PNG · JPG · SVG</span>
-          </label>
-          <div class="mt-3 flex items-center gap-2">
-            <label class="flex flex-1 items-center gap-2 text-xs font-bold text-zinc-300">
-              <input type="checkbox" id="showLogo" class="toggle-switch" checked>
-              <span>Mostrar no encarte atual</span>
-            </label>
-            <button type="button" id="btnRemoveLogo" class="btn-ghost"><i class="fa-solid fa-trash" aria-hidden="true"></i></button>
-          </div>
-          <p id="logoName" class="ui-hint truncate">Nenhuma logo enviada.</p>
-        </fieldset>
-
-        <fieldset class="ui-panel">
-          <legend class="ui-legend"><i class="fa-solid fa-image text-amber-400" aria-hidden="true"></i> Imagem do produto</legend>
-          <input id="productFile" type="file" accept="image/*" class="peer sr-only">
-          <label for="productFile" class="flex cursor-pointer flex-col items-center gap-2 rounded-xl border-2 border-dashed border-zinc-700 bg-zinc-950/60 px-4 py-6 text-center transition hover:border-amber-400/70 hover:bg-zinc-900 peer-focus-visible:border-amber-400 peer-focus-visible:ring-2 peer-focus-visible:ring-amber-400/30">
-            <i class="fa-solid fa-cloud-arrow-up text-2xl text-amber-400" aria-hidden="true"></i>
-            <span class="text-sm font-bold text-zinc-200">Enviar foto do produto</span>
-            <span class="text-[10px] font-medium uppercase tracking-wider text-zinc-500">JPG · PNG · WEBP — recorte fixo 3:4</span>
-          </label>
-          <div class="mt-3 flex items-center gap-2">
-            <button type="button" id="btnRecrop" class="btn-ghost flex-1" disabled><i class="fa-solid fa-crop-simple" aria-hidden="true"></i> Reenquadrar</button>
-            <button type="button" id="btnResetImage" class="btn-ghost flex-1"><i class="fa-solid fa-rotate-left" aria-hidden="true"></i> Exemplo</button>
-          </div>
-          <p id="fileName" class="ui-hint truncate">Nenhum arquivo enviado — usando arte de demonstração.</p>
-        </fieldset>
-
-        <fieldset class="ui-panel">
-          <legend class="ui-legend"><i class="fa-solid fa-tags text-amber-400" aria-hidden="true"></i> Preços</legend>
-          <div class="grid grid-cols-2 gap-3">
-            <div class="col-span-2">
-              <label class="ui-label" for="priceBase"><i class="fa-solid fa-tag" aria-hidden="true"></i> Preço normal <span class="ml-auto text-[9px] font-semibold normal-case tracking-normal text-zinc-500">(De:)</span></label>
-              <input class="ui-input" id="priceBase" data-field="priceBase" data-mask="currency" type="text" inputmode="numeric" maxlength="150" value="599,90" autocomplete="off">
-            </div>
-            <div>
-              <label class="ui-label" for="price3x"><i class="fa-solid fa-credit-card" aria-hidden="true"></i> 3x cartão <span class="text-[9px] font-semibold normal-case tracking-normal text-emerald-400">−20%</span></label>
-              <input class="ui-input" id="price3x" data-field="price3x" data-mask="currency" type="text" inputmode="numeric" maxlength="150" value="479,92" autocomplete="off">
-            </div>
-            <div>
-              <label class="ui-label" for="pricePix"><i class="fa-solid fa-qrcode" aria-hidden="true"></i> PIX <span class="text-[9px] font-semibold normal-case tracking-normal text-amber-400">−25%</span></label>
-              <input class="ui-input" id="pricePix" data-field="pricePix" data-mask="currency" type="text" inputmode="numeric" maxlength="150" value="449,90" autocomplete="off">
-            </div>
-            <div class="col-span-2">
-              <button type="button" id="btnCalcPrices" class="btn-ghost w-full"><i class="fa-solid fa-calculator" aria-hidden="true"></i> Calcular 3x (−20%) e PIX (−25%) automaticamente</button>
-              <p class="ui-hint">O valor em destaque no encarte será o <strong class="text-amber-300">PIX</strong> (maior desconto).</p>
-            </div>
-          </div>
-        </fieldset>
-
-        <fieldset class="ui-panel">
-          <legend class="ui-legend"><i class="fa-solid fa-tag text-amber-400" aria-hidden="true"></i> Selo de desconto</legend>
-          <div class="grid grid-cols-2 gap-3">
-            <div class="col-span-2">
-              <label class="flex items-center gap-2 text-xs font-bold text-zinc-300">
-                <input type="checkbox" id="showSeal" class="toggle-switch">
-                <span>Mostrar selo no encarte</span>
-              </label>
-            </div>
-            <div class="col-span-2">
-              <label class="ui-label" for="sealTop"><i class="fa-solid fa-heading" aria-hidden="true"></i> Texto do topo do selo</label>
-              <input class="ui-input" id="sealTop" data-field="sealTop" type="text" maxlength="150" value="OFERTA" autocomplete="off">
-            </div>
-            <div>
-              <label class="ui-label" for="ribbon"><i class="fa-solid fa-ribbon" aria-hidden="true"></i> Faixa</label>
-              <input class="ui-input" id="ribbon" data-field="ribbon" type="text" maxlength="150" value="DESCONTO" autocomplete="off">
-            </div>
-            <div>
-              <label class="ui-label" for="discount"><i class="fa-solid fa-percent" aria-hidden="true"></i> % do selo</label>
-              <input class="ui-input" id="discount" data-field="discount" data-mask="int" type="text" inputmode="numeric" maxlength="150" value="25" autocomplete="off">
-            </div>
-          </div>
-        </fieldset>
-
-        <fieldset class="ui-panel">
-          <legend class="ui-legend"><i class="fa-solid fa-box-open text-amber-400" aria-hidden="true"></i> Banner de rodapé</legend>
+        <section class="ui-section">
+          <h3 class="ui-label"><i class="fa-solid fa-cloud-arrow-up text-workspace-accent"></i> Mídia</h3>
+          
           <div class="space-y-3">
             <div>
-              <label class="ui-label" for="title"><i class="fa-solid fa-font" aria-hidden="true"></i> Título do produto</label>
-              <input class="ui-input" id="title" data-field="title" type="text" maxlength="150" value="Perfume Noir Intense" autocomplete="off">
-            </div>
-            <div>
-              <label class="ui-label" for="subtitle"><i class="fa-solid fa-align-center" aria-hidden="true"></i> Subtítulo técnico</label>
-              <input class="ui-input" id="subtitle" data-field="subtitle" type="text" maxlength="150" value="Eau de Parfum · 100ml · Alta fixação" autocomplete="off">
-            </div>
-            <div>
-              <label class="ui-label" for="legalLeft"><i class="fa-solid fa-scale-balanced" aria-hidden="true"></i> Legal · esquerda</label>
-              <input class="ui-input" id="legalLeft" data-field="legalLeft" type="text" maxlength="150" value="Válido enquanto durar o estoque. Poucas Unidades!" autocomplete="off">
-            </div>
-            <div>
-              <label class="ui-label" for="legalRight"><i class="fa-solid fa-circle-info" aria-hidden="true"></i> Legal · direita</label>
-              <input class="ui-input" id="legalRight" data-field="legalRight" type="text" maxlength="150" value="Estoque limitado · Imagem ilustrativa" autocomplete="off">
-            </div>
-          </div>
-        </fieldset>
-
-        <fieldset class="ui-panel">
-          <legend class="ui-legend"><i class="fa-solid fa-palette text-amber-400" aria-hidden="true"></i> Tema visual</legend>
-          <div class="grid grid-cols-3 gap-2">
-            <div>
-              <input class="theme-radio sr-only" type="radio" name="theme" id="themePadrao" value="padrao" checked>
-              <label class="theme-card" for="themePadrao">
-                <span class="h-6 w-6 rounded-full border-2 border-amber-300 bg-gradient-to-br from-red-500 to-red-900"></span>
-                <span class="text-[10px] font-extrabold uppercase leading-tight tracking-wide">Padrão<br>Foto</span>
+              <input id="logoFile" type="file" accept="image/*" class="peer sr-only">
+              <label for="logoFile" class="flex cursor-pointer flex-col items-center gap-2 rounded-lg border border-dashed border-workspace-border bg-zinc-900 p-3 text-center transition hover:border-workspace-accent peer-focus-visible:ring-1 peer-focus-visible:ring-workspace-accent">
+                <i class="fa-solid fa-image text-workspace-accent"></i>
+                <span class="text-[10px] font-bold text-zinc-300">Logo da Loja</span>
               </label>
-            </div>
-            <div>
-              <input class="theme-radio sr-only" type="radio" name="theme" id="themeBlack" value="black">
-              <label class="theme-card" for="themeBlack">
-                <span class="h-6 w-6 rounded-full border-2 border-yellow-300 bg-gradient-to-br from-zinc-700 to-black"></span>
-                <span class="text-[10px] font-extrabold uppercase leading-tight tracking-wide">Black<br>Friday</span>
-              </label>
-            </div>
-            <div>
-              <input class="theme-radio sr-only" type="radio" name="theme" id="themeNatal" value="natal">
-              <label class="theme-card" for="themeNatal">
-                <span class="h-6 w-6 rounded-full border-2 border-amber-200 bg-gradient-to-br from-red-600 to-emerald-700"></span>
-                <span class="text-[10px] font-extrabold uppercase leading-tight tracking-wide">Especial<br>Natal</span>
-              </label>
-            </div>
-          </div>
-        </fieldset>
-
-        <div class="space-y-2.5 pb-8">
-          <button type="button" id="btnDownloadJpg" class="btn-primary w-full"><i class="fa-solid fa-download" aria-hidden="true"></i> Baixar encarte JPG</button>
-          <button type="button" id="btnDownloadZip" class="btn-secondary w-full"><i class="fa-solid fa-file-zipper" aria-hidden="true"></i> Baixar combo (3 temas · ZIP)</button>
-          <p class="pt-1 text-center text-[10px] font-medium text-zinc-600"><i class="fa-solid fa-lock" aria-hidden="true"></i> Nenhum dado sai do seu navegador.</p>
-        </div>
-      </form>
-    </aside>
-
-    <main id="previewArea" class="order-1 flex min-h-[560px] flex-col items-center justify-center gap-4 bg-[radial-gradient(circle_at_50%_0%,#27272a_0%,#09090b_60%)] p-6 lg:order-2 lg:sticky lg:top-[57px] lg:h-[calc(100vh-57px)]">
-      <p class="flex items-center gap-2 text-[11px] font-bold uppercase tracking-[0.2em] text-zinc-500">
-        <i class="fa-solid fa-eye text-amber-400" aria-hidden="true"></i> Pré-visualização em tempo real
-      </p>
-      <div id="stageFrame" class="stage-frame">
-        <div class="stage-scaler">
-          <article id="flyer" class="flyer theme-padrao" aria-label="Pré-visualização do encarte de oferta">
-            <img id="flyerImage" class="flyer__media" src="" alt="Foto do produto em destaque no encarte" crossorigin="anonymous">
-            <div class="flyer__scrim" aria-hidden="true"></div>
-            <img id="flyerLogo" class="logo logo--hidden" src="" alt="Logo da loja" crossorigin="anonymous">
-            <section class="seal" aria-label="Selo de desconto">
-              <div class="seal__disc">
-                <span class="seal__top" data-bind="sealTop">OFERTA</span>
-                <span class="seal__value"><span data-bind="discount">25</span><span class="seal__pct">%</span></span>
-              </div>
-              <p class="seal__ribbon"><span class="seal__ribbon-text" data-bind="ribbon">DESCONTO</span></p>
-            </section>
-            <section class="pricebox" id="priceBox" data-digits="3" aria-label="Preços da oferta">
-              <p class="pricebox__old">De: <s data-bind="priceBase">R$ 599,90</s></p>
-              <p class="pricebox__new">
-                <span class="pricebox__cur">R$</span>
-                <span class="pricebox__int" data-bind="pricePixInt">449</span>
-                <span class="pricebox__cents" data-bind="pricePixCents">,90</span>
-              </p>
-              <p><br></p>
-              <p class="pricebox__terms">- no PIX -</p>
-              <div class="pricebox__list">
-                <div class="pricebox__row">
-                  <span class="pricebox__row-label">3x cartão</span>
-                  <span class="pricebox__row-value" data-bind="price3x">R$ 479,92</span>
+              <div class="flex items-center justify-between mt-2">
+                <span id="logoName" class="text-[9px] text-zinc-500 truncate max-w-[140px]">Nenhuma logo</span>
+                <div class="flex gap-1">
+                  <label class="flex items-center gap-1.5 text-[10px] text-zinc-400 cursor-pointer">
+                    <input type="checkbox" id="showLogo" class="toggle-switch" checked>
+                    Visível
+                  </label>
+                  <button type="button" id="btnRemoveLogo" class="text-[9px] text-red-400 hover:text-red-300 font-bold">Remover</button>
                 </div>
               </div>
-            </section>
-            <footer class="plate">
-              <h2 class="plate__title" data-bind="title">PERFUME NOIR INTENSE</h2>
-              <p class="plate__subtitle" data-bind="subtitle">Eau de Parfum · 100ml · Alta fixação</p>
-              <div class="plate__rule" aria-hidden="true"></div>
-              <p class="plate__legal">
-                <span data-bind="legalLeft">Oferta válida até 30/11/2026</span>
-                <span data-bind="legalRight">Estoque limitado · Imagem ilustrativa</span>
-              </p>
-            </footer>
-          </article>
-        </div>
+            </div>
+
+            <div>
+              <input id="productFile" type="file" accept="image/*" class="peer sr-only">
+              <label for="productFile" class="flex cursor-pointer flex-col items-center gap-2 rounded-lg border border-dashed border-workspace-border bg-zinc-900 p-4 text-center transition hover:border-workspace-accent peer-focus-visible:ring-1 peer-focus-visible:ring-workspace-accent">
+                <i class="fa-solid fa-image text-2xl text-workspace-accent"></i>
+                <span class="text-xs font-bold text-zinc-200">Foto do Produto</span>
+                <span class="text-[9px] text-zinc-500">Arraste ou clique (Recorte 3:4)</span>
+              </label>
+              <div class="flex gap-2 mt-2">
+                <button type="button" id="btnRecrop" class="btn-ghost flex-1 text-[10px]" disabled><i class="fa-solid fa-crop-simple"></i> Reenquadrar</button>
+                <button type="button" id="btnResetImage" class="btn-ghost flex-1 text-[10px]"><i class="fa-solid fa-rotate-left"></i> Reset</button>
+              </div>
+              <p id="fileName" class="ui-hint truncate">Usando arte de demonstração.</p>
+            </div>
+          </div>
+        </section>
+
+        <section class="ui-section">
+          <div class="rounded-lg border border-workspace-border bg-zinc-900/60 p-3">
+            <h3 class="ui-label mb-2"><i class="fa-solid fa-hand-pointer text-workspace-accent"></i> Dica</h3>
+            <p class="text-[10px] text-zinc-400 leading-relaxed">
+              <strong class="text-zinc-200">Arraste</strong> os elementos no canvas. Use o <strong class="text-zinc-200">handle dourado</strong> no canto para redimensionar.
+            </p>
+          </div>
+        </section>
       </div>
-      <p class="rounded-full border border-zinc-800 bg-zinc-900/70 px-4 py-1.5 text-[10px] font-bold uppercase tracking-widest text-zinc-400">
-        3:4 · 450×600 pt · Export <span class="text-amber-400">1350×1800 px</span> (scale 3)
-      </p>
+    </aside>
+
+    <main class="canvas-area" id="previewArea" aria-label="Área de desenho">
+      <div id="stageFrame" class="stage-scaler">
+        <article id="flyer" class="flyer theme-padrao" aria-label="Pré-visualização do encarte">
+          <img id="flyerImage" class="flyer__media" src="" alt="Foto do produto" crossorigin="anonymous">
+          <div class="flyer__scrim" aria-hidden="true"></div>
+          <img id="flyerLogo" class="logo logo--hidden draggable" data-draggable="logo" src="" alt="Logo da loja" crossorigin="anonymous">
+          <div class="resize-handle" data-resize-handle data-for="logo"></div>
+          
+          <section class="seal draggable" data-draggable="seal" aria-label="Selo de desconto">
+            <div class="seal__disc">
+              <span class="seal__top" data-bind="sealTop">OFERTA</span>
+              <span class="seal__value"><span data-bind="discount">25</span><span class="seal__pct">%</span></span>
+            </div>
+            <p class="seal__ribbon"><span class="seal__ribbon-text" data-bind="ribbon">DESCONTO</span></p>
+            <div class="resize-handle" data-resize-handle data-for="seal"></div>
+          </section>
+          
+          <section class="pricebox draggable" id="priceBox" data-draggable="pricebox" data-digits="3" aria-label="Preços">
+            <p class="pricebox__old">De: <s data-bind="priceBase">R$ 599,90</s></p>
+            <p class="pricebox__new">
+              <span class="pricebox__cur">R$</span>
+              <span class="pricebox__int" data-bind="pricePixInt">449</span>
+              <span class="pricebox__cents" data-bind="pricePixCents">,90</span>
+            </p>
+            <p class="pricebox__terms">- no PIX -</p>
+            <div class="pricebox__list">
+              <div class="pricebox__row">
+                <span class="pricebox__row-label">3x cartão</span>
+                <span class="pricebox__row-value" data-bind="price3x">R$ 479,92</span>
+              </div>
+            </div>
+            <div class="resize-handle" data-resize-handle data-for="pricebox"></div>
+          </section>
+          
+          <footer class="plate draggable" id="plate" data-draggable="plate">
+            <h2 class="plate__title" data-bind="title">PERFUME NOIR INTENSE</h2>
+            <p class="plate__subtitle" data-bind="subtitle">Eau de Parfum · 100ml · Alta fixação</p>
+            <div class="plate__rule" aria-hidden="true"></div>
+            <p class="plate__legal">
+              <span data-bind="legalLeft">Válido enquanto durar o estoque.</span>
+              <span data-bind="legalRight">Imagem ilustrativa</span>
+            </p>
+            <div class="resize-handle" data-resize-handle data-for="plate"></div>
+          </footer>
+        </article>
+      </div>
+      
+      <div class="absolute bottom-6 left-1/2 -translate-x-1/2 flex items-center gap-2 rounded-full border border-workspace-border bg-workspace-panel/90 px-4 py-2 backdrop-blur shadow-xl">
+        <span class="text-[10px] font-bold uppercase tracking-widest text-zinc-500">450×600 pt · Export <span class="text-workspace-accent">1350×1800 px</span></span>
+      </div>
     </main>
+
+    <aside class="sidebar sidebar-right" aria-label="Painel de propriedades">
+      <div class="sidebar-header">
+        <h2 class="text-xs font-bold uppercase tracking-wider text-zinc-400">Propriedades</h2>
+      </div>
+      <form id="controlForm" class="sidebar-content custom-scrollbar" novalidate>
+        
+        <section class="ui-section">
+          <h3 class="ui-label"><i class="fa-solid fa-font text-workspace-accent"></i> Conteúdo</h3>
+          <div>
+            <label class="ui-label" for="title">Título do Produto</label>
+            <input class="ui-input" id="title" data-field="title" type="text" maxlength="150" value="Perfume Noir Intense" autocomplete="off">
+          </div>
+          <div>
+            <label class="ui-label" for="subtitle">Subtítulo Técnico</label>
+            <input class="ui-input" id="subtitle" data-field="subtitle" type="text" maxlength="150" value="Eau de Parfum · 100ml · Alta fixação" autocomplete="off">
+          </div>
+        </section>
+
+        <section class="ui-section">
+          <h3 class="ui-label"><i class="fa-solid fa-tags text-workspace-accent"></i> Preços</h3>
+          <div class="grid grid-cols-2 gap-2">
+            <div class="col-span-2">
+              <label class="ui-label" for="priceBase">Preço Normal (De:)</label>
+              <input class="ui-input" id="priceBase" data-field="priceBase" data-mask="currency" type="text" inputmode="numeric" value="599,90">
+            </div>
+            <div>
+              <label class="ui-label" for="price3x">3x Cartão</label>
+              <input class="ui-input" id="price3x" data-field="price3x" data-mask="currency" type="text" inputmode="numeric" value="479,92">
+            </div>
+            <div>
+              <label class="ui-label" for="pricePix">PIX (Destaque)</label>
+              <input class="ui-input" id="pricePix" data-field="pricePix" data-mask="currency" type="text" inputmode="numeric" value="449,90">
+            </div>
+          </div>
+          <button type="button" id="btnCalcPrices" class="btn-ghost w-full mt-2 text-[10px]">
+            <i class="fa-solid fa-calculator"></i> Calcular descontos auto.
+          </button>
+        </section>
+
+        <section class="ui-section">
+          <div class="flex items-center justify-between mb-2">
+            <h3 class="ui-label mb-0"><i class="fa-solid fa-certificate text-workspace-accent"></i> Selo de Desconto</h3>
+            <label class="flex items-center gap-2 text-[10px] text-zinc-400 cursor-pointer">
+              <input type="checkbox" id="showSeal" class="toggle-switch">
+              Ativo
+            </label>
+          </div>
+          <div class="grid grid-cols-2 gap-2">
+            <div class="col-span-2">
+              <input class="ui-input" id="sealTop" data-field="sealTop" type="text" maxlength="150" value="OFERTA" placeholder="Topo do selo">
+            </div>
+            <div>
+              <input class="ui-input" id="ribbon" data-field="ribbon" type="text" maxlength="150" value="DESCONTO" placeholder="Faixa">
+            </div>
+            <div>
+              <input class="ui-input" id="discount" data-field="discount" data-mask="int" type="text" inputmode="numeric" value="25" placeholder="%">
+            </div>
+          </div>
+        </section>
+
+        <section class="ui-section">
+          <h3 class="ui-label"><i class="fa-solid fa-scale-balanced text-workspace-accent"></i> Rodapé Legal</h3>
+          <input class="ui-input mb-2" id="legalLeft" data-field="legalLeft" type="text" maxlength="150" value="Válido enquanto durar o estoque.">
+          <input class="ui-input" id="legalRight" data-field="legalRight" type="text" maxlength="150" value="Estoque limitado · Imagem ilustrativa">
+        </section>
+
+        <section class="ui-section">
+          <h3 class="ui-label"><i class="fa-solid fa-palette text-workspace-accent"></i> Tema Visual</h3>
+          <div class="grid grid-cols-3 gap-2">
+            <div>
+              <input class="theme-radio" type="radio" name="theme" id="themePadrao" value="padrao" checked>
+              <label class="theme-card" for="themePadrao">
+                <span class="h-8 w-8 rounded-full border-2 border-amber-300 bg-gradient-to-br from-red-500 to-red-900"></span>
+                <span class="text-[9px] font-bold uppercase">Padrão</span>
+              </label>
+            </div>
+            <div>
+              <input class="theme-radio" type="radio" name="theme" id="themeBlack" value="black">
+              <label class="theme-card" for="themeBlack">
+                <span class="h-8 w-8 rounded-full border-2 border-yellow-300 bg-gradient-to-br from-zinc-700 to-black"></span>
+                <span class="text-[9px] font-bold uppercase">Black</span>
+              </label>
+            </div>
+            <div>
+              <input class="theme-radio" type="radio" name="theme" id="themeNatal" value="natal">
+              <label class="theme-card" for="themeNatal">
+                <span class="h-8 w-8 rounded-full border-2 border-amber-200 bg-gradient-to-br from-red-600 to-emerald-700"></span>
+                <span class="text-[9px] font-bold uppercase">Natal</span>
+              </label>
+            </div>
+          </div>
+        </section>
+
+        <section class="ui-section">
+          <div class="flex items-center justify-between mb-2">
+            <h3 class="ui-label mb-0"><i class="fa-solid fa-up-down-left-right text-workspace-accent"></i> Layout</h3>
+            <button type="button" id="btnResetPositions" class="text-[10px] text-zinc-400 hover:text-amber-400 font-bold uppercase tracking-wider">Resetar</button>
+          </div>
+          <p class="text-[10px] text-zinc-500 leading-relaxed">
+            Arraste elementos no canvas. Handle dourado = redimensionar.
+          </p>
+          <div class="mt-3 space-y-1.5 text-[10px] text-zinc-400 font-mono">
+            <div class="flex justify-between"><span>Logo:</span><span id="posLogo" class="text-zinc-300">—</span></div>
+            <div class="flex justify-between"><span>Selo:</span><span id="posSeal" class="text-zinc-300">—</span></div>
+            <div class="flex justify-between"><span>Preço:</span><span id="posPrice" class="text-zinc-300">—</span></div>
+            <div class="flex justify-between"><span>Rodapé:</span><span id="posPlate" class="text-zinc-300">—</span></div>
+          </div>
+        </section>
+      </form>
+    </aside>
   </div>
-</section>
 
-<!-- ================= MÓDULO 2: CATÁLOGO PDF ================= -->
-<section id="moduloCatalogo" class="modulo" role="tabpanel" aria-labelledby="tabCatalogo">
-  <div class="grid grid-cols-1 lg:grid-cols-[300px_1fr]">
-    <aside class="order-2 border-zinc-800 bg-zinc-950 lg:order-1 lg:h-[calc(100vh-57px)] lg:overflow-y-auto lg:border-r lg:sticky lg:top-[57px]">
-      <header class="sticky top-0 z-10 border-b border-zinc-800 bg-zinc-950/95 px-5 py-4 backdrop-blur">
-        <h2 class="flex items-center gap-2 font-display text-lg uppercase tracking-wide">
-          <i class="fa-solid fa-layer-group text-amber-400" aria-hidden="true"></i> Categorias
-        </h2>
-        <p class="mt-1 text-[10px] font-medium text-zinc-500">Organize seu catálogo em seções</p>
-      </header>
-
-      <div class="space-y-4 p-5">
-        <div class="ui-panel">
-          <label class="ui-label" for="novaCategoriaNome"><i class="fa-solid fa-plus" aria-hidden="true"></i> Nova categoria</label>
+  <div id="moduloCatalogo" class="modulo w-full h-full" role="tabpanel">
+    <aside class="sidebar" aria-label="Categorias do catálogo">
+      <div class="sidebar-header">
+        <h2 class="text-xs font-bold uppercase tracking-wider text-zinc-400">Categorias</h2>
+      </div>
+      <div class="sidebar-content custom-scrollbar">
+        <div class="ui-section">
+          <label class="ui-label" for="novaCategoriaNome">Nova Categoria</label>
           <div class="flex gap-2">
-            <input class="ui-input flex-1" id="novaCategoriaNome" type="text" maxlength="60" placeholder="Ex: Lustres" autocomplete="off">
-            <button type="button" id="btnAddCategoria" class="btn-primary !px-3 !py-2.5" aria-label="Adicionar categoria">
-              <i class="fa-solid fa-plus" aria-hidden="true"></i>
-            </button>
+            <input class="ui-input flex-1" id="novaCategoriaNome" type="text" maxlength="60" placeholder="Ex: Lustres">
+            <button type="button" id="btnAddCategoria" class="btn-primary !px-3"><i class="fa-solid fa-plus"></i></button>
           </div>
-          <p class="ui-hint">Crie categorias como Lustres, Pendentes, Arandelas...</p>
         </div>
-
-        <div class="ui-panel">
-          <legend class="ui-legend"><i class="fa-solid fa-list" aria-hidden="true"></i> Categorias existentes</legend>
-          <div id="categoriasList" class="flex flex-col gap-2">
-            <p class="text-center text-[11px] font-medium text-zinc-600 py-3">Nenhuma categoria criada.</p>
-          </div>
+        <div id="categoriasList" class="flex flex-col gap-2 mt-4">
+          <p class="text-center text-[11px] text-zinc-600 py-3">Nenhuma categoria.</p>
         </div>
       </div>
     </aside>
 
-    <main class="order-1 lg:order-2 p-5 lg:p-6">
-      <header class="mb-5 flex flex-wrap items-center justify-between gap-3">
+    <main class="flex-1 overflow-y-auto custom-scrollbar p-6 bg-workspace-bg">
+      <header class="mb-6 flex flex-wrap items-center justify-between gap-3">
         <div>
-          <h2 class="flex items-center gap-2 font-display text-2xl uppercase tracking-wide">
-            <i class="fa-solid fa-book-open text-amber-400" aria-hidden="true"></i> Catálogo de Produtos
+          <h2 class="flex items-center gap-2 font-display text-2xl uppercase tracking-wide text-zinc-100">
+            <i class="fa-solid fa-book-open text-workspace-accent"></i> Catálogo de Produtos
           </h2>
-          <p id="catHeaderSubtitle" class="mt-1 text-xs font-medium text-zinc-500">Selecione ou crie uma categoria para começar.</p>
+          <p id="catHeaderSubtitle" class="mt-1 text-xs text-zinc-500">Selecione ou crie uma categoria.</p>
         </div>
-        <div class="flex flex-wrap items-center gap-2">
-          <button type="button" id="btnPreviewPdf" class="btn-secondary">
-            <i class="fa-solid fa-eye" aria-hidden="true"></i> Pré-visualizar PDF
-          </button>
-          <button type="button" id="btnDownloadPdf" class="btn-primary">
-            <i class="fa-solid fa-file-pdf" aria-hidden="true"></i> Baixar Catálogo PDF
-          </button>
+        <div class="flex gap-2">
+          <button type="button" id="btnPreviewPdf" class="btn-secondary"><i class="fa-solid fa-eye"></i> Preview</button>
+          <button type="button" id="btnDownloadPdf" class="btn-primary"><i class="fa-solid fa-file-pdf"></i> Baixar PDF</button>
         </div>
       </header>
 
-      <div id="catProdutoFormHost" class="mb-5">
-        <div class="ui-panel">
-          <legend class="ui-legend"><i class="fa-solid fa-circle-info text-amber-400" aria-hidden="true"></i> Status</legend>
-          <p id="catStatusMsg" class="text-xs font-medium text-zinc-400">Crie uma categoria para habilitar o cadastro de produtos.</p>
+      <div id="catProdutoFormHost" class="mb-6">
+        <div class="rounded-lg border border-workspace-border bg-workspace-panel p-4">
+          <p id="catStatusMsg" class="text-xs text-zinc-400">Crie uma categoria para habilitar o cadastro.</p>
         </div>
       </div>
 
-      <div id="produtosArea" class="hidden">
-        <div class="ui-panel mb-5">
-          <legend class="ui-legend">
-            <i class="fa-solid fa-plus-circle text-amber-400" aria-hidden="true"></i>
-            Adicionar produto à categoria <span id="catProdutoCategoriaLabel" class="text-amber-300"></span>
-          </legend>
-
-          <div class="mb-4 flex flex-wrap items-center gap-2 rounded-xl border border-dashed border-amber-400/40 bg-amber-400/5 px-3 py-2.5">
-            <i class="fa-solid fa-recycle text-amber-400" aria-hidden="true"></i>
-            <span class="flex-1 text-[11px] font-bold text-zinc-300">Reutilize dados dos anúncios já criados</span>
-            <button type="button" id="btnImportarAnuncio" class="btn-ghost !py-1.5 !text-[11px]">
-              <i class="fa-solid fa-file-import" aria-hidden="true"></i> Usar de anúncio
-            </button>
+      <div id="produtosArea" class="hidden space-y-6">
+        <div class="rounded-lg border border-workspace-border bg-workspace-panel p-5">
+          <h3 class="ui-label mb-4"><i class="fa-solid fa-plus-circle text-workspace-accent"></i> Adicionar Produto</h3>
+          
+          <div class="mb-4 flex items-center gap-2 rounded-lg border border-dashed border-workspace-accent/40 bg-workspace-accent/5 px-3 py-2.5">
+            <i class="fa-solid fa-recycle text-workspace-accent"></i>
+            <span class="flex-1 text-[11px] font-bold text-zinc-300">Reutilizar dados de encarte salvo</span>
+            <button type="button" id="btnImportarAnuncio" class="btn-ghost !py-1.5 !text-[11px]"><i class="fa-solid fa-file-import"></i> Importar</button>
           </div>
 
-          <div class="grid grid-cols-1 gap-4 md:grid-cols-[220px_1fr]">
+          <div class="grid grid-cols-1 gap-6 lg:grid-cols-[240px_1fr]">
             <div>
-              <label class="ui-label">
-                <i class="fa-solid fa-images text-amber-400" aria-hidden="true"></i>
-                Fotos do produto
-                <span class="ml-auto text-[9px] font-semibold normal-case tracking-normal text-zinc-500">Múltiplas imagens</span>
-              </label>
+              <label class="ui-label">Fotos do Produto</label>
               <input id="produtoFile" type="file" accept="image/*" multiple class="peer sr-only">
               <div id="fotosGrid" class="fotos-grid">
                 <label for="produtoFile" class="foto-add-btn" tabindex="0" aria-label="Adicionar fotos">
-                  <i class="fa-solid fa-plus text-lg text-amber-400" aria-hidden="true"></i>
+                  <i class="fa-solid fa-plus text-lg text-workspace-accent"></i>
                   <span class="text-[9px] font-bold text-zinc-300">Adicionar</span>
                 </label>
               </div>
-              <p class="ui-hint mt-2">
-                <i class="fa-solid fa-star text-amber-400" aria-hidden="true"></i>
-                Clique em <strong class="text-zinc-200">"Capa"</strong> para definir a foto principal. A primeira foto é usada no PDF.
-              </p>
             </div>
 
             <div class="space-y-3">
               <div>
-                <label class="ui-label" for="produtoNome"><i class="fa-solid fa-font" aria-hidden="true"></i> Nome do produto</label>
-                <input class="ui-input" id="produtoNome" type="text" maxlength="120" placeholder="Ex: Lustre Versailles Cristal" autocomplete="off">
+                <label class="ui-label" for="produtoNome">Nome do Produto</label>
+                <input class="ui-input" id="produtoNome" type="text" maxlength="120" placeholder="Ex: Lustre Versailles">
               </div>
               <div>
-                <label class="ui-label" for="produtoDescricao"><i class="fa-solid fa-align-left" aria-hidden="true"></i> Descrição</label>
-                <textarea class="ui-textarea" id="produtoDescricao" rows="4" maxlength="400" placeholder="Ex: 8 braços · cristal premium · acabamento dourado · bocal E14"></textarea>
+                <label class="ui-label" for="produtoDescricao">Descrição</label>
+                <textarea class="ui-input resize-none" id="produtoDescricao" rows="4" maxlength="400" placeholder="Ex: 8 braços · cristal premium"></textarea>
               </div>
-              <div class="flex gap-2">
-                <button type="button" id="btnSalvarProduto" class="btn-primary flex-1">
-                  <i class="fa-solid fa-floppy-disk" aria-hidden="true"></i> Adicionar produto
-                </button>
-                <button type="button" id="btnLimparProduto" class="btn-ghost">
-                  <i class="fa-solid fa-rotate-left" aria-hidden="true"></i> Limpar
-                </button>
+              <div class="flex gap-2 pt-2">
+                <button type="button" id="btnSalvarProduto" class="btn-primary flex-1"><i class="fa-solid fa-floppy-disk"></i> Salvar Produto</button>
+                <button type="button" id="btnLimparProduto" class="btn-ghost"><i class="fa-solid fa-rotate-left"></i> Limpar</button>
               </div>
             </div>
           </div>
         </div>
 
-        <div class="ui-panel">
-          <legend class="ui-legend">
-            <i class="fa-solid fa-boxes-stacked text-amber-400" aria-hidden="true"></i>
-            Produtos em <span id="catProdutosCategoriaLabel" class="text-amber-300"></span>
+        <div class="rounded-lg border border-workspace-border bg-workspace-panel p-5">
+          <h3 class="ui-label mb-4">
+            <i class="fa-solid fa-boxes-stacked text-workspace-accent"></i> Produtos
             <span id="catProdutosCount" class="ml-auto text-[10px] font-bold text-zinc-500"></span>
-          </legend>
+          </h3>
           <div id="produtosList" class="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5">
-            <p class="col-span-full text-center text-[11px] font-medium text-zinc-600 py-4">Nenhum produto cadastrado nesta categoria.</p>
+            <p class="col-span-full text-center text-[11px] text-zinc-600 py-4">Nenhum produto nesta categoria.</p>
           </div>
         </div>
       </div>
     </main>
   </div>
-</section>
 
-<!-- MODAL DE RECORTE -->
+</div>
+
 <dialog id="cropDialog" aria-labelledby="cropTitle">
-  <div class="w-[min(94vw,880px)] overflow-hidden rounded-2xl border border-zinc-800 bg-zinc-950 shadow-2xl">
-    <header class="flex items-center justify-between border-b border-zinc-800 px-5 py-4">
+  <div class="modal-content">
+    <header class="flex items-center justify-between border-b border-workspace-border px-5 py-4">
       <h2 id="cropTitle" class="flex items-center gap-2 font-display text-lg uppercase tracking-wide">
-        <i class="fa-solid fa-crop-simple text-amber-400" aria-hidden="true"></i> Enquadrar foto · 3:4
+        <i class="fa-solid fa-crop-simple text-workspace-accent"></i> Enquadrar foto · 3:4
       </h2>
-      <button type="button" id="btnCropClose" class="btn-ghost" aria-label="Fechar janela de recorte"><i class="fa-solid fa-xmark" aria-hidden="true"></i></button>
+      <button type="button" id="btnCropClose" class="btn-icon" aria-label="Fechar (Esc)"><i class="fa-solid fa-xmark"></i></button>
     </header>
-    <div class="crop-stage"><img id="cropImage" src="" alt="Imagem original aguardando recorte"></div>
-    <div class="flex flex-wrap items-center justify-center gap-2 border-t border-zinc-800 px-5 py-3">
-      <button type="button" class="btn-ghost" data-crop-action="zoom-in"><i class="fa-solid fa-magnifying-glass-plus" aria-hidden="true"></i> Zoom +</button>
-      <button type="button" class="btn-ghost" data-crop-action="zoom-out"><i class="fa-solid fa-magnifying-glass-minus" aria-hidden="true"></i> Zoom −</button>
-      <button type="button" class="btn-ghost" data-crop-action="rotate"><i class="fa-solid fa-rotate-right" aria-hidden="true"></i> Girar 90°</button>
-      <button type="button" class="btn-ghost" data-crop-action="flip"><i class="fa-solid fa-left-right" aria-hidden="true"></i> Espelhar</button>
-      <button type="button" class="btn-ghost" data-crop-action="reset"><i class="fa-solid fa-arrows-rotate" aria-hidden="true"></i> Resetar</button>
+    <div class="h-[50vh] bg-zinc-950 p-4 flex items-center justify-center">
+      <img id="cropImage" src="" alt="Imagem para recorte" class="max-h-full max-w-full block">
     </div>
-    <footer class="flex flex-col gap-2 border-t border-zinc-800 bg-zinc-900/60 px-5 py-4 sm:flex-row sm:justify-end">
-      <button type="button" id="btnCropCancel" class="btn-secondary sm:w-40">Cancelar</button>
-      <button type="button" id="btnCropApply" class="btn-primary sm:w-56"><i class="fa-solid fa-check" aria-hidden="true"></i> Aplicar recorte</button>
+    <div class="flex flex-wrap items-center justify-center gap-2 border-t border-workspace-border px-5 py-3">
+      <button type="button" class="btn-ghost" data-crop-action="zoom-in"><i class="fa-solid fa-magnifying-glass-plus"></i></button>
+      <button type="button" class="btn-ghost" data-crop-action="zoom-out"><i class="fa-solid fa-magnifying-glass-minus"></i></button>
+      <button type="button" class="btn-ghost" data-crop-action="rotate"><i class="fa-solid fa-rotate-right"></i></button>
+      <button type="button" class="btn-ghost" data-crop-action="flip"><i class="fa-solid fa-left-right"></i></button>
+      <button type="button" class="btn-ghost" data-crop-action="reset"><i class="fa-solid fa-arrows-rotate"></i></button>
+    </div>
+    <footer class="flex justify-end gap-2 border-t border-workspace-border bg-zinc-900/60 px-5 py-4">
+      <button type="button" id="btnCropCancel" class="btn-secondary w-32">Cancelar</button>
+      <button type="button" id="btnCropApply" class="btn-primary w-40"><i class="fa-solid fa-check"></i> Aplicar</button>
     </footer>
   </div>
 </dialog>
 
-<!-- MODAL: IMPORTAR DE ANÚNCIO -->
 <dialog id="importarAnuncioDialog" aria-labelledby="importarAnuncioTitle">
-  <div class="w-[min(96vw,900px)] overflow-hidden rounded-2xl border border-zinc-800 bg-zinc-950 shadow-2xl">
-    <header class="flex items-center justify-between border-b border-zinc-800 px-5 py-4">
+  <div class="modal-content w-[min(96vw,800px)]">
+    <header class="flex items-center justify-between border-b border-workspace-border px-5 py-4">
       <h2 id="importarAnuncioTitle" class="flex items-center gap-2 font-display text-lg uppercase tracking-wide">
-        <i class="fa-solid fa-recycle text-amber-400" aria-hidden="true"></i> Importar de Anúncio Salvo
+        <i class="fa-solid fa-recycle text-workspace-accent"></i> Importar de Encarte Salvo
       </h2>
-      <button type="button" id="btnImportarClose" class="btn-ghost" aria-label="Fechar modal de importação"><i class="fa-solid fa-xmark" aria-hidden="true"></i></button>
+      <button type="button" id="btnImportarClose" class="btn-icon" aria-label="Fechar (Esc)"><i class="fa-solid fa-xmark"></i></button>
     </header>
-
-    <div class="max-h-[70vh] overflow-y-auto bg-zinc-900/60 p-5">
-      <p class="mb-4 text-xs font-medium text-zinc-400">
-        <i class="fa-solid fa-circle-info text-amber-400" aria-hidden="true"></i>
-        Selecione um anúncio. O <strong class="text-zinc-200">nome</strong>, <strong class="text-zinc-200">descrição</strong> e <strong class="text-zinc-200">foto</strong> serão preenchidos automaticamente no formulário.
-      </p>
+    <div class="max-h-[60vh] overflow-y-auto bg-zinc-900/60 p-5 custom-scrollbar">
       <div id="importarAnuncioList" class="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4">
-        <p class="col-span-full text-center text-[11px] font-medium text-zinc-600 py-4">Carregando anúncios…</p>
+        <p class="col-span-full text-center text-[11px] text-zinc-600 py-4">Carregando…</p>
       </div>
     </div>
-
-    <footer class="flex justify-end border-t border-zinc-800 bg-zinc-900/60 px-5 py-4">
-      <button type="button" id="btnImportarCancelar" class="btn-secondary sm:w-40">Fechar</button>
+    <footer class="flex justify-end border-t border-workspace-border bg-zinc-900/60 px-5 py-4">
+      <button type="button" id="btnImportarCancelar" class="btn-secondary w-32">Fechar</button>
     </footer>
   </div>
 </dialog>
 
-<!-- MODAL PREVIEW PDF -->
 <dialog id="pdfPreviewDialog" aria-labelledby="pdfPreviewTitle">
-  <div class="w-[min(96vw,900px)] overflow-hidden rounded-2xl border border-zinc-800 bg-zinc-950 shadow-2xl">
-    <header class="flex items-center justify-between border-b border-zinc-800 px-5 py-4">
+  <div class="modal-content w-[min(96vw,900px)]">
+    <header class="flex items-center justify-between border-b border-workspace-border px-5 py-4">
       <h2 id="pdfPreviewTitle" class="flex items-center gap-2 font-display text-lg uppercase tracking-wide">
-        <i class="fa-solid fa-file-pdf text-amber-400" aria-hidden="true"></i> Pré-visualização do Catálogo
+        <i class="fa-solid fa-file-pdf text-workspace-accent"></i> Pré-visualização
       </h2>
-      <button type="button" id="btnPdfPreviewClose" class="btn-ghost" aria-label="Fechar pré-visualização"><i class="fa-solid fa-xmark" aria-hidden="true"></i></button>
+      <button type="button" id="btnPdfPreviewClose" class="btn-icon" aria-label="Fechar (Esc)"><i class="fa-solid fa-xmark"></i></button>
     </header>
-    <div class="max-h-[75vh] overflow-y-auto bg-zinc-900 p-5">
+    <div class="max-h-[75vh] overflow-y-auto bg-zinc-900 p-5 custom-scrollbar">
       <div id="pdfPreviewContent" class="mx-auto flex flex-col gap-4"></div>
     </div>
-    <footer class="flex flex-col gap-2 border-t border-zinc-800 bg-zinc-900/60 px-5 py-4 sm:flex-row sm:justify-end">
-      <button type="button" id="btnPdfPreviewDownload" class="btn-primary sm:w-56"><i class="fa-solid fa-download" aria-hidden="true"></i> Baixar PDF</button>
+    <footer class="flex justify-end gap-2 border-t border-workspace-border bg-zinc-900/60 px-5 py-4">
+      <button type="button" id="btnPdfPreviewDownload" class="btn-primary w-40"><i class="fa-solid fa-download"></i> Baixar PDF</button>
     </footer>
   </div>
 </dialog>
 
-<!-- OVERLAY DE PROCESSAMENTO -->
 <div id="progressOverlay" class="fixed inset-0 z-50 hidden place-items-center bg-zinc-950/90 p-6 backdrop-blur-sm">
-  <div class="w-[min(92vw,420px)] rounded-2xl border border-zinc-800 bg-zinc-900 p-6 text-center shadow-2xl" role="status" aria-live="polite">
-    <i class="fa-solid fa-circle-notch fa-spin text-3xl text-amber-400" aria-hidden="true"></i>
+  <div class="w-[min(92vw,420px)] rounded-xl border border-workspace-border bg-workspace-panel p-6 text-center shadow-2xl" role="status" aria-live="polite">
+    <i class="fa-solid fa-circle-notch fa-spin text-3xl text-workspace-accent" aria-hidden="true"></i>
     <p id="progressLabel" class="mt-4 text-sm font-bold text-zinc-100">Renderizando…</p>
     <div class="mt-4 h-2 w-full overflow-hidden rounded-full bg-zinc-800">
-      <div id="progressFill" class="progress-fill h-full rounded-full bg-gradient-to-r from-amber-400 to-amber-500"></div>
+      <div id="progressFill" class="h-full rounded-full bg-workspace-accent transition-all duration-300" style="width: 0%"></div>
     </div>
     <p id="progressHint" class="mt-3 text-[10px] font-medium uppercase tracking-widest text-zinc-500">Aguarde…</p>
   </div>
 </div>
 
-<div id="exportHost" class="export-host" aria-hidden="true"></div>
+<div id="exportHost" class="fixed top-0 left-[-10000px] w-[450px] h-[600px] pointer-events-none z-[-1]" aria-hidden="true"></div>
 <div id="pdfHost" aria-hidden="true"></div>
 <div id="toastArea" class="pointer-events-none fixed bottom-5 right-5 z-[60] flex flex-col gap-2" aria-live="polite" aria-atomic="false"></div>
 
-<!-- ================= CDN: SCRIPTS ================= -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.6.2/cropper.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
@@ -701,7 +778,7 @@
   const EXPORT_SCALE = 3;
   const DB_CONFIG = {
     name: 'EncarteStudioDB',
-    version: 2,
+    version: 4,
     stores: { anuncios: 'anuncios', config: 'config', categorias: 'categorias', produtos: 'produtos' }
   };
 
@@ -711,10 +788,41 @@
     { id: 'natal', label: 'Especial de Natal', file: '03-especial-natal' }
   ];
 
+  const DEFAULT_POSITIONS = {
+    logo: { top: 20, left: 137.5 },
+    seal: { top: 80, left: 16 },
+    pricebox: { top: 330, left: 16 },
+    plate: { top: 500, left: 16 }
+  };
+
+  const DEFAULT_SIZES = {
+    logo: { width: 175 },
+    seal: { width: 132 },
+    pricebox: { width: 230 },
+    plate: { width: 418 }
+  };
+
+  const SIZE_LIMITS = {
+    logo: { min: 80, max: 350 },
+    seal: { min: 80, max: 220 },
+    pricebox: { min: 160, max: 400 },
+    plate: { min: 200, max: 418 }
+  };
+
   const sanitize = (value, max = 120) => String(value ?? '').replace(/[\u0000-\u001F\u007F<>]/g, '').slice(0, max);
   const onlyDigits = (value) => String(value ?? '').replace(/\D+/g, '');
   const slugify = (value) => sanitize(value, 60).normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '').slice(0, 40) || 'encarte';
   const yieldToUI = () => new Promise((resolve) => requestAnimationFrame(() => setTimeout(resolve, 0)));
+
+  const debounce = (fn, wait = 300) => {
+    let timeoutId;
+    const debounced = (...args) => {
+      clearTimeout(timeoutId);
+      timeoutId = setTimeout(() => fn(...args), wait);
+    };
+    debounced.cancel = () => clearTimeout(timeoutId);
+    return debounced;
+  };
 
   const formatCurrencyMask = (raw) => {
     const digits = onlyDigits(raw).slice(0, 9);
@@ -773,35 +881,55 @@
   const state = {
     currentAnuncioId: null, createdAt: null, theme: 'padrao', image: DEMO_IMAGE, source: null,
     logo: null, logoName: '', showLogo: true, showSeal: false,
+    positions: {
+      logo: { ...DEFAULT_POSITIONS.logo },
+      seal: { ...DEFAULT_POSITIONS.seal },
+      pricebox: { ...DEFAULT_POSITIONS.pricebox },
+      plate: { ...DEFAULT_POSITIONS.plate }
+    },
+    sizes: {
+      logo: { ...DEFAULT_SIZES.logo },
+      seal: { ...DEFAULT_SIZES.seal },
+      pricebox: { ...DEFAULT_SIZES.pricebox },
+      plate: { ...DEFAULT_SIZES.plate }
+    },
     fields: {
       sealTop: 'OFERTA', ribbon: 'DESCONTO', discount: '25', priceBase: '599,90', price3x: '479,92', pricePix: '449,90',
       title: 'Perfume Noir Intense', subtitle: 'Eau de Parfum · 100ml · Alta fixação',
-      legalLeft: 'Válido enquanto durar o estoque. Poucas Unidades!', legalRight: 'Valores com lâmpadas não inclusas.'
+      legalLeft: 'Válido enquanto durar o estoque. Poucas Unidades!', legalRight: 'Estoque limitado · Imagem ilustrativa'
     },
     cat: { categoriaAtivaId: null, produtoImagens: [], editandoProdutoId: null }
   };
 
   const dom = {
     form: $('#controlForm'), flyer: $('#flyer'), flyerImage: $('#flyerImage'), flyerLogo: $('#flyerLogo'),
-    priceBox: $('#priceBox'), seal: $('.seal'), previewArea: $('#previewArea'), stageFrame: $('#stageFrame'),
+    priceBox: $('#priceBox'), seal: $('.seal'), plate: $('#plate'),
+    previewArea: $('#previewArea'), stageFrame: $('#stageFrame'),
     fileInput: $('#productFile'), fileName: $('#fileName'), btnRecrop: $('#btnRecrop'), btnResetImg: $('#btnResetImage'),
     btnCalc: $('#btnCalcPrices'), btnJpg: $('#btnDownloadJpg'), btnZip: $('#btnDownloadZip'),
     cropDialog: $('#cropDialog'), cropImage: $('#cropImage'), exportHost: $('#exportHost'),
     overlay: $('#progressOverlay'), progressLbl: $('#progressLabel'), progressFill: $('#progressFill'), progressHint: $('#progressHint'),
     toastArea: $('#toastArea'), logoInput: $('#logoFile'), logoName: $('#logoName'), showLogo: $('#showLogo'),
     btnRemoveLogo: $('#btnRemoveLogo'), showSeal: $('#showSeal'), anunciosList: $('#anunciosList'),
-    btnSaveAnuncio: $('#btnSaveAnuncio'), btnNewAnuncio: $('#btnNewAnuncio'),
+    btnSaveAnuncio: $('#btnSaveAnuncio'), btnNewAnuncio: $('#btnNewAnuncio'), docTitle: $('#docTitle'),
     categoriasList: $('#categoriasList'), novaCategoriaNome: $('#novaCategoriaNome'), btnAddCategoria: $('#btnAddCategoria'),
     produtosArea: $('#produtosArea'), catHeaderSubtitle: $('#catHeaderSubtitle'), catStatusMsg: $('#catStatusMsg'),
-    catProdutoFormHost: $('#catProdutoFormHost'), catProdutoCategoriaLabel: $('#catProdutoCategoriaLabel'),
-    catProdutosCategoriaLabel: $('#catProdutosCategoriaLabel'), catProdutosCount: $('#catProdutosCount'),
+    catProdutoFormHost: $('#catProdutoFormHost'),
+    catProdutosCount: $('#catProdutosCount'),
     produtoFile: $('#produtoFile'), fotosGrid: $('#fotosGrid'), produtoNome: $('#produtoNome'), produtoDescricao: $('#produtoDescricao'),
     btnSalvarProduto: $('#btnSalvarProduto'), btnLimparProduto: $('#btnLimparProduto'), produtosList: $('#produtosList'),
     btnDownloadPdf: $('#btnDownloadPdf'), btnPreviewPdf: $('#btnPreviewPdf'), pdfHost: $('#pdfHost'),
     pdfPreviewDialog: $('#pdfPreviewDialog'), pdfPreviewContent: $('#pdfPreviewContent'),
     btnPdfPreviewClose: $('#btnPdfPreviewClose'), btnPdfPreviewDownload: $('#btnPdfPreviewDownload'),
     btnImportarAnuncio: $('#btnImportarAnuncio'), importarAnuncioDialog: $('#importarAnuncioDialog'),
-    importarAnuncioList: $('#importarAnuncioList'), btnImportarClose: $('#btnImportarClose'), btnImportarCancelar: $('#btnImportarCancelar')
+    importarAnuncioList: $('#importarAnuncioList'), btnImportarClose: $('#btnImportarClose'), btnImportarCancelar: $('#btnImportarCancelar'),
+    autoSaveIndicator: $('#autoSaveIndicator'),
+    autoSaveText: $('#autoSaveText'),
+    btnResetPositions: $('#btnResetPositions'),
+    posLogo: $('#posLogo'),
+    posSeal: $('#posSeal'),
+    posPrice: $('#posPrice'),
+    posPlate: $('#posPlate')
   };
 
   const bindings = new Map();
@@ -846,8 +974,218 @@
   const toggleSeal = (visible) => { state.showSeal = visible; dom.seal.classList.toggle('seal--hidden', !visible); };
   const toggleLogo = (visible) => { state.showLogo = visible; dom.flyerLogo.classList.toggle('logo--hidden', !visible || !state.logo); };
 
+  const applyLayout = () => {
+    const { positions, sizes } = state;
+    
+    dom.flyerLogo.style.top = `${positions.logo.top}px`;
+    dom.flyerLogo.style.left = `${positions.logo.left}px`;
+    dom.flyerLogo.style.width = `${sizes.logo.width}px`;
+    dom.flyerLogo.style.height = 'auto';
+    dom.flyerLogo.style.transform = 'none';
+    
+    dom.seal.style.top = `${positions.seal.top}px`;
+    dom.seal.style.left = `${positions.seal.left}px`;
+    dom.seal.style.width = `${sizes.seal.width}px`;
+    dom.seal.style.height = `${sizes.seal.width}px`;
+    
+    dom.priceBox.style.top = `${positions.pricebox.top}px`;
+    dom.priceBox.style.left = `${positions.pricebox.left}px`;
+    dom.priceBox.style.width = `${sizes.pricebox.width}px`;
+    dom.priceBox.style.bottom = 'auto';
+    dom.priceBox.style.right = 'auto';
+    
+    dom.plate.style.top = `${positions.plate.top}px`;
+    dom.plate.style.left = `${positions.plate.left}px`;
+    dom.plate.style.width = `${sizes.plate.width}px`;
+    dom.plate.style.bottom = 'auto';
+    dom.plate.style.right = 'auto';
+    
+    if (dom.posLogo) dom.posLogo.textContent = `${Math.round(positions.logo.left)}, ${Math.round(positions.logo.top)} · ${Math.round(sizes.logo.width)}px`;
+    if (dom.posSeal) dom.posSeal.textContent = `${Math.round(positions.seal.left)}, ${Math.round(positions.seal.top)} · ${Math.round(sizes.seal.width)}px`;
+    if (dom.posPrice) dom.posPrice.textContent = `${Math.round(positions.pricebox.left)}, ${Math.round(positions.pricebox.top)} · ${Math.round(sizes.pricebox.width)}px`;
+    if (dom.posPlate) dom.posPlate.textContent = `${Math.round(positions.plate.left)}, ${Math.round(positions.plate.top)} · ${Math.round(sizes.plate.width)}px`;
+  };
+
+  const DragDropManager = {
+    mode: null,
+    activeElement: null,
+    activeKey: null,
+    handle: null,
+    startX: 0,
+    startY: 0,
+    startTop: 0,
+    startLeft: 0,
+    startWidth: 0,
+    scale: 1,
+
+    init() {
+      const draggables = $$('[data-draggable]', dom.flyer);
+      draggables.forEach((el) => {
+        el.addEventListener('pointerdown', (e) => {
+          if (e.target.hasAttribute('data-resize-handle')) return;
+          this._onDragStart(e, el);
+        });
+      });
+      
+      $$('[data-resize-handle]', dom.flyer).forEach((handle) => {
+        handle.addEventListener('pointerdown', (e) => {
+          const key = handle.dataset.for;
+          const element = $(`[data-draggable="${key}"]`, dom.flyer);
+          if (element) this._onResizeStart(e, element, handle, key);
+        });
+      });
+      
+      document.addEventListener('pointermove', (e) => this._onPointerMove(e));
+      document.addEventListener('pointerup', (e) => this._onPointerUp(e));
+      document.addEventListener('pointercancel', (e) => this._onPointerUp(e));
+      
+      if (dom.btnResetPositions) {
+        dom.btnResetPositions.addEventListener('click', () => this.resetLayout());
+      }
+    },
+
+    _onDragStart(e, element) {
+      if (e.button !== 0 && e.pointerType !== 'touch') return;
+      
+      e.preventDefault();
+      e.stopPropagation();
+      
+      this.mode = 'drag';
+      this.activeElement = element;
+      this.activeKey = element.dataset.draggable;
+      
+      element.setPointerCapture(e.pointerId);
+      
+      const stageStyle = getComputedStyle(dom.stageFrame);
+      this.scale = parseFloat(stageStyle.getPropertyValue('--ps')) || 1;
+      
+      this.startX = e.clientX;
+      this.startY = e.clientY;
+      this.startTop = state.positions[this.activeKey].top;
+      this.startLeft = state.positions[this.activeKey].left;
+      
+      element.classList.add('is-dragging');
+    },
+
+    _onResizeStart(e, element, handle, key) {
+      if (e.button !== 0 && e.pointerType !== 'touch') return;
+      
+      e.preventDefault();
+      e.stopPropagation();
+      
+      this.mode = 'resize';
+      this.activeElement = element;
+      this.activeKey = key;
+      this.handle = handle;
+      
+      handle.setPointerCapture(e.pointerId);
+      
+      const stageStyle = getComputedStyle(dom.stageFrame);
+      this.scale = parseFloat(stageStyle.getPropertyValue('--ps')) || 1;
+      
+      this.startX = e.clientX;
+      this.startY = e.clientY;
+      this.startWidth = state.sizes[key].width;
+      
+      element.classList.add('is-resizing');
+    },
+
+    _onPointerMove(e) {
+      if (!this.activeElement || !this.mode) return;
+      
+      e.preventDefault();
+      
+      const deltaX = (e.clientX - this.startX) / this.scale;
+      const deltaY = (e.clientY - this.startY) / this.scale;
+      
+      if (this.mode === 'drag') {
+        this._onDragMove(deltaX, deltaY);
+      } else if (this.mode === 'resize') {
+        this._onResizeMove(deltaX, deltaY);
+      }
+    },
+
+    _onDragMove(deltaX, deltaY) {
+      let newLeft = this.startLeft + deltaX;
+      let newTop = this.startTop + deltaY;
+      
+      const elRect = this.activeElement.getBoundingClientRect();
+      const elWidth = elRect.width / this.scale;
+      const elHeight = elRect.height / this.scale;
+      
+      newLeft = Math.max(0, Math.min(CANVAS_W - elWidth, newLeft));
+      newTop = Math.max(0, Math.min(CANVAS_H - elHeight, newTop));
+      
+      state.positions[this.activeKey].left = newLeft;
+      state.positions[this.activeKey].top = newTop;
+      
+      applyLayout();
+    },
+
+    _onResizeMove(deltaX, deltaY) {
+      const limits = SIZE_LIMITS[this.activeKey];
+      let newWidth = this.startWidth + deltaX;
+      
+      if (this.activeKey === 'seal') {
+        const maxDelta = Math.max(Math.abs(deltaX), Math.abs(deltaY));
+        const sign = (deltaX + deltaY) >= 0 ? 1 : -1;
+        newWidth = this.startWidth + (maxDelta * sign);
+      }
+      
+      newWidth = Math.max(limits.min, Math.min(limits.max, newWidth));
+      
+      state.sizes[this.activeKey].width = newWidth;
+      
+      const currentLeft = state.positions[this.activeKey].left;
+      if (currentLeft + newWidth > CANVAS_W) {
+        state.positions[this.activeKey].left = CANVAS_W - newWidth;
+      }
+      
+      applyLayout();
+    },
+
+    _onPointerUp(e) {
+      if (!this.activeElement) return;
+      
+      this.activeElement.classList.remove('is-dragging', 'is-resizing');
+      
+      try {
+        if (this.mode === 'drag') {
+          this.activeElement.releasePointerCapture(e.pointerId);
+        } else if (this.mode === 'resize' && this.handle) {
+          this.handle.releasePointerCapture(e.pointerId);
+        }
+      } catch (err) {}
+      
+      this.activeElement = null;
+      this.activeKey = null;
+      this.handle = null;
+      this.mode = null;
+      
+      AutoSaveManager.schedule();
+    },
+
+    resetLayout() {
+      state.positions = {
+        logo: { ...DEFAULT_POSITIONS.logo },
+        seal: { ...DEFAULT_POSITIONS.seal },
+        pricebox: { ...DEFAULT_POSITIONS.pricebox },
+        plate: { ...DEFAULT_POSITIONS.plate }
+      };
+      state.sizes = {
+        logo: { ...DEFAULT_SIZES.logo },
+        seal: { ...DEFAULT_SIZES.seal },
+        pricebox: { ...DEFAULT_SIZES.pricebox },
+        plate: { ...DEFAULT_SIZES.plate }
+      };
+      applyLayout();
+      AutoSaveManager.schedule();
+      toast('Layout resetado para o padrão.', 'info');
+    }
+  };
+
   const initTabs = () => {
-    const tabs = $$('.nav-tab');
+    const tabs = $$('.tab-btn');
     tabs.forEach((tab) => {
       tab.addEventListener('click', () => {
         const target = tab.dataset.modulo;
@@ -856,9 +1194,12 @@
           t.classList.toggle('active', isActive);
           t.setAttribute('aria-selected', String(isActive));
         });
+        
         $$('.modulo').forEach((m) => m.classList.remove('active'));
+        
         const panel = $(`#modulo${target.charAt(0).toUpperCase() + target.slice(1)}`);
         if (panel) panel.classList.add('active');
+        
         if (target === 'encarte') fitPreview();
       });
     });
@@ -990,9 +1331,25 @@
   const StorageManager = {
     getCurrentState() {
       return {
-        id: state.currentAnuncioId || Date.now(), name: state.fields.title || 'Sem nome',
+        id: state.currentAnuncioId || Date.now(), 
+        name: dom.docTitle.value || 'Sem nome',
         createdAt: state.currentAnuncioId ? state.createdAt : new Date().toISOString(),
-        theme: state.theme, fields: { ...state.fields }, image: state.image, showSeal: state.showSeal
+        theme: state.theme, 
+        fields: { ...state.fields }, 
+        image: state.image, 
+        showSeal: state.showSeal,
+        positions: {
+          logo: { ...state.positions.logo },
+          seal: { ...state.positions.seal },
+          pricebox: { ...state.positions.pricebox },
+          plate: { ...state.positions.plate }
+        },
+        sizes: {
+          logo: { ...state.sizes.logo },
+          seal: { ...state.sizes.seal },
+          pricebox: { ...state.sizes.pricebox },
+          plate: { ...state.sizes.plate }
+        }
       };
     },
     async saveCurrent() {
@@ -1012,16 +1369,44 @@
     async loadAll() { try { return await DB.getAll(DB_CONFIG.stores.anuncios); } catch (error) { return []; } },
     async deleteRecord(id) { try { return await DB.delete(DB_CONFIG.stores.anuncios, id); } catch (error) { return false; } },
     applyToState(anuncio) {
-      state.currentAnuncioId = anuncio.id; state.createdAt = anuncio.createdAt; state.theme = anuncio.theme;
-      state.fields = { ...anuncio.fields }; state.image = anuncio.image || DEMO_IMAGE; state.showSeal = anuncio.showSeal ?? false;
+      state.currentAnuncioId = anuncio.id; 
+      state.createdAt = anuncio.createdAt; 
+      state.theme = anuncio.theme;
+      state.fields = { ...anuncio.fields }; 
+      state.image = anuncio.image || DEMO_IMAGE; 
+      state.showSeal = anuncio.showSeal ?? false;
+      
+      state.positions = {
+        logo: { ...DEFAULT_POSITIONS.logo, ...(anuncio.positions?.logo || {}) },
+        seal: { ...DEFAULT_POSITIONS.seal, ...(anuncio.positions?.seal || {}) },
+        pricebox: { ...DEFAULT_POSITIONS.pricebox, ...(anuncio.positions?.pricebox || {}) },
+        plate: { ...DEFAULT_POSITIONS.plate, ...(anuncio.positions?.plate || {}) }
+      };
+      
+      state.sizes = {
+        logo: { ...DEFAULT_SIZES.logo, ...(anuncio.sizes?.logo || {}) },
+        seal: { ...DEFAULT_SIZES.seal, ...(anuncio.sizes?.seal || {}) },
+        pricebox: { ...DEFAULT_SIZES.pricebox, ...(anuncio.sizes?.pricebox || {}) },
+        plate: { ...DEFAULT_SIZES.plate, ...(anuncio.sizes?.plate || {}) }
+      };
+      
+      dom.docTitle.value = anuncio.name || 'Encarte';
       dom.flyerImage.src = state.image;
       if (state.logo) { dom.flyerLogo.src = state.logo; dom.logoName.textContent = state.logoName || 'Logo carregada.'; }
       else { dom.flyerLogo.src = ''; dom.logoName.textContent = 'Nenhuma logo enviada.'; }
-      Object.keys(state.fields).forEach((key) => { const input = $(`[data-field="${key}"]`); if (input) input.value = state.fields[key]; });
+      Object.keys(state.fields).forEach((key) => { 
+        const input = $(`[data-field="${key}"]`); 
+        if (input) input.value = state.fields[key]; 
+      });
       const themeRadio = $(`input[name="theme"][value="${state.theme}"]`);
       if (themeRadio) themeRadio.checked = true;
-      dom.showLogo.checked = state.showLogo; dom.showSeal.checked = state.showSeal;
-      applyTheme(state.theme); toggleLogo(state.showLogo); toggleSeal(state.showSeal); scheduleRender();
+      dom.showLogo.checked = state.showLogo; 
+      dom.showSeal.checked = state.showSeal;
+      applyTheme(state.theme); 
+      toggleLogo(state.showLogo); 
+      toggleSeal(state.showSeal);
+      applyLayout();
+      scheduleRender();
     }
   };
 
@@ -1062,7 +1447,7 @@
   };
 
   const setProgress = (percent, label, hint) => {
-    dom.progressFill.style.setProperty('--progress', `${Math.min(100, Math.max(0, percent))}%`);
+    dom.progressFill.style.width = `${Math.min(100, Math.max(0, percent))}%`;
     if (label) dom.progressLbl.textContent = label;
     if (hint) dom.progressHint.textContent = hint;
   };
@@ -1078,11 +1463,10 @@
   };
 
   const fitPreview = () => {
+    if (!dom.previewArea || !dom.stageFrame) return;
     const { width, height } = dom.previewArea.getBoundingClientRect();
-    const scale = Math.max(0.35, Math.min((width - 56) / CANVAS_W, (height - 140) / CANVAS_H, 1.25));
+    const scale = Math.max(0.35, Math.min((width - 64) / CANVAS_W, (height - 64) / CANVAS_H, 1.5));
     dom.stageFrame.style.setProperty('--ps', String(scale));
-    dom.stageFrame.style.setProperty('--pw', `${CANVAS_W * scale}px`);
-    dom.stageFrame.style.setProperty('--ph', `${CANVAS_H * scale}px`);
   };
 
   let cropper = null, scaleX = 1;
@@ -1138,21 +1522,80 @@
     } catch (error) { toast('Erro ao processar a logo.', 'error'); }
   };
 
+  // CORREÇÃO CRÍTICA: Função de exportação reescrita para garantir renderização completa
   const buildExportNode = (themeId) => {
-    const clone = dom.flyer.cloneNode(true); clone.removeAttribute('id');
+    const clone = dom.flyer.cloneNode(true); 
+    clone.removeAttribute('id');
+    
+    // Remove IDs duplicados
     $$('[id]', clone).forEach((node) => node.removeAttribute('id'));
-    clone.classList.remove(...THEMES.map((t) => `theme-${t.id}`)); clone.classList.add(`theme-${themeId}`);
+    
+    // Aplica tema
+    clone.classList.remove(...THEMES.map((t) => `theme-${t.id}`)); 
+    clone.classList.add(`theme-${themeId}`);
+    
+    // CORREÇÃO: Remove overflow:hidden temporariamente para html2canvas
+    clone.style.overflow = 'visible';
+    
+    // Remove elementos de UI de edição
+    $$('.draggable', clone).forEach((el) => {
+      el.classList.remove('draggable', 'is-dragging', 'is-resizing');
+      el.style.cursor = 'default';
+    });
+    $$('[data-resize-handle]', clone).forEach((el) => el.remove());
+    
+    // CORREÇÃO: Aplica o scrim background explicitamente
+    const scrim = clone.querySelector('.flyer__scrim');
+    if (scrim) {
+      const computedStyle = getComputedStyle(dom.flyer);
+      const scrimBg = computedStyle.getPropertyValue('--scrim');
+      scrim.style.background = scrimBg;
+    }
+    
     return clone;
   };
 
   const renderThemeToCanvas = async (themeId) => {
-    const node = buildExportNode(themeId); dom.exportHost.appendChild(node);
+    const node = buildExportNode(themeId); 
+    dom.exportHost.appendChild(node);
+    
     try {
+      // Aguarda imagens carregarem
       const images = $$('img', node);
-      await Promise.all(images.map((img) => img.decode?.().catch(() => {})));
+      await Promise.all(images.map((img) => {
+        if (img.complete) return Promise.resolve();
+        return new Promise((resolve) => {
+          img.onload = resolve;
+          img.onerror = resolve;
+        });
+      }));
+      
       await yieldToUI();
-      return await html2canvas(node, { scale: EXPORT_SCALE, width: CANVAS_W, height: CANVAS_H, backgroundColor: '#000000', useCORS: true, allowTaint: false, logging: false, removeContainer: true, imageTimeout: 15000 });
-    } finally { node.remove(); }
+      
+      // CORREÇÃO: Configuração otimizada para html2canvas
+      const canvas = await html2canvas(node, {
+        scale: EXPORT_SCALE,
+        width: CANVAS_W,
+        height: CANVAS_H,
+        backgroundColor: '#000000',
+        useCORS: true,
+        allowTaint: false,
+        logging: false,
+        removeContainer: true,
+        imageTimeout: 15000,
+        onclone: (clonedDoc) => {
+          // Garante que o clone tenha as fontes carregadas
+          const clonedFlyer = clonedDoc.querySelector('.flyer');
+          if (clonedFlyer) {
+            clonedFlyer.style.overflow = 'visible';
+          }
+        }
+      });
+      
+      return canvas;
+    } finally { 
+      node.remove(); 
+    }
   };
 
   const canvasToBlob = (canvas) => new Promise((resolve, reject) => {
@@ -1160,12 +1603,16 @@
   });
 
   const triggerDownload = (blob, filename) => {
-    const url = URL.createObjectURL(blob); const anchor = document.createElement('a');
-    anchor.href = url; anchor.download = filename; document.body.appendChild(anchor); anchor.click(); anchor.remove();
+    const url = URL.createObjectURL(blob); 
+    const anchor = document.createElement('a');
+    anchor.href = url; 
+    anchor.download = filename; 
+    document.body.appendChild(anchor); 
+    anchor.click(); 
+    anchor.remove();
     setTimeout(() => URL.revokeObjectURL(url), 5000);
   };
 
-  // CORREÇÃO: Verificação correta da biblioteca jsPDF (window.jspdf.jsPDF)
   const ensureLibs = (...libs) => {
     const missing = libs.filter((lib) => {
       if (lib === 'jsPDF') return typeof window.jspdf === 'undefined' || typeof window.jspdf.jsPDF === 'undefined';
@@ -1175,27 +1622,43 @@
     return true;
   };
 
+  const getExportFilename = () => {
+    const productName = state.fields.title?.trim() || 'encarte';
+    return slugify(productName);
+  };
+
   const exportSingle = async () => {
     if (!ensureLibs('html2canvas')) return;
     lockActions(true);
     const currentTheme = THEMES.find((t) => t.id === state.theme);
     toggleOverlay(true, `Renderizando ${currentTheme.label}…`, 'Alta resolução · scale 3×');
     try {
-      await document.fonts.ready; setProgress(30, 'Compondo camadas em 3×…');
+      await document.fonts.ready; 
+      setProgress(30, 'Compondo camadas em 3×…');
       const canvas = await renderThemeToCanvas(state.theme);
       setProgress(80, 'Codificando JPG…');
       const blob = await canvasToBlob(canvas);
-      triggerDownload(blob, `${slugify(state.fields.title)}.jpg`);
-      setProgress(100, 'Concluído!'); toast('Encarte JPG baixado (1350×1800).', 'success');
-    } catch (error) { toast('Falha na exportação do encarte.', 'error'); }
-    finally { toggleOverlay(false); lockActions(false); }
+      const filename = `${getExportFilename()}.jpg`;
+      triggerDownload(blob, filename);
+      setProgress(100, 'Concluído!'); 
+      toast(`"${filename}" baixado (1350×1800).`, 'success');
+    } catch (error) { 
+      console.error('Erro na exportação:', error);
+      toast('Falha na exportação do encarte.', 'error'); 
+    } finally { 
+      toggleOverlay(false); 
+      lockActions(false); 
+    }
   };
 
   const exportBatchZip = async () => {
     if (!ensureLibs('html2canvas', 'JSZip')) return;
-    lockActions(true); toggleOverlay(true, 'Iniciando lote…', '3 temas em alta resolução');
+    lockActions(true); 
+    toggleOverlay(true, 'Iniciando lote…', '3 temas em alta resolução');
     try {
-      await document.fonts.ready; const zip = new JSZip(); const slug = slugify(state.fields.title);
+      await document.fonts.ready; 
+      const zip = new JSZip(); 
+      const slug = getExportFilename();
       for (const [index, theme] of THEMES.entries()) {
         setProgress((index / THEMES.length) * 75, `Renderizando ${theme.label} (${index + 1}/3)…`);
         await yieldToUI();
@@ -1206,62 +1669,261 @@
       zip.file('LEIA-ME.txt', `Encarte Studio — pacote de ofertas\r\nProduto: ${state.fields.title}\r\nGerado em: ${new Date().toLocaleString('pt-BR')}\r\nResolução: ${CANVAS_W * EXPORT_SCALE}x${CANVAS_H * EXPORT_SCALE}px\r\nFormato: JPG qualidade 95%\r\n`);
       const blob = await zip.generateAsync({ type: 'blob', compression: 'STORE' }, (meta) => setProgress(75 + meta.percent * 0.25, `Compactando ZIP… ${meta.percent.toFixed(0)}%`));
       triggerDownload(blob, `encartes-${slug}-combo.zip`);
-      setProgress(100, 'Pacote pronto!'); toast('Combo com 3 temas baixado em .ZIP.', 'success');
-    } catch (error) { toast('Falha ao gerar o pacote ZIP.', 'error'); }
-    finally { toggleOverlay(false); lockActions(false); }
+      setProgress(100, 'Pacote pronto!'); 
+      toast('Combo com 3 temas baixado em .ZIP.', 'success');
+    } catch (error) { 
+      console.error('Erro no ZIP:', error);
+      toast('Falha ao gerar o pacote ZIP.', 'error'); 
+    } finally { 
+      toggleOverlay(false); 
+      lockActions(false); 
+    }
   };
 
   const renderAnunciosList = async () => {
     const anuncios = await StorageManager.loadAll();
-    if (anuncios.length === 0) { dom.anunciosList.innerHTML = '<p class="col-span-3 text-center text-[11px] font-medium text-zinc-600 py-4">Nenhum anúncio salvo ainda.</p>'; return; }
+    if (anuncios.length === 0) { 
+      dom.anunciosList.innerHTML = '<p class="col-span-2 text-center text-[10px] text-zinc-600 py-4">Nenhum encarte salvo.</p>'; 
+      return; 
+    }
     anuncios.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
     dom.anunciosList.innerHTML = anuncios.map((anuncio) => `
       <div class="anuncio-item group" data-anuncio-id="${anuncio.id}">
-        <img class="anuncio-item__thumb" src="${anuncio.image}" alt="Thumbnail do anúncio" loading="lazy">
-        <div class="anuncio-item__info">
-          <p class="anuncio-item__name" title="${sanitize(anuncio.name, 40)}">${sanitize(anuncio.name, 40)}</p>
-          <p class="anuncio-item__meta">${new Date(anuncio.createdAt).toLocaleDateString('pt-BR')}</p>
+        <img class="anuncio-item__thumb" src="${anuncio.image}" alt="Thumbnail" loading="lazy">
+        <div class="flex flex-col min-w-0">
+          <p class="truncate text-[10px] font-bold text-zinc-100" title="${sanitize(anuncio.name, 40)}">${sanitize(anuncio.name, 40)}</p>
+          <p class="text-[9px] text-zinc-500">${new Date(anuncio.createdAt).toLocaleDateString('pt-BR')}</p>
         </div>
-        <div class="anuncio-item__actions">
-          <button type="button" class="btn-action-mini" data-action="load" data-id="${anuncio.id}" aria-label="Carregar anúncio" title="Carregar"><i class="fa-solid fa-folder-open" aria-hidden="true"></i></button>
-          <button type="button" class="btn-action-mini danger" data-action="delete" data-id="${anuncio.id}" aria-label="Excluir anúncio" title="Excluir"><i class="fa-solid fa-trash" aria-hidden="true"></i></button>
+        <div class="flex items-center justify-end gap-1 mt-1 pt-1 border-t border-workspace-border">
+          <button type="button" class="btn-icon w-6 h-6 text-[10px]" data-action="load" data-id="${anuncio.id}" title="Carregar"><i class="fa-solid fa-folder-open"></i></button>
+          <button type="button" class="btn-icon w-6 h-6 text-[10px] text-red-400 hover:text-red-300" data-action="delete" data-id="${anuncio.id}" title="Excluir"><i class="fa-solid fa-trash"></i></button>
         </div>
       </div>
     `).join('');
   };
 
-  const saveCurrentAnuncio = async () => {
-    dom.btnSaveAnuncio.disabled = true; dom.btnSaveAnuncio.innerHTML = '<i class="fa-solid fa-circle-notch fa-spin" aria-hidden="true"></i> Salvando...';
+  const performSave = async (silent = false) => {
+    dom.btnSaveAnuncio.disabled = true;
+    const originalHtml = dom.btnSaveAnuncio.innerHTML;
+    if (!silent) {
+      dom.btnSaveAnuncio.innerHTML = '<i class="fa-solid fa-circle-notch fa-spin"></i>';
+    }
+    
     try {
       const success = await StorageManager.saveCurrent();
-      if (success) { await renderAnunciosList(); toast('Anúncio salvo com alta qualidade.', 'success'); }
-    } finally { dom.btnSaveAnuncio.disabled = false; dom.btnSaveAnuncio.innerHTML = '<i class="fa-solid fa-floppy-disk" aria-hidden="true"></i> Salvar atual'; }
+      if (success) {
+        await renderAnunciosList();
+        if (!silent) toast('Encarte salvo com alta qualidade.', 'success');
+        AutoSaveManager.markAsSaved();
+        return true;
+      }
+      return false;
+    } finally {
+      dom.btnSaveAnuncio.disabled = false;
+      dom.btnSaveAnuncio.innerHTML = originalHtml;
+    }
   };
+
+  const saveCurrentAnuncio = () => performSave(false);
 
   const loadAnuncio = async (id) => {
     const anuncios = await StorageManager.loadAll();
     const anuncio = anuncios.find((a) => a.id === id);
-    if (!anuncio) { toast('Anúncio não encontrado.', 'error'); return; }
-    StorageManager.applyToState(anuncio); toast('Anúncio carregado.', 'success');
+    if (!anuncio) { toast('Encarte não encontrado.', 'error'); return; }
+    StorageManager.applyToState(anuncio); 
+    AutoSaveManager.cancel();
+    toast('Encarte carregado.', 'success');
   };
 
   const deleteAnuncio = async (id) => {
-    if (!confirm('Excluir este anúncio permanentemente?')) return;
+    if (!confirm('Excluir este encarte permanentemente?')) return;
     const success = await StorageManager.deleteRecord(id);
-    if (success) { await renderAnunciosList(); if (state.currentAnuncioId === id) newAnuncio(); toast('Anúncio excluído.', 'info'); }
-    else { toast('Falha ao excluir anúncio.', 'error'); }
+    if (success) { 
+      await renderAnunciosList(); 
+      if (state.currentAnuncioId === id) newAnuncio(); 
+      toast('Encarte excluído.', 'info'); 
+    } else { 
+      toast('Falha ao excluir encarte.', 'error'); 
+    }
   };
 
   const newAnuncio = async () => {
-    state.currentAnuncioId = null; state.image = DEMO_IMAGE; state.source = null; state.showLogo = true; state.showSeal = false;
-    state.fields = { sealTop: 'OFERTA', ribbon: 'DESCONTO', discount: '25', priceBase: '599,90', price3x: '479,92', pricePix: '449,90', title: 'Novo Produto', subtitle: 'Descrição do produto', legalLeft: 'Válido enquanto durar o estoque. Poucas Unidades!', legalRight: 'Valores com lâmpadas não inclusas.' };
+    state.currentAnuncioId = null; 
+    state.image = DEMO_IMAGE; 
+    state.source = null; 
+    state.showLogo = true; 
+    state.showSeal = false;
+    state.fields = { 
+      sealTop: 'OFERTA', ribbon: 'DESCONTO', discount: '25', 
+      priceBase: '599,90', price3x: '479,92', pricePix: '449,90', 
+      title: 'Novo Produto', subtitle: 'Descrição do produto', 
+      legalLeft: 'Válido enquanto durar o estoque.', 
+      legalRight: 'Imagem ilustrativa' 
+    };
+    state.positions = {
+      logo: { ...DEFAULT_POSITIONS.logo },
+      seal: { ...DEFAULT_POSITIONS.seal },
+      pricebox: { ...DEFAULT_POSITIONS.pricebox },
+      plate: { ...DEFAULT_POSITIONS.plate }
+    };
+    state.sizes = {
+      logo: { ...DEFAULT_SIZES.logo },
+      seal: { ...DEFAULT_SIZES.seal },
+      pricebox: { ...DEFAULT_SIZES.pricebox },
+      plate: { ...DEFAULT_SIZES.plate }
+    };
+    dom.docTitle.value = 'Novo Encarte';
     dom.flyerImage.src = DEMO_IMAGE;
-    if (state.logo) { dom.flyerLogo.src = state.logo; dom.logoName.textContent = state.logoName || 'Logo carregada.'; }
-    else { dom.flyerLogo.src = ''; dom.logoName.textContent = 'Nenhuma logo enviada.'; }
-    dom.fileName.textContent = 'Nenhum arquivo enviado — usando arte de demonstração.'; dom.btnRecrop.disabled = true;
-    Object.keys(state.fields).forEach((key) => { const input = $(`[data-field="${key}"]`); if (input) input.value = state.fields[key]; });
-    dom.showLogo.checked = state.showLogo; dom.showSeal.checked = state.showSeal;
-    toggleLogo(state.showLogo); toggleSeal(state.showSeal); scheduleRender(); toast('Novo anúncio criado.', 'info');
+    if (state.logo) { 
+      dom.flyerLogo.src = state.logo; 
+      dom.logoName.textContent = state.logoName || 'Logo carregada.'; 
+    } else { 
+      dom.flyerLogo.src = ''; 
+      dom.logoName.textContent = 'Nenhuma logo enviada.'; 
+    }
+    dom.fileName.textContent = 'Usando arte de demonstração.'; 
+    dom.btnRecrop.disabled = true;
+    Object.keys(state.fields).forEach((key) => { 
+      const input = $(`[data-field="${key}"]`); 
+      if (input) input.value = state.fields[key]; 
+    });
+    dom.showLogo.checked = state.showLogo; 
+    dom.showSeal.checked = state.showSeal;
+    toggleLogo(state.showLogo); 
+    toggleSeal(state.showSeal);
+    applyLayout();
+    scheduleRender();
+    AutoSaveManager.cancel();
+    AutoSaveManager.hide();
+    toast('Novo encarte criado.', 'info');
+  };
+
+  const AutoSaveManager = {
+    DELAY_MS: 3000,
+    MIN_INTERVAL_MS: 5000,
+    _lastSaveTime: 0,
+    _hideTimeout: null,
+    _debouncedSave: null,
+
+    init() {
+      this._debouncedSave = debounce(() => {
+        this._executeAutoSave();
+      }, this.DELAY_MS);
+    },
+
+    schedule() {
+      if (!state.currentAnuncioId) return;
+      this.showSaving();
+      this._debouncedSave();
+    },
+
+    async _executeAutoSave() {
+      const now = Date.now();
+      const timeSinceLastSave = now - this._lastSaveTime;
+      
+      if (timeSinceLastSave < this.MIN_INTERVAL_MS) {
+        this._debouncedSave();
+        return;
+      }
+
+      try {
+        await performSave(true);
+        this._lastSaveTime = Date.now();
+      } catch (error) {
+        console.error('Auto-save falhou:', error);
+        this.markAsError();
+      }
+    },
+
+    showSaving() {
+      if (!dom.autoSaveIndicator) return;
+      clearTimeout(this._hideTimeout);
+      dom.autoSaveIndicator.className = 'autosave-indicator is-saving';
+      dom.autoSaveIndicator.innerHTML = '<i class="fa-solid fa-circle-notch fa-spin text-[10px]"></i><span>Salvando...</span>';
+    },
+
+    markAsSaved() {
+      if (!dom.autoSaveIndicator) return;
+      dom.autoSaveIndicator.className = 'autosave-indicator is-saved';
+      dom.autoSaveIndicator.innerHTML = '<i class="fa-solid fa-circle-check text-[10px]"></i><span>Salvo</span>';
+      clearTimeout(this._hideTimeout);
+      this._hideTimeout = setTimeout(() => this.hide(), 3000);
+    },
+
+    markAsError() {
+      if (!dom.autoSaveIndicator) return;
+      dom.autoSaveIndicator.className = 'autosave-indicator is-error';
+      dom.autoSaveIndicator.innerHTML = '<i class="fa-solid fa-triangle-exclamation text-[10px]"></i><span>Erro ao salvar</span>';
+      clearTimeout(this._hideTimeout);
+      this._hideTimeout = setTimeout(() => this.hide(), 4000);
+    },
+
+    hide() {
+      if (!dom.autoSaveIndicator) return;
+      dom.autoSaveIndicator.className = 'autosave-indicator';
+    },
+
+    cancel() {
+      if (this._debouncedSave && typeof this._debouncedSave.cancel === 'function') {
+        this._debouncedSave.cancel();
+      }
+      clearTimeout(this._hideTimeout);
+    }
+  };
+
+  const KeyboardShortcuts = {
+    init() {
+      document.addEventListener('keydown', (e) => this._handleKeydown(e));
+    },
+
+    _handleKeydown(e) {
+      const isMac = navigator.platform.toUpperCase().indexOf('MAC') >= 0;
+      const modKey = isMac ? e.metaKey : e.ctrlKey;
+
+      if (e.key === 'Escape') {
+        const openDialogs = $$('dialog[open]');
+        if (openDialogs.length > 0) {
+          e.preventDefault();
+          const topDialog = openDialogs[openDialogs.length - 1];
+          topDialog.close();
+          return;
+        }
+        if (document.activeElement && document.activeElement !== document.body) {
+          document.activeElement.blur();
+        }
+        return;
+      }
+
+      if (modKey && (e.key === 's' || e.key === 'S')) {
+        e.preventDefault();
+        const encarteActive = $('#moduloEncarte').classList.contains('active');
+        if (encarteActive && !dom.btnSaveAnuncio.disabled) {
+          saveCurrentAnuncio();
+          toast('Encarte salvo (Ctrl+S)', 'success');
+        }
+        return;
+      }
+
+      if (modKey && (e.key === 'n' || e.key === 'N')) {
+        e.preventDefault();
+        const encarteActive = $('#moduloEncarte').classList.contains('active');
+        if (encarteActive) {
+          if (confirm('Criar novo encarte? Alterações não salvas serão perdidas.')) {
+            newAnuncio();
+          }
+        }
+        return;
+      }
+
+      if (modKey && (e.key === 'e' || e.key === 'E')) {
+        e.preventDefault();
+        const encarteActive = $('#moduloEncarte').classList.contains('active');
+        if (encarteActive && !dom.btnJpg.disabled) {
+          exportSingle();
+        }
+        return;
+      }
+    }
   };
 
   const CatalogoManager = {
@@ -1288,33 +1950,45 @@
     },
     async renderCategoriasList() {
       const cats = await this.loadCategorias();
-      if (cats.length === 0) { dom.categoriasList.innerHTML = '<p class="text-center text-[11px] font-medium text-zinc-600 py-3">Nenhuma categoria criada.</p>'; this.updateUIForNoCategoria(); return; }
+      if (cats.length === 0) { 
+        dom.categoriasList.innerHTML = '<p class="text-center text-[11px] text-zinc-600 py-3">Nenhuma categoria.</p>'; 
+        this.updateUIForNoCategoria(); 
+        return; 
+      }
       dom.categoriasList.innerHTML = cats.map((cat) => `
         <div class="cat-categoria-item ${cat.id === state.cat.categoriaAtivaId ? 'active' : ''}" data-cat-id="${cat.id}" tabindex="0" role="button" aria-pressed="${cat.id === state.cat.categoriaAtivaId}">
           <span class="flex items-center gap-2 min-w-0">
-            <i class="fa-solid fa-folder${cat.id === state.cat.categoriaAtivaId ? '-open' : ''} text-amber-400" aria-hidden="true"></i>
+            <i class="fa-solid fa-folder${cat.id === state.cat.categoriaAtivaId ? '-open' : ''} text-workspace-accent" aria-hidden="true"></i>
             <span class="truncate">${sanitize(cat.nome, 40)}</span>
           </span>
-          <button type="button" class="btn-action-mini danger" data-action="delete-cat" data-id="${cat.id}" aria-label="Excluir categoria" title="Excluir"><i class="fa-solid fa-trash" aria-hidden="true"></i></button>
+          <button type="button" class="btn-icon w-6 h-6 text-[10px] text-red-400 hover:text-red-300" data-action="delete-cat" data-id="${cat.id}" aria-label="Excluir categoria"><i class="fa-solid fa-trash"></i></button>
         </div>
       `).join('');
     },
     updateUIForNoCategoria() {
-      dom.produtosArea.classList.add('hidden'); dom.catHeaderSubtitle.textContent = 'Selecione ou crie uma categoria para começar.';
-      dom.catStatusMsg.textContent = 'Crie uma categoria para habilitar o cadastro de produtos.'; dom.catStatusMsg.parentElement.classList.remove('hidden');
+      dom.produtosArea.classList.add('hidden'); 
+      dom.catHeaderSubtitle.textContent = 'Selecione ou crie uma categoria para começar.';
+      dom.catStatusMsg.textContent = 'Crie uma categoria para habilitar o cadastro de produtos.'; 
+      dom.catStatusMsg.parentElement.classList.remove('hidden');
     },
     updateUIForCategoria(cat) {
       dom.produtosArea.classList.remove('hidden');
-      dom.catHeaderSubtitle.innerHTML = `Categoria ativa: <strong class="text-amber-300">${sanitize(cat.nome, 40)}</strong>`;
-      dom.catProdutoCategoriaLabel.textContent = sanitize(cat.nome, 40); dom.catProdutosCategoriaLabel.textContent = sanitize(cat.nome, 40);
+      dom.catHeaderSubtitle.innerHTML = `Categoria ativa: <strong class="text-workspace-accent">${sanitize(cat.nome, 40)}</strong>`;
       dom.catStatusMsg.parentElement.classList.add('hidden');
     },
     async selectCategoria(id) {
-      state.cat.categoriaAtivaId = id; state.cat.editandoProdutoId = null; this.resetProdutoForm();
+      state.cat.categoriaAtivaId = id; 
+      state.cat.editandoProdutoId = null; 
+      this.resetProdutoForm();
       await this.renderCategoriasList();
-      const cats = await this.loadCategorias(); const cat = cats.find((c) => c.id === id);
-      if (cat) { this.updateUIForCategoria(cat); await this.renderProdutosList(id); }
-      else { this.updateUIForNoCategoria(); }
+      const cats = await this.loadCategorias(); 
+      const cat = cats.find((c) => c.id === id);
+      if (cat) { 
+        this.updateUIForCategoria(cat); 
+        await this.renderProdutosList(id); 
+      } else { 
+        this.updateUIForNoCategoria(); 
+      }
     },
     async loadProdutosByCategoria(categoriaId) {
       try {
@@ -1351,13 +2025,13 @@
       const normalized = this._normalizeProduto(prod);
       state.cat.editandoProdutoId = id; state.cat.produtoImagens = [...normalized.imagens];
       dom.produtoNome.value = normalized.nome || ''; dom.produtoDescricao.value = normalized.descricao || '';
-      this.renderFotosGrid(); dom.btnSalvarProduto.innerHTML = '<i class="fa-solid fa-floppy-disk" aria-hidden="true"></i> Atualizar produto';
+      this.renderFotosGrid(); dom.btnSalvarProduto.innerHTML = '<i class="fa-solid fa-floppy-disk"></i> Atualizar';
       dom.produtoNome.focus(); window.scrollTo({ top: 0, behavior: 'smooth' });
     },
     resetProdutoForm() {
       state.cat.editandoProdutoId = null; state.cat.produtoImagens = [];
       dom.produtoNome.value = ''; dom.produtoDescricao.value = '';
-      this.renderFotosGrid(); dom.btnSalvarProduto.innerHTML = '<i class="fa-solid fa-floppy-disk" aria-hidden="true"></i> Adicionar produto';
+      this.renderFotosGrid(); dom.btnSalvarProduto.innerHTML = '<i class="fa-solid fa-floppy-disk"></i> Salvar Produto';
     },
     renderFotosGrid() {
       const fotos = state.cat.produtoImagens;
@@ -1365,16 +2039,16 @@
         const isPrincipal = index === 0;
         return `
           <div class="foto-item group ${isPrincipal ? 'is-principal' : ''}" data-foto-index="${index}">
-            <img class="foto-item__img" src="${dataUrl}" alt="Foto ${index + 1}${isPrincipal ? ' (principal)' : ''}">
-            ${isPrincipal ? `<span class="foto-item__principal-badge"><i class="fa-solid fa-star" aria-hidden="true"></i> Capa</span>` : ''}
+            <img class="foto-item__img" src="${dataUrl}" alt="Foto ${index + 1}">
+            ${isPrincipal ? `<span class="foto-item__principal-badge"><i class="fa-solid fa-star"></i> Capa</span>` : ''}
             <div class="foto-item__actions">
-              ${!isPrincipal ? `<button type="button" class="foto-item__btn" data-foto-action="set-principal" data-index="${index}" title="Definir como capa"><i class="fa-solid fa-star" aria-hidden="true"></i></button>` : `<span></span>`}
-              <button type="button" class="foto-item__btn danger" data-foto-action="remove" data-index="${index}" title="Remover foto"><i class="fa-solid fa-trash" aria-hidden="true"></i></button>
+              ${!isPrincipal ? `<button type="button" class="foto-item__btn" data-foto-action="set-principal" data-index="${index}" title="Definir como capa"><i class="fa-solid fa-star"></i></button>` : `<span></span>`}
+              <button type="button" class="foto-item__btn danger" data-foto-action="remove" data-index="${index}" title="Remover foto"><i class="fa-solid fa-trash"></i></button>
             </div>
           </div>
         `;
       }).join('');
-      dom.fotosGrid.innerHTML = `${items}<label for="produtoFile" class="foto-add-btn" tabindex="0" aria-label="Adicionar mais fotos"><i class="fa-solid fa-plus text-lg text-amber-400" aria-hidden="true"></i><span class="text-[9px] font-bold text-zinc-300">Adicionar</span></label>`;
+      dom.fotosGrid.innerHTML = `${items}<label for="produtoFile" class="foto-add-btn" tabindex="0" aria-label="Adicionar mais fotos"><i class="fa-solid fa-plus text-lg text-workspace-accent"></i><span class="text-[9px] font-bold text-zinc-300">Add</span></label>`;
     },
     async adicionarFotos(fileList) {
       if (!fileList || fileList.length === 0) return;
@@ -1389,10 +2063,10 @@
           state.cat.produtoImagens.push(compressed);
         }
         this.renderFotosGrid();
-        toast(`${files.length} ${files.length === 1 ? 'foto adicionada' : 'fotos adicionadas'} com sucesso.`, 'success');
+        toast(`${files.length} ${files.length === 1 ? 'foto adicionada' : 'fotos adicionadas'}.`, 'success');
       } catch (e) {
         console.error('Erro ao processar imagens:', e);
-        toast('Erro ao processar imagens. Verifique o console.', 'error');
+        toast('Erro ao processar imagens.', 'error');
       }
     },
     setFotoPrincipal(index) {
@@ -1407,307 +2081,24 @@
     async renderProdutosList(categoriaId) {
       const prods = await this.loadProdutosByCategoria(categoriaId);
       dom.catProdutosCount.textContent = prods.length ? `${prods.length} ${prods.length === 1 ? 'item' : 'itens'}` : '';
-      if (prods.length === 0) { dom.produtosList.innerHTML = '<p class="col-span-full text-center text-[11px] font-medium text-zinc-600 py-4">Nenhum produto cadastrado nesta categoria.</p>'; return; }
+      if (prods.length === 0) { 
+        dom.produtosList.innerHTML = '<p class="col-span-full text-center text-[11px] text-zinc-600 py-4">Nenhum produto nesta categoria.</p>'; 
+        return; 
+      }
       dom.produtosList.innerHTML = prods.map((p) => {
         const fotoPrincipal = p.imagens[0]; const totalFotos = p.imagens.length;
         return `
           <article class="cat-produto-card" data-produto-id="${p.id}">
             <div class="cat-produto-thumb-wrap">
-              ${fotoPrincipal ? `<img class="cat-produto-thumb" src="${fotoPrincipal}" alt="${sanitize(p.nome, 60)}" loading="lazy">` : `<div class="flex h-full w-full items-center justify-center text-zinc-600"><i class="fa-solid fa-image text-2xl" aria-hidden="true"></i></div>`}
-              ${totalFotos > 1 ? `<span class="cat-produto-photos-badge"><i class="fa-solid fa-images" aria-hidden="true"></i> ${totalFotos}</span>` : ''}
+              ${fotoPrincipal ? `<img class="cat-produto-thumb" src="${fotoPrincipal}" alt="${sanitize(p.nome, 60)}" loading="lazy">` : `<div class="flex h-full w-full items-center justify-center text-zinc-600"><i class="fa-solid fa-image text-2xl"></i></div>`}
+              ${totalFotos > 1 ? `<span class="absolute bottom-1.5 right-1.5 flex items-center gap-1 rounded bg-zinc-950/85 px-1.5 py-0.5 text-[9px] font-bold text-zinc-200 backdrop-blur"><i class="fa-solid fa-images"></i> ${totalFotos}</span>` : ''}
             </div>
             <div class="min-w-0">
-              <h3 class="truncate text-[12px] font-bold text-zinc-100" title="${sanitize(p.nome, 80)}">${sanitize(p.nome, 60)}</h3>
-              <p class="mt-0.5 line-clamp-2 text-[10px] font-medium text-zinc-500 leading-tight" title="${sanitize(p.descricao, 200)}">${sanitize(p.descricao || 'Sem descrição', 100)}</p>
+              <h3 class="truncate text-[11px] font-bold text-zinc-100" title="${sanitize(p.nome, 80)}">${sanitize(p.nome, 60)}</h3>
+              <p class="mt-0.5 line-clamp-2 text-[9px] text-zinc-500 leading-tight" title="${sanitize(p.descricao, 200)}">${sanitize(p.descricao || 'Sem descrição', 100)}</p>
             </div>
-            <div class="flex items-center justify-end gap-1 pt-1 border-t border-zinc-800/50">
-              <button type="button" class="btn-action-mini" data-action="edit-prod" data-id="${p.id}" aria-label="Editar produto" title="Editar"><i class="fa-solid fa-pen" aria-hidden="true"></i></button>
-              <button type="button" class="btn-action-mini danger" data-action="delete-prod" data-id="${p.id}" aria-label="Excluir produto" title="Excluir"><i class="fa-solid fa-trash" aria-hidden="true"></i></button>
+            <div class="flex items-center justify-end gap-1 pt-1 border-t border-workspace-border">
+              <button type="button" class="btn-icon w-6 h-6 text-[10px]" data-action="edit-prod" data-id="${p.id}" title="Editar"><i class="fa-solid fa-pen"></i></button>
+              <button type="button" class="btn-icon w-6 h-6 text-[10px] text-red-400 hover:text-red-300" data-action="delete-prod" data-id="${p.id}" title="Excluir"><i class="fa-solid fa-trash"></i></button>
             </div>
-          </article>
-        `;
-      }).join('');
-    },
-    async abrirModalImportarAnuncio() {
-      if (!state.cat.categoriaAtivaId) { toast('Selecione uma categoria antes de importar.', 'error'); return; }
-      const anuncios = await StorageManager.loadAll();
-      if (anuncios.length === 0) { toast('Nenhum anúncio salvo ainda. Crie um anúncio no módulo "Encarte" primeiro.', 'info'); return; }
-      anuncios.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
-      dom.importarAnuncioList.innerHTML = anuncios.map((anuncio) => {
-        const nome = sanitize(anuncio.fields?.title || anuncio.name || 'Sem nome', 60);
-        const descricao = sanitize(anuncio.fields?.subtitle || '', 100);
-        const imagem = anuncio.image || DEMO_IMAGE;
-        const data = new Date(anuncio.createdAt).toLocaleDateString('pt-BR');
-        return `
-          <button type="button" class="import-anuncio-card text-left" data-import-id="${anuncio.id}" aria-label="Importar anúncio ${nome}">
-            <img class="import-anuncio-card__thumb" src="${imagem}" alt="${nome}" loading="lazy">
-            <div class="min-w-0">
-              <h3 class="truncate text-[12px] font-bold text-zinc-100" title="${nome}">${nome}</h3>
-              <p class="mt-0.5 line-clamp-2 text-[10px] font-medium text-zinc-500 leading-tight" title="${descricao}">${descricao || 'Sem descrição'}</p>
-              <p class="mt-1 text-[9px] font-bold uppercase tracking-wider text-zinc-600">${data}</p>
-            </div>
-          </button>
-        `;
-      }).join('');
-      dom.importarAnuncioDialog.showModal();
-    },
-    async importarAnuncio(anuncioId) {
-      const anuncio = await DB.get(DB_CONFIG.stores.anuncios, anuncioId); if (!anuncio) { toast('Anúncio não encontrado.', 'error'); return; }
-      const nome = anuncio.fields?.title || anuncio.name || '';
-      const descricao = anuncio.fields?.subtitle || '';
-      const imagem = anuncio.image || null;
-      dom.produtoNome.value = nome; dom.produtoDescricao.value = descricao;
-      if (imagem && !imagem.startsWith('data:image/svg')) { state.cat.produtoImagens = [imagem]; }
-      else { state.cat.produtoImagens = []; }
-      this.renderFotosGrid(); state.cat.editandoProdutoId = null;
-      dom.btnSalvarProduto.innerHTML = '<i class="fa-solid fa-floppy-disk" aria-hidden="true"></i> Adicionar produto';
-      if (dom.importarAnuncioDialog.open) dom.importarAnuncioDialog.close();
-      toast(`Dados do anúncio "${sanitize(nome, 30)}" importados. Revise antes de salvar.`, 'success');
-      dom.produtoNome.focus(); dom.produtoNome.scrollIntoView({ behavior: 'smooth', block: 'center' });
-    },
-    async buildPdfStructure() {
-      const cats = await this.loadCategorias(); const structure = [];
-      for (const cat of cats) {
-        const prods = await this.loadProdutosByCategoria(cat.id);
-        if (prods.length > 0) structure.push({ categoria: cat, produtos: prods });
-      }
-      return structure;
-    },
-    async renderPdfHost(structure, catalogTitle = 'Catálogo') {
-      dom.pdfHost.innerHTML = '';
-      const cover = document.createElement('section'); cover.className = 'pdf-cover';
-      cover.innerHTML = `<div class="pdf-cover__brand">Encarte Studio</div><h1 class="pdf-cover__title">${sanitize(catalogTitle, 60)}</h1><p class="pdf-cover__sub">Coleção Completa</p><p class="pdf-cover__year">${new Date().getFullYear()}</p>`;
-      dom.pdfHost.appendChild(cover);
-      const ITEMS_PER_PAGE = 6;
-      for (const { categoria, produtos } of structure) {
-        for (let i = 0; i < produtos.length; i += ITEMS_PER_PAGE) {
-          const chunk = produtos.slice(i, i + ITEMS_PER_PAGE);
-          const page = document.createElement('section'); page.className = 'pdf-page';
-          const isFirstOfCategory = i === 0;
-          const headerHtml = isFirstOfCategory
-            ? `<h2 class="pdf-cat-title">${sanitize(categoria.nome, 60)}</h2>`
-            : `<h2 class="pdf-cat-title" style="font-size:28px;">${sanitize(categoria.nome, 60)} <span style="font-size:14px;color:#71717a;font-weight:500;letter-spacing:2px;">(continuação)</span></h2>`;
-          page.innerHTML = `${headerHtml}<div class="pdf-grid">${chunk.map((p) => {
-            const fotoPrincipal = p.imagens[0];
-            return `<article class="pdf-item">
-              ${fotoPrincipal ? `<img class="pdf-item__img" src="${fotoPrincipal}" alt="${sanitize(p.nome, 60)}">` : `<div class="pdf-item__img" style="display:flex;align-items:center;justify-content:center;color:#a1a1aa;"><i class="fa-solid fa-image" style="font-size:48px;"></i></div>`}
-              <div class="pdf-item__body"><h3 class="pdf-item__name">${sanitize(p.nome, 80)}</h3><p class="pdf-item__desc">${sanitize(p.descricao || '', 300)}</p></div>
-            </article>`;
-          }).join('')}</div>`;
-          dom.pdfHost.appendChild(page);
-        }
-      }
-    },
-    async generatePdf() {
-      if (!ensureLibs('html2canvas', 'jsPDF')) return null;
-      const { jsPDF } = window.jspdf;
-      const structure = await this.buildPdfStructure();
-      if (structure.length === 0) { toast('Cadastre produtos em pelo menos uma categoria.', 'error'); return null; }
-      const totalProdutos = structure.reduce((acc, s) => acc + s.produtos.length, 0);
-      await this.renderPdfHost(structure); await yieldToUI();
-      const pages = $$('.pdf-cover, .pdf-page', dom.pdfHost);
-      const pdf = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
-      const pageWidth = 210, pageHeight = 297;
-      for (let i = 0; i < pages.length; i++) {
-        setProgress((i / pages.length) * 90, `Renderizando página ${i + 1} de ${pages.length}…`, `${totalProdutos} produtos no total`);
-        const canvas = await html2canvas(pages[i], { scale: 2, backgroundColor: '#ffffff', useCORS: true, allowTaint: false, logging: false, width: 794, windowWidth: 794 });
-        const imgData = canvas.toDataURL('image/jpeg', 0.92);
-        if (i > 0) pdf.addPage();
-        pdf.addImage(imgData, 'JPEG', 0, 0, pageWidth, pageHeight, undefined, 'FAST');
-        await yieldToUI();
-      }
-      return pdf;
-    },
-    async previewPdf() {
-      const structure = await this.buildPdfStructure();
-      if (structure.length === 0) { toast('Cadastre produtos em pelo menos uma categoria.', 'error'); return; }
-      await this.renderPdfHost(structure); dom.pdfPreviewContent.innerHTML = '';
-      const pages = $$('.pdf-cover, .pdf-page', dom.pdfHost);
-      pages.forEach((page) => {
-        const wrapper = document.createElement('div');
-        wrapper.className = 'rounded-lg border border-zinc-700 bg-white shadow-2xl overflow-hidden';
-        wrapper.style.cssText = 'width:100%;max-width:600px;margin:0 auto;aspect-ratio:794/1123;position:relative;';
-        const clone = page.cloneNode(true);
-        clone.style.cssText = 'transform:scale(0.755);transform-origin:top left;width:794px;min-height:1123px;position:absolute;top:0;left:0;';
-        wrapper.appendChild(clone); dom.pdfPreviewContent.appendChild(wrapper);
-      });
-      dom.pdfPreviewDialog.showModal();
-    }
-  };
-
-  dom.form.addEventListener('input', (event) => {
-    const input = event.target.closest('[data-field]'); if (!input) return;
-    const key = input.dataset.field;
-    if (input.dataset.mask === 'currency') {
-      const masked = formatCurrencyMask(input.value); input.value = masked; state.fields[key] = masked;
-    } else if (input.dataset.mask === 'int') {
-      const value = String(Math.min(100, Number(onlyDigits(input.value).slice(0, 3) || 0)));
-      input.value = onlyDigits(input.value) ? value : ''; state.fields[key] = input.value;
-    } else { state.fields[key] = sanitize(input.value, Number(input.maxLength) > 0 ? input.maxLength : 150); }
-    scheduleRender();
-  });
-
-  dom.form.addEventListener('change', (event) => { const radio = event.target.closest('input[name="theme"]'); if (radio) applyTheme(radio.value); });
-  dom.form.addEventListener('submit', (event) => event.preventDefault());
-
-  dom.btnCalc.addEventListener('click', () => {
-    const base = priceToNumber(state.fields.priceBase);
-    if (base <= 0) { toast('Informe o preço normal primeiro.', 'error'); return; }
-    state.fields.price3x = numberToCurrency(Math.round(base * 0.80 * 100) / 100);
-    state.fields.pricePix = numberToCurrency(Math.round(base * 0.75 * 100) / 100);
-    $('#price3x').value = state.fields.price3x; $('#pricePix').value = state.fields.pricePix;
-    scheduleRender(); toast(`3x: R$ ${state.fields.price3x} · PIX: R$ ${state.fields.pricePix}`, 'success');
-  });
-
-  dom.fileInput.addEventListener('change', (event) => { ingestFile(event.target.files[0]); event.target.value = ''; });
-  dom.btnRecrop.addEventListener('click', () => { if (state.source) openCropper(state.source); });
-  dom.btnResetImg.addEventListener('click', () => {
-    state.image = DEMO_IMAGE; state.source = null; dom.flyerImage.src = DEMO_IMAGE;
-    dom.fileName.textContent = 'Nenhum arquivo enviado — usando arte de demonstração.'; dom.btnRecrop.disabled = true;
-    toast('Arte de demonstração restaurada.', 'info');
-  });
-
-  dom.logoInput.addEventListener('change', (event) => { ingestLogo(event.target.files[0]); event.target.value = ''; });
-  dom.showLogo.addEventListener('change', () => toggleLogo(dom.showLogo.checked));
-  dom.btnRemoveLogo.addEventListener('click', removeLogo);
-  dom.showSeal.addEventListener('change', () => toggleSeal(dom.showSeal.checked));
-
-  $$('[data-crop-action]').forEach((btn) => btn.addEventListener('click', () => handleCropAction(btn.dataset.cropAction)));
-  $('#btnCropApply').addEventListener('click', applyCrop);
-  $('#btnCropCancel').addEventListener('click', closeCropper);
-  $('#btnCropClose').addEventListener('click', closeCropper);
-  dom.cropDialog.addEventListener('close', destroyCropper);
-
-  dom.btnJpg.addEventListener('click', exportSingle);
-  dom.btnZip.addEventListener('click', exportBatchZip);
-  dom.btnSaveAnuncio.addEventListener('click', saveCurrentAnuncio);
-  dom.btnNewAnuncio.addEventListener('click', newAnuncio);
-
-  dom.anunciosList.addEventListener('click', (event) => {
-    const btn = event.target.closest('[data-action]'); if (!btn) return;
-    const id = Number(btn.dataset.id);
-    if (btn.dataset.action === 'load') loadAnuncio(id);
-    else if (btn.dataset.action === 'delete') deleteAnuncio(id);
-  });
-
-  ['dragenter', 'dragover'].forEach((type) => { dom.previewArea.addEventListener(type, (event) => { event.preventDefault(); dom.stageFrame.classList.add('dropzone-active'); }); });
-  ['dragleave', 'drop'].forEach((type) => { dom.previewArea.addEventListener(type, (event) => { event.preventDefault(); dom.stageFrame.classList.remove('dropzone-active'); }); });
-  dom.previewArea.addEventListener('drop', (event) => { const [file] = event.dataTransfer?.files ?? []; ingestFile(file); });
-
-  dom.btnAddCategoria.addEventListener('click', async () => {
-    const nome = dom.novaCategoriaNome.value; const cat = await CatalogoManager.addCategoria(nome);
-    if (cat) { dom.novaCategoriaNome.value = ''; await CatalogoManager.renderCategoriasList(); await CatalogoManager.selectCategoria(cat.id); }
-  });
-  dom.novaCategoriaNome.addEventListener('keydown', (e) => { if (e.key === 'Enter') { e.preventDefault(); dom.btnAddCategoria.click(); } });
-
-  dom.categoriasList.addEventListener('click', async (event) => {
-    const deleteBtn = event.target.closest('[data-action="delete-cat"]');
-    if (deleteBtn) {
-      event.stopPropagation(); const id = Number(deleteBtn.dataset.id);
-      const success = await CatalogoManager.deleteCategoria(id);
-      if (success) { await CatalogoManager.renderCategoriasList(); if (state.cat.categoriaAtivaId) await CatalogoManager.selectCategoria(state.cat.categoriaAtivaId); else CatalogoManager.updateUIForNoCategoria(); }
-      return;
-    }
-    const item = event.target.closest('.cat-categoria-item');
-    if (item) await CatalogoManager.selectCategoria(Number(item.dataset.catId));
-  });
-  dom.categoriasList.addEventListener('keydown', async (event) => {
-    if (event.key !== 'Enter' && event.key !== ' ') return;
-    const item = event.target.closest('.cat-categoria-item');
-    if (item) { event.preventDefault(); await CatalogoManager.selectCategoria(Number(item.dataset.catId)); }
-  });
-
-  // CORREÇÃO: Upload múltiplo robusto com feedback
-  dom.produtoFile.addEventListener('change', async (event) => {
-    const files = event.target.files; event.target.value = '';
-    await CatalogoManager.adicionarFotos(files);
-  });
-
-  dom.fotosGrid.addEventListener('click', (event) => {
-    const btn = event.target.closest('[data-foto-action]'); if (!btn) return;
-    const index = Number(btn.dataset.index);
-    if (btn.dataset.fotoAction === 'set-principal') CatalogoManager.setFotoPrincipal(index);
-    else if (btn.dataset.fotoAction === 'remove') CatalogoManager.removeFoto(index);
-  });
-
-  // CORREÇÃO: Salvamento de produto com try/catch explícito
-  dom.btnSalvarProduto.addEventListener('click', async () => {
-    if (!state.cat.categoriaAtivaId) { toast('Selecione uma categoria.', 'error'); return; }
-    const nome = dom.produtoNome.value; const descricao = dom.produtoDescricao.value;
-    if (!nome.trim()) { toast('Informe o nome do produto.', 'error'); return; }
-    try {
-      const success = await CatalogoManager.addOrUpdateProduto({
-        id: state.cat.editandoProdutoId, categoriaId: state.cat.categoriaAtivaId, nome, descricao, imagens: [...state.cat.produtoImagens]
-      });
-      if (success) { CatalogoManager.resetProdutoForm(); await CatalogoManager.renderProdutosList(state.cat.categoriaAtivaId); }
-    } catch (err) {
-      console.error('Erro ao salvar produto:', err);
-      toast('Erro ao salvar produto. Verifique o console.', 'error');
-    }
-  });
-
-  dom.btnLimparProduto.addEventListener('click', () => { CatalogoManager.resetProdutoForm(); });
-
-  dom.produtosList.addEventListener('click', async (event) => {
-    const btn = event.target.closest('[data-action]'); if (!btn) return;
-    const id = Number(btn.dataset.id);
-    if (btn.dataset.action === 'edit-prod') await CatalogoManager.editProduto(id);
-    else if (btn.dataset.action === 'delete-prod') {
-      const success = await CatalogoManager.deleteProduto(id);
-      if (success) await CatalogoManager.renderProdutosList(state.cat.categoriaAtivaId);
-    }
-  });
-
-  dom.btnPreviewPdf.addEventListener('click', () => CatalogoManager.previewPdf());
-  dom.btnPdfPreviewClose.addEventListener('click', () => { if (dom.pdfPreviewDialog.open) dom.pdfPreviewDialog.close(); });
-  dom.btnPdfPreviewDownload.addEventListener('click', async () => {
-    if (dom.pdfPreviewDialog.open) dom.pdfPreviewDialog.close(); await downloadPdfFlow();
-  });
-  dom.btnDownloadPdf.addEventListener('click', downloadPdfFlow);
-
-  async function downloadPdfFlow() {
-    if (!ensureLibs('html2canvas', 'jsPDF')) return;
-    toggleOverlay(true, 'Preparando catálogo…', 'Montando estrutura do PDF');
-    try {
-      await document.fonts.ready;
-      const pdf = await CatalogoManager.generatePdf();
-      if (!pdf) { toggleOverlay(false); return; }
-      setProgress(95, 'Finalizando PDF…');
-      pdf.save(`catalogo-${slugify('produtos')}-${Date.now()}.pdf`);
-      setProgress(100, 'Concluído!'); toast('Catálogo PDF baixado com sucesso.', 'success');
-    } catch (error) {
-      console.error(error); toast('Falha ao gerar o catálogo PDF.', 'error');
-    } finally { toggleOverlay(false); }
-  }
-
-  dom.btnImportarAnuncio.addEventListener('click', () => CatalogoManager.abrirModalImportarAnuncio());
-  dom.btnImportarClose.addEventListener('click', () => { if (dom.importarAnuncioDialog.open) dom.importarAnuncioDialog.close(); });
-  dom.btnImportarCancelar.addEventListener('click', () => { if (dom.importarAnuncioDialog.open) dom.importarAnuncioDialog.close(); });
-  dom.importarAnuncioList.addEventListener('click', (event) => {
-    const card = event.target.closest('[data-import-id]'); if (!card) return;
-    CatalogoManager.importarAnuncio(Number(card.dataset.importId));
-  });
-
-  const init = async () => {
-    try {
-      await DB.init(); await DB.migrateFromLocalStorage(); await loadGlobalLogo();
-      dom.flyerImage.src = state.image; applyTheme(state.theme); toggleLogo(state.showLogo); toggleSeal(state.showSeal);
-      render(); fitPreview(); await renderAnunciosList();
-      if ('ResizeObserver' in window) new ResizeObserver(fitPreview).observe(dom.previewArea);
-      else window.addEventListener('resize', fitPreview);
-      document.fonts?.ready.then(fitPreview);
-      initTabs(); await CatalogoManager.renderCategoriasList();
-      const cats = await CatalogoManager.loadCategorias();
-      if (cats.length > 0) await CatalogoManager.selectCategoria(cats[0].id);
-      else CatalogoManager.updateUIForNoCategoria();
-    } catch (error) {
-      console.error('Falha crítica na inicialização:', error);
-      toast('Erro ao inicializar o sistema. Verifique o console.', 'error');
-    }
-  };
-
-  init();
-})();
-</script>
-</body>
-</html>
+         
