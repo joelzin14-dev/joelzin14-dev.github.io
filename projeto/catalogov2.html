@@ -103,10 +103,9 @@
     -webkit-font-smoothing: antialiased; user-select: none;
     box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.8);
   }
-  .flyer__media { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; object-position: center; display: block; }
-  .flyer__scrim { position: absolute; inset: 0; pointer-events: none; }
+  .flyer__media { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; object-position: center; display: block; z-index: 1; }
+  .flyer__scrim { position: absolute; inset: 0; z-index: 2; pointer-events: none; }
   
-  /* Elementos arrastáveis e redimensionáveis */
   .draggable {
     cursor: grab;
     transition: outline 0.15s ease, box-shadow 0.15s ease;
@@ -155,7 +154,6 @@
     opacity: 0;
   }
 
-  /* Handle de redimensionamento */
   .resize-handle {
     position: absolute;
     width: 11px;
@@ -182,7 +180,6 @@
     background: #f59e0b;
   }
 
-  /* Logo - posições controladas via JS */
   .logo { 
     object-fit: contain; 
     z-index: 10; 
@@ -190,7 +187,7 @@
   }
   .logo--hidden { display: none; }
   
-  /* Selo - posições controladas via JS */
+  .seal { z-index: 10; }
   .seal--hidden { display: none; }
   .seal__disc {
     position: absolute; inset: 0; border-radius: 50%;
@@ -214,11 +211,11 @@
   .seal__ribbon::after { right: 0; border-width: 7px 0 0 9px; border-color: var(--ribbon-fold) transparent transparent transparent; }
   .seal__ribbon-text { font-family: 'Oswald', sans-serif; font-weight: 600; font-size: 13px; letter-spacing: 3px; text-transform: uppercase; color: var(--ribbon-text); }
   
-  /* Pricebox - posições controladas via JS */
   .pricebox {
     padding: 11px 14px 10px; border-radius: 12px;
     background: var(--price-bg); border: 1px solid var(--price-border);
     box-shadow: 0 14px 30px rgba(0,0,0,.55); text-align: right;
+    z-index: 10;
   }
   .pricebox::before { content: ''; position: absolute; inset: 5px; border: 1px solid var(--price-inner); border-radius: 8px; pointer-events: none; }
   .pricebox__old { font-size: 10.5px; font-weight: 600; letter-spacing: .6px; color: var(--price-old); text-transform: uppercase; }
@@ -236,12 +233,12 @@
   .pricebox__row-label { color: var(--price-row-label); text-transform: uppercase; letter-spacing: 1px; }
   .pricebox__row-value { color: var(--price-row-value); font-family: 'Oswald', sans-serif; font-weight: 600; font-size: 11px; letter-spacing: .3px; }
   
-  /* Plate - posições controladas via JS */
   .plate { 
     padding: 12px 16px 10px; 
     background: var(--plate-bg); 
     border: 1px solid var(--plate-border); 
     box-shadow: 0 14px 28px rgba(0,0,0,.55); 
+    z-index: 10;
   }
   .plate::before { content: ''; position: absolute; inset: 4px; border: 1px solid var(--plate-inner); pointer-events: none; }
   .plate__title { font-family: 'Oswald', sans-serif; font-weight: 700; font-size: 25px; line-height: 1.06; letter-spacing: .6px; text-transform: uppercase; text-align: center; color: var(--plate-title); word-break: break-word; }
@@ -791,7 +788,6 @@
     { id: 'natal', label: 'Especial de Natal', file: '03-especial-natal' }
   ];
 
-  // Posições padrão: pricebox ACIMA do plate
   const DEFAULT_POSITIONS = {
     logo: { top: 20, left: 137.5 },
     seal: { top: 80, left: 16 },
@@ -799,7 +795,6 @@
     plate: { top: 500, left: 16 }
   };
 
-  // Tamanhos padrão (width em px; height é auto exceto para seal que é quadrado)
   const DEFAULT_SIZES = {
     logo: { width: 175 },
     seal: { width: 132 },
@@ -807,7 +802,6 @@
     plate: { width: 418 }
   };
 
-  // Limites de tamanho
   const SIZE_LIMITS = {
     logo: { min: 80, max: 350 },
     seal: { min: 80, max: 220 },
@@ -980,47 +974,40 @@
   const toggleSeal = (visible) => { state.showSeal = visible; dom.seal.classList.toggle('seal--hidden', !visible); };
   const toggleLogo = (visible) => { state.showLogo = visible; dom.flyerLogo.classList.toggle('logo--hidden', !visible || !state.logo); };
 
-  // Aplica posições E tamanhos no DOM
   const applyLayout = () => {
     const { positions, sizes } = state;
     
-    // Logo
     dom.flyerLogo.style.top = `${positions.logo.top}px`;
     dom.flyerLogo.style.left = `${positions.logo.left}px`;
     dom.flyerLogo.style.width = `${sizes.logo.width}px`;
     dom.flyerLogo.style.height = 'auto';
     dom.flyerLogo.style.transform = 'none';
     
-    // Selo (quadrado: width = height)
     dom.seal.style.top = `${positions.seal.top}px`;
     dom.seal.style.left = `${positions.seal.left}px`;
     dom.seal.style.width = `${sizes.seal.width}px`;
     dom.seal.style.height = `${sizes.seal.width}px`;
     
-    // Pricebox
     dom.priceBox.style.top = `${positions.pricebox.top}px`;
     dom.priceBox.style.left = `${positions.pricebox.left}px`;
     dom.priceBox.style.width = `${sizes.pricebox.width}px`;
     dom.priceBox.style.bottom = 'auto';
     dom.priceBox.style.right = 'auto';
     
-    // Plate
     dom.plate.style.top = `${positions.plate.top}px`;
     dom.plate.style.left = `${positions.plate.left}px`;
     dom.plate.style.width = `${sizes.plate.width}px`;
     dom.plate.style.bottom = 'auto';
     dom.plate.style.right = 'auto';
     
-    // Atualiza indicadores no painel
     if (dom.posLogo) dom.posLogo.textContent = `${Math.round(positions.logo.left)}, ${Math.round(positions.logo.top)} · ${Math.round(sizes.logo.width)}px`;
     if (dom.posSeal) dom.posSeal.textContent = `${Math.round(positions.seal.left)}, ${Math.round(positions.seal.top)} · ${Math.round(sizes.seal.width)}px`;
     if (dom.posPrice) dom.posPrice.textContent = `${Math.round(positions.pricebox.left)}, ${Math.round(positions.pricebox.top)} · ${Math.round(sizes.pricebox.width)}px`;
     if (dom.posPlate) dom.posPlate.textContent = `${Math.round(positions.plate.left)}, ${Math.round(positions.plate.top)} · ${Math.round(sizes.plate.width)}px`;
   };
 
-  // Sistema de Drag & Drop + Resize
   const DragDropManager = {
-    mode: null, // 'drag' | 'resize' | null
+    mode: null,
     activeElement: null,
     activeKey: null,
     handle: null,
@@ -1035,13 +1022,11 @@
       const draggables = $$('[data-draggable]', dom.flyer);
       draggables.forEach((el) => {
         el.addEventListener('pointerdown', (e) => {
-          // Ignora se clicou em um handle de resize
           if (e.target.hasAttribute('data-resize-handle')) return;
           this._onDragStart(e, el);
         });
       });
       
-      // Handlers de resize
       $$('[data-resize-handle]', dom.flyer).forEach((handle) => {
         handle.addEventListener('pointerdown', (e) => {
           const key = handle.dataset.for;
@@ -1124,7 +1109,6 @@
       let newLeft = this.startLeft + deltaX;
       let newTop = this.startTop + deltaY;
       
-      // Calcula dimensões do elemento para limitar
       const elRect = this.activeElement.getBoundingClientRect();
       const elWidth = elRect.width / this.scale;
       const elHeight = elRect.height / this.scale;
@@ -1142,7 +1126,6 @@
       const limits = SIZE_LIMITS[this.activeKey];
       let newWidth = this.startWidth + deltaX;
       
-      // Para o selo, usa o maior delta para manter aspect ratio 1:1
       if (this.activeKey === 'seal') {
         const maxDelta = Math.max(Math.abs(deltaX), Math.abs(deltaY));
         const sign = (deltaX + deltaY) >= 0 ? 1 : -1;
@@ -1153,7 +1136,6 @@
       
       state.sizes[this.activeKey].width = newWidth;
       
-      // Garante que o elemento não saia do canvas após redimensionar
       const currentLeft = state.positions[this.activeKey].left;
       if (currentLeft + newWidth > CANVAS_W) {
         state.positions[this.activeKey].left = CANVAS_W - newWidth;
@@ -1173,9 +1155,7 @@
         } else if (this.mode === 'resize' && this.handle) {
           this.handle.releasePointerCapture(e.pointerId);
         }
-      } catch (err) {
-        // Ignora se já liberado
-      }
+      } catch (err) {}
       
       this.activeElement = null;
       this.activeKey = null;
@@ -1396,7 +1376,6 @@
       state.image = anuncio.image || DEMO_IMAGE; 
       state.showSeal = anuncio.showSeal ?? false;
       
-      // Restaura posições (compatibilidade com anúncios antigos)
       state.positions = {
         logo: { ...DEFAULT_POSITIONS.logo, ...(anuncio.positions?.logo || {}) },
         seal: { ...DEFAULT_POSITIONS.seal, ...(anuncio.positions?.seal || {}) },
@@ -1404,7 +1383,6 @@
         plate: { ...DEFAULT_POSITIONS.plate, ...(anuncio.positions?.plate || {}) }
       };
       
-      // Restaura tamanhos (compatibilidade com anúncios antigos)
       state.sizes = {
         logo: { ...DEFAULT_SIZES.logo, ...(anuncio.sizes?.logo || {}) },
         seal: { ...DEFAULT_SIZES.seal, ...(anuncio.sizes?.seal || {}) },
@@ -1544,18 +1522,35 @@
     } catch (error) { toast('Erro ao processar a logo.', 'error'); }
   };
 
+  // CORREÇÃO CRÍTICA: Função de exportação reescrita para garantir renderização completa
   const buildExportNode = (themeId) => {
     const clone = dom.flyer.cloneNode(true); 
     clone.removeAttribute('id');
+    
+    // Remove IDs duplicados
     $$('[id]', clone).forEach((node) => node.removeAttribute('id'));
+    
+    // Aplica tema
     clone.classList.remove(...THEMES.map((t) => `theme-${t.id}`)); 
     clone.classList.add(`theme-${themeId}`);
+    
+    // CORREÇÃO: Remove overflow:hidden temporariamente para html2canvas
+    clone.style.overflow = 'visible';
     
     // Remove elementos de UI de edição
     $$('.draggable', clone).forEach((el) => {
       el.classList.remove('draggable', 'is-dragging', 'is-resizing');
+      el.style.cursor = 'default';
     });
     $$('[data-resize-handle]', clone).forEach((el) => el.remove());
+    
+    // CORREÇÃO: Aplica o scrim background explicitamente
+    const scrim = clone.querySelector('.flyer__scrim');
+    if (scrim) {
+      const computedStyle = getComputedStyle(dom.flyer);
+      const scrimBg = computedStyle.getPropertyValue('--scrim');
+      scrim.style.background = scrimBg;
+    }
     
     return clone;
   };
@@ -1563,11 +1558,41 @@
   const renderThemeToCanvas = async (themeId) => {
     const node = buildExportNode(themeId); 
     dom.exportHost.appendChild(node);
+    
     try {
+      // Aguarda imagens carregarem
       const images = $$('img', node);
-      await Promise.all(images.map((img) => img.decode?.().catch(() => {})));
+      await Promise.all(images.map((img) => {
+        if (img.complete) return Promise.resolve();
+        return new Promise((resolve) => {
+          img.onload = resolve;
+          img.onerror = resolve;
+        });
+      }));
+      
       await yieldToUI();
-      return await html2canvas(node, { scale: EXPORT_SCALE, width: CANVAS_W, height: CANVAS_H, backgroundColor: '#000000', useCORS: true, allowTaint: false, logging: false, removeContainer: true, imageTimeout: 15000 });
+      
+      // CORREÇÃO: Configuração otimizada para html2canvas
+      const canvas = await html2canvas(node, {
+        scale: EXPORT_SCALE,
+        width: CANVAS_W,
+        height: CANVAS_H,
+        backgroundColor: '#000000',
+        useCORS: true,
+        allowTaint: false,
+        logging: false,
+        removeContainer: true,
+        imageTimeout: 15000,
+        onclone: (clonedDoc) => {
+          // Garante que o clone tenha as fontes carregadas
+          const clonedFlyer = clonedDoc.querySelector('.flyer');
+          if (clonedFlyer) {
+            clonedFlyer.style.overflow = 'visible';
+          }
+        }
+      });
+      
+      return canvas;
     } finally { 
       node.remove(); 
     }
@@ -1597,7 +1622,6 @@
     return true;
   };
 
-  // CORREÇÃO: Nome do arquivo = nome do produto (state.fields.title)
   const getExportFilename = () => {
     const productName = state.fields.title?.trim() || 'encarte';
     return slugify(productName);
@@ -1619,6 +1643,7 @@
       setProgress(100, 'Concluído!'); 
       toast(`"${filename}" baixado (1350×1800).`, 'success');
     } catch (error) { 
+      console.error('Erro na exportação:', error);
       toast('Falha na exportação do encarte.', 'error'); 
     } finally { 
       toggleOverlay(false); 
@@ -1647,6 +1672,7 @@
       setProgress(100, 'Pacote pronto!'); 
       toast('Combo com 3 temas baixado em .ZIP.', 'success');
     } catch (error) { 
+      console.error('Erro no ZIP:', error);
       toast('Falha ao gerar o pacote ZIP.', 'error'); 
     } finally { 
       toggleOverlay(false); 
@@ -2075,337 +2101,4 @@
               <button type="button" class="btn-icon w-6 h-6 text-[10px]" data-action="edit-prod" data-id="${p.id}" title="Editar"><i class="fa-solid fa-pen"></i></button>
               <button type="button" class="btn-icon w-6 h-6 text-[10px] text-red-400 hover:text-red-300" data-action="delete-prod" data-id="${p.id}" title="Excluir"><i class="fa-solid fa-trash"></i></button>
             </div>
-          </article>
-        `;
-      }).join('');
-    },
-    async abrirModalImportarAnuncio() {
-      if (!state.cat.categoriaAtivaId) { toast('Selecione uma categoria antes de importar.', 'error'); return; }
-      const anuncios = await StorageManager.loadAll();
-      if (anuncios.length === 0) { toast('Nenhum encarte salvo ainda.', 'info'); return; }
-      anuncios.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
-      dom.importarAnuncioList.innerHTML = anuncios.map((anuncio) => {
-        const nome = sanitize(anuncio.fields?.title || anuncio.name || 'Sem nome', 60);
-        const descricao = sanitize(anuncio.fields?.subtitle || '', 100);
-        const imagem = anuncio.image || DEMO_IMAGE;
-        return `
-          <button type="button" class="anuncio-item text-left" data-import-id="${anuncio.id}" aria-label="Importar ${nome}">
-            <img class="anuncio-item__thumb" src="${imagem}" alt="${nome}" loading="lazy">
-            <div class="min-w-0">
-              <h3 class="truncate text-[10px] font-bold text-zinc-100" title="${nome}">${nome}</h3>
-              <p class="mt-0.5 line-clamp-2 text-[9px] text-zinc-500 leading-tight" title="${descricao}">${descricao || 'Sem descrição'}</p>
-            </div>
-          </button>
-        `;
-      }).join('');
-      dom.importarAnuncioDialog.showModal();
-    },
-    async importarAnuncio(anuncioId) {
-      const anuncio = await DB.get(DB_CONFIG.stores.anuncios, anuncioId); if (!anuncio) { toast('Encarte não encontrado.', 'error'); return; }
-      const nome = anuncio.fields?.title || anuncio.name || '';
-      const descricao = anuncio.fields?.subtitle || '';
-      const imagem = anuncio.image || null;
-      dom.produtoNome.value = nome; dom.produtoDescricao.value = descricao;
-      if (imagem && !imagem.startsWith('data:image/svg')) { state.cat.produtoImagens = [imagem]; }
-      else { state.cat.produtoImagens = []; }
-      this.renderFotosGrid(); state.cat.editandoProdutoId = null;
-      dom.btnSalvarProduto.innerHTML = '<i class="fa-solid fa-floppy-disk"></i> Salvar Produto';
-      if (dom.importarAnuncioDialog.open) dom.importarAnuncioDialog.close();
-      toast(`Dados importados. Revise antes de salvar.`, 'success');
-      dom.produtoNome.focus();
-    },
-    async buildPdfStructure() {
-      const cats = await this.loadCategorias(); const structure = [];
-      for (const cat of cats) {
-        const prods = await this.loadProdutosByCategoria(cat.id);
-        if (prods.length > 0) structure.push({ categoria: cat, produtos: prods });
-      }
-      return structure;
-    },
-    async renderPdfHost(structure, catalogTitle = 'Catálogo') {
-      dom.pdfHost.innerHTML = '';
-      const cover = document.createElement('section'); cover.className = 'pdf-cover';
-      cover.innerHTML = `<div class="pdf-cover__brand">Encarte Studio</div><h1 class="pdf-cover__title">${sanitize(catalogTitle, 60)}</h1><p class="pdf-cover__sub">Coleção Completa</p><p class="pdf-cover__year">${new Date().getFullYear()}</p>`;
-      dom.pdfHost.appendChild(cover);
-      const ITEMS_PER_PAGE = 6;
-      for (const { categoria, produtos } of structure) {
-        for (let i = 0; i < produtos.length; i += ITEMS_PER_PAGE) {
-          const chunk = produtos.slice(i, i + ITEMS_PER_PAGE);
-          const page = document.createElement('section'); page.className = 'pdf-page';
-          const isFirstOfCategory = i === 0;
-          const headerHtml = isFirstOfCategory
-            ? `<h2 class="pdf-cat-title">${sanitize(categoria.nome, 60)}</h2>`
-            : `<h2 class="pdf-cat-title" style="font-size:28px;">${sanitize(categoria.nome, 60)} <span style="font-size:14px;color:#71717a;font-weight:500;letter-spacing:2px;">(continuação)</span></h2>`;
-          page.innerHTML = `${headerHtml}<div class="pdf-grid">${chunk.map((p) => {
-            const fotoPrincipal = p.imagens[0];
-            return `<article class="pdf-item">
-              ${fotoPrincipal ? `<img class="pdf-item__img" src="${fotoPrincipal}" alt="${sanitize(p.nome, 60)}">` : `<div class="pdf-item__img" style="display:flex;align-items:center;justify-content:center;color:#a1a1aa;"><i class="fa-solid fa-image" style="font-size:48px;"></i></div>`}
-              <div class="pdf-item__body"><h3 class="pdf-item__name">${sanitize(p.nome, 80)}</h3><p class="pdf-item__desc">${sanitize(p.descricao || '', 300)}</p></div>
-            </article>`;
-          }).join('')}</div>`;
-          dom.pdfHost.appendChild(page);
-        }
-      }
-    },
-    async generatePdf() {
-      if (!ensureLibs('html2canvas', 'jsPDF')) return null;
-      const { jsPDF } = window.jspdf;
-      const structure = await this.buildPdfStructure();
-      if (structure.length === 0) { toast('Cadastre produtos em pelo menos uma categoria.', 'error'); return null; }
-      const totalProdutos = structure.reduce((acc, s) => acc + s.produtos.length, 0);
-      await this.renderPdfHost(structure); await yieldToUI();
-      const pages = $$('.pdf-cover, .pdf-page', dom.pdfHost);
-      const pdf = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
-      const pageWidth = 210, pageHeight = 297;
-      for (let i = 0; i < pages.length; i++) {
-        setProgress((i / pages.length) * 90, `Renderizando página ${i + 1} de ${pages.length}…`, `${totalProdutos} produtos no total`);
-        const canvas = await html2canvas(pages[i], { scale: 2, backgroundColor: '#ffffff', useCORS: true, allowTaint: false, logging: false, width: 794, windowWidth: 794 });
-        const imgData = canvas.toDataURL('image/jpeg', 0.92);
-        if (i > 0) pdf.addPage();
-        pdf.addImage(imgData, 'JPEG', 0, 0, pageWidth, pageHeight, undefined, 'FAST');
-        await yieldToUI();
-      }
-      return pdf;
-    },
-    async previewPdf() {
-      const structure = await this.buildPdfStructure();
-      if (structure.length === 0) { toast('Cadastre produtos em pelo menos uma categoria.', 'error'); return; }
-      await this.renderPdfHost(structure); dom.pdfPreviewContent.innerHTML = '';
-      const pages = $$('.pdf-cover, .pdf-page', dom.pdfHost);
-      pages.forEach((page) => {
-        const wrapper = document.createElement('div');
-        wrapper.className = 'rounded-lg border border-workspace-border bg-white shadow-2xl overflow-hidden';
-        wrapper.style.cssText = 'width:100%;max-width:600px;margin:0 auto;aspect-ratio:794/1123;position:relative;';
-        const clone = page.cloneNode(true);
-        clone.style.cssText = 'transform:scale(0.755);transform-origin:top left;width:794px;min-height:1123px;position:absolute;top:0;left:0;';
-        wrapper.appendChild(clone); dom.pdfPreviewContent.appendChild(wrapper);
-      });
-      dom.pdfPreviewDialog.showModal();
-    }
-  };
-
-  dom.form.addEventListener('input', (event) => {
-    const input = event.target.closest('[data-field]'); if (!input) return;
-    const key = input.dataset.field;
-    if (input.dataset.mask === 'currency') {
-      const masked = formatCurrencyMask(input.value); input.value = masked; state.fields[key] = masked;
-    } else if (input.dataset.mask === 'int') {
-      const value = String(Math.min(100, Number(onlyDigits(input.value).slice(0, 3) || 0)));
-      input.value = onlyDigits(input.value) ? value : ''; state.fields[key] = input.value;
-    } else { state.fields[key] = sanitize(input.value, Number(input.maxLength) > 0 ? input.maxLength : 150); }
-    scheduleRender();
-    AutoSaveManager.schedule();
-  });
-
-  dom.form.addEventListener('change', (event) => { 
-    const radio = event.target.closest('input[name="theme"]'); 
-    if (radio) {
-      applyTheme(radio.value);
-      AutoSaveManager.schedule();
-    }
-  });
-  dom.form.addEventListener('submit', (event) => event.preventDefault());
-
-  dom.btnCalc.addEventListener('click', () => {
-    const base = priceToNumber(state.fields.priceBase);
-    if (base <= 0) { toast('Informe o preço normal primeiro.', 'error'); return; }
-    state.fields.price3x = numberToCurrency(Math.round(base * 0.80 * 100) / 100);
-    state.fields.pricePix = numberToCurrency(Math.round(base * 0.75 * 100) / 100);
-    $('#price3x').value = state.fields.price3x; $('#pricePix').value = state.fields.pricePix;
-    scheduleRender(); 
-    AutoSaveManager.schedule();
-    toast(`3x: R$ ${state.fields.price3x} · PIX: R$ ${state.fields.pricePix}`, 'success');
-  });
-
-  dom.fileInput.addEventListener('change', (event) => { ingestFile(event.target.files[0]); event.target.value = ''; });
-  dom.btnRecrop.addEventListener('click', () => { if (state.source) openCropper(state.source); });
-  dom.btnResetImg.addEventListener('click', () => {
-    state.image = DEMO_IMAGE; state.source = null; dom.flyerImage.src = DEMO_IMAGE;
-    dom.fileName.textContent = 'Usando arte de demonstração.'; dom.btnRecrop.disabled = true;
-    AutoSaveManager.schedule();
-    toast('Arte de demonstração restaurada.', 'info');
-  });
-
-  dom.logoInput.addEventListener('change', (event) => { ingestLogo(event.target.files[0]); event.target.value = ''; });
-  dom.showLogo.addEventListener('change', () => { 
-    toggleLogo(dom.showLogo.checked); 
-    AutoSaveManager.schedule();
-  });
-  dom.btnRemoveLogo.addEventListener('click', removeLogo);
-  dom.showSeal.addEventListener('change', () => { 
-    toggleSeal(dom.showSeal.checked); 
-    AutoSaveManager.schedule();
-  });
-
-  dom.docTitle.addEventListener('input', () => {
-    AutoSaveManager.schedule();
-  });
-
-  $$('[data-crop-action]').forEach((btn) => btn.addEventListener('click', () => handleCropAction(btn.dataset.cropAction)));
-  $('#btnCropApply').addEventListener('click', applyCrop);
-  $('#btnCropCancel').addEventListener('click', closeCropper);
-  $('#btnCropClose').addEventListener('click', closeCropper);
-  dom.cropDialog.addEventListener('close', destroyCropper);
-
-  dom.btnJpg.addEventListener('click', exportSingle);
-  dom.btnZip.addEventListener('click', exportBatchZip);
-  dom.btnSaveAnuncio.addEventListener('click', saveCurrentAnuncio);
-  dom.btnNewAnuncio.addEventListener('click', newAnuncio);
-
-  dom.anunciosList.addEventListener('click', (event) => {
-    const btn = event.target.closest('[data-action]'); if (!btn) return;
-    const id = Number(btn.dataset.id);
-    if (btn.dataset.action === 'load') loadAnuncio(id);
-    else if (btn.dataset.action === 'delete') deleteAnuncio(id);
-  });
-
-  ['dragenter', 'dragover'].forEach((type) => { dom.previewArea.addEventListener(type, (event) => { event.preventDefault(); dom.stageFrame.style.outline = '2px dashed #fbbf24'; }); });
-  ['dragleave', 'drop'].forEach((type) => { dom.previewArea.addEventListener(type, (event) => { event.preventDefault(); dom.stageFrame.style.outline = 'none'; }); });
-  dom.previewArea.addEventListener('drop', (event) => { const [file] = event.dataTransfer?.files ?? []; ingestFile(file); });
-
-  dom.btnAddCategoria.addEventListener('click', async () => {
-    const nome = dom.novaCategoriaNome.value; const cat = await CatalogoManager.addCategoria(nome);
-    if (cat) { dom.novaCategoriaNome.value = ''; await CatalogoManager.renderCategoriasList(); await CatalogoManager.selectCategoria(cat.id); }
-  });
-  dom.novaCategoriaNome.addEventListener('keydown', (e) => { if (e.key === 'Enter') { e.preventDefault(); dom.btnAddCategoria.click(); } });
-
-  dom.categoriasList.addEventListener('click', async (event) => {
-    const deleteBtn = event.target.closest('[data-action="delete-cat"]');
-    if (deleteBtn) {
-      event.stopPropagation(); const id = Number(deleteBtn.dataset.id);
-      const success = await CatalogoManager.deleteCategoria(id);
-      if (success) { 
-        await CatalogoManager.renderCategoriasList(); 
-        if (state.cat.categoriaAtivaId) await CatalogoManager.selectCategoria(state.cat.categoriaAtivaId); 
-        else CatalogoManager.updateUIForNoCategoria(); 
-      }
-      return;
-    }
-    const item = event.target.closest('.cat-categoria-item');
-    if (item) await CatalogoManager.selectCategoria(Number(item.dataset.catId));
-  });
-
-  dom.produtoFile.addEventListener('change', async (event) => {
-    const files = event.target.files; event.target.value = '';
-    await CatalogoManager.adicionarFotos(files);
-  });
-
-  dom.fotosGrid.addEventListener('click', (event) => {
-    const btn = event.target.closest('[data-foto-action]'); if (!btn) return;
-    const index = Number(btn.dataset.index);
-    if (btn.dataset.fotoAction === 'set-principal') CatalogoManager.setFotoPrincipal(index);
-    else if (btn.dataset.fotoAction === 'remove') CatalogoManager.removeFoto(index);
-  });
-
-  dom.btnSalvarProduto.addEventListener('click', async () => {
-    if (!state.cat.categoriaAtivaId) { toast('Selecione uma categoria.', 'error'); return; }
-    const nome = dom.produtoNome.value; const descricao = dom.produtoDescricao.value;
-    if (!nome.trim()) { toast('Informe o nome do produto.', 'error'); return; }
-    try {
-      const success = await CatalogoManager.addOrUpdateProduto({
-        id: state.cat.editandoProdutoId, categoriaId: state.cat.categoriaAtivaId, nome, descricao, imagens: [...state.cat.produtoImagens]
-      });
-      if (success) { CatalogoManager.resetProdutoForm(); await CatalogoManager.renderProdutosList(state.cat.categoriaAtivaId); }
-    } catch (err) {
-      console.error('Erro ao salvar produto:', err);
-      toast('Erro ao salvar produto.', 'error');
-    }
-  });
-
-  dom.btnLimparProduto.addEventListener('click', () => { CatalogoManager.resetProdutoForm(); });
-
-  dom.produtosList.addEventListener('click', async (event) => {
-    const btn = event.target.closest('[data-action]'); if (!btn) return;
-    const id = Number(btn.dataset.id);
-    if (btn.dataset.action === 'edit-prod') await CatalogoManager.editProduto(id);
-    else if (btn.dataset.action === 'delete-prod') {
-      const success = await CatalogoManager.deleteProduto(id);
-      if (success) await CatalogoManager.renderProdutosList(state.cat.categoriaAtivaId);
-    }
-  });
-
-  dom.btnPreviewPdf.addEventListener('click', () => CatalogoManager.previewPdf());
-  dom.btnPdfPreviewClose.addEventListener('click', () => { if (dom.pdfPreviewDialog.open) dom.pdfPreviewDialog.close(); });
-  dom.btnPdfPreviewDownload.addEventListener('click', async () => {
-    if (dom.pdfPreviewDialog.open) dom.pdfPreviewDialog.close(); await downloadPdfFlow();
-  });
-  dom.btnDownloadPdf.addEventListener('click', downloadPdfFlow);
-
-  async function downloadPdfFlow() {
-    if (!ensureLibs('html2canvas', 'jsPDF')) return;
-    toggleOverlay(true, 'Preparando catálogo…', 'Montando estrutura do PDF');
-    try {
-      await document.fonts.ready;
-      const pdf = await CatalogoManager.generatePdf();
-      if (!pdf) { toggleOverlay(false); return; }
-      setProgress(95, 'Finalizando PDF…');
-      pdf.save(`catalogo-${slugify(dom.docTitle.value || 'produtos')}-${Date.now()}.pdf`);
-      setProgress(100, 'Concluído!'); toast('Catálogo PDF baixado com sucesso.', 'success');
-    } catch (error) {
-      console.error(error); toast('Falha ao gerar o catálogo PDF.', 'error');
-    } finally { toggleOverlay(false); }
-  }
-
-  dom.btnImportarAnuncio.addEventListener('click', () => CatalogoManager.abrirModalImportarAnuncio());
-  dom.btnImportarClose.addEventListener('click', () => { if (dom.importarAnuncioDialog.open) dom.importarAnuncioDialog.close(); });
-  dom.btnImportarCancelar.addEventListener('click', () => { if (dom.importarAnuncioDialog.open) dom.importarAnuncioDialog.close(); });
-  dom.importarAnuncioList.addEventListener('click', (event) => {
-    const card = event.target.closest('[data-import-id]'); if (!card) return;
-    CatalogoManager.importarAnuncio(Number(card.dataset.importId));
-  });
-
-  const beforeUnloadHandler = (e) => {
-    if (state.currentAnuncioId && AutoSaveManager._debouncedSave) {
-      const isSaving = dom.autoSaveIndicator?.classList.contains('is-saving');
-      if (isSaving) {
-        e.preventDefault();
-        e.returnValue = '';
-        return '';
-      }
-    }
-  };
-  window.addEventListener('beforeunload', beforeUnloadHandler);
-
-  const init = async () => {
-    try {
-      await DB.init(); 
-      await DB.migrateFromLocalStorage(); 
-      await loadGlobalLogo();
-      
-      dom.flyerImage.src = state.image; 
-      applyTheme(state.theme); 
-      toggleLogo(state.showLogo); 
-      toggleSeal(state.showSeal);
-      applyLayout();
-      render(); 
-      fitPreview(); 
-      await renderAnunciosList();
-      
-      if ('ResizeObserver' in window) new ResizeObserver(fitPreview).observe(dom.previewArea);
-      else window.addEventListener('resize', fitPreview);
-      document.fonts?.ready.then(fitPreview);
-      
-      initTabs(); 
-      await CatalogoManager.renderCategoriasList();
-      const cats = await CatalogoManager.loadCategorias();
-      if (cats.length > 0) await CatalogoManager.selectCategoria(cats[0].id);
-      else CatalogoManager.updateUIForNoCategoria();
-      
-      AutoSaveManager.init();
-      KeyboardShortcuts.init();
-      DragDropManager.init();
-      
-      console.log('%c✓ Encarte Studio inicializado', 'color: #fbbf24; font-weight: bold;');
-      console.log('%cAtalhos: Ctrl+S (Salvar) · Ctrl+N (Novo) · Ctrl+E (Exportar) · Esc (Fechar modal)', 'color: #a1a1aa;');
-      console.log('%cDrag & Drop + Resize: Arraste elementos ou use o handle dourado', 'color: #a1a1aa;');
-    } catch (error) {
-      console.error('Falha crítica na inicialização:', error);
-      toast('Erro ao inicializar o sistema.', 'error');
-    }
-  };
-
-  init();
-})();
-</script>
-</body>
-</html>
+         
