@@ -42,57 +42,65 @@
 <!-- ================= COMPONENTES DE UI ================= -->
 <style type="text/tailwindcss">
   @layer components {
-    /* Layout Base */
     .app-shell { @apply flex flex-col h-screen bg-workspace-bg text-zinc-100 font-sans overflow-hidden; }
     .app-header { @apply h-14 flex items-center justify-between px-4 border-b border-workspace-border bg-workspace-panel z-30 flex-shrink-0; }
     .app-body { @apply flex flex-1 overflow-hidden; }
     
-    /* Sidebars */
     .sidebar { @apply flex flex-col border-r border-workspace-border bg-workspace-panel w-72 flex-shrink-0; }
     .sidebar-right { @apply border-r-0 border-l w-80; }
     .sidebar-header { @apply px-4 py-3 border-b border-workspace-border flex items-center justify-between flex-shrink-0; }
     .sidebar-content { @apply flex-1 overflow-y-auto p-4 space-y-5 custom-scrollbar; }
     
-    /* Canvas Area */
     .canvas-area { @apply flex-1 relative bg-[#0a0a0c] overflow-auto flex items-center justify-center p-8; 
       background-image: radial-gradient(#2a2a2e 1px, transparent 1px); background-size: 20px 20px; }
     
-    /* UI Elements */
     .ui-section { @apply space-y-3; }
     .ui-label { @apply flex items-center gap-2 text-[11px] font-semibold uppercase tracking-wider text-zinc-400 mb-1.5; }
     .ui-input { @apply w-full rounded-md border border-workspace-border bg-zinc-950 px-3 py-2 text-sm text-zinc-100 placeholder-zinc-600 outline-none transition focus:border-workspace-accent focus:ring-1 focus:ring-workspace-accent/30; }
     .ui-hint { @apply text-[10px] text-zinc-500 mt-1; }
     
-    /* Buttons */
     .btn { @apply inline-flex items-center justify-center gap-2 rounded-md px-3 py-2 text-xs font-bold uppercase tracking-wide transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-workspace-accent disabled:opacity-50 disabled:cursor-not-allowed; }
     .btn-primary { @apply btn bg-workspace-accent text-zinc-950 hover:bg-workspace-accentHover; }
     .btn-secondary { @apply btn border border-workspace-border bg-zinc-800 text-zinc-200 hover:border-zinc-600 hover:bg-zinc-700; }
     .btn-ghost { @apply btn border border-transparent text-zinc-400 hover:text-zinc-100 hover:bg-zinc-800; }
     .btn-icon { @apply inline-flex items-center justify-center w-8 h-8 rounded-md text-zinc-400 hover:text-zinc-100 hover:bg-zinc-800 transition; }
 
-    /* Form Controls */
     .toggle-switch { @apply relative h-5 w-9 cursor-pointer rounded-full bg-zinc-700 transition; }
     .toggle-switch::after { @apply absolute left-0.5 top-0.5 h-4 w-4 rounded-full bg-zinc-300 transition-transform content-['']; }
     .toggle-switch:checked { @apply bg-workspace-accent; }
     .toggle-switch:checked::after { @apply translate-x-4 bg-zinc-950; }
 
-    /* Theme Cards */
     .theme-card { @apply flex cursor-pointer flex-col items-center gap-2 rounded-lg border border-workspace-border bg-zinc-900 p-3 text-center transition hover:border-workspace-accent/50; }
     .theme-radio:checked + .theme-card { @apply border-workspace-accent bg-workspace-accent/10 ring-1 ring-workspace-accent; }
     .theme-radio { @apply sr-only; }
 
-    /* Custom Scrollbar */
     .custom-scrollbar::-webkit-scrollbar { @apply w-1.5; }
     .custom-scrollbar::-webkit-scrollbar-track { @apply bg-transparent; }
     .custom-scrollbar::-webkit-scrollbar-thumb { @apply bg-zinc-700 rounded-full hover:bg-zinc-600; }
 
-    /* Tabs */
     .tab-btn { @apply flex-1 py-2 text-xs font-bold uppercase tracking-wider text-zinc-500 border-b-2 border-transparent transition hover:text-zinc-300; }
     .tab-btn.active { @apply text-workspace-accent border-workspace-accent; }
+
+    .autosave-indicator {
+      @apply flex items-center gap-1.5 rounded-full px-2.5 py-1 text-[10px] font-bold uppercase tracking-wider transition-all duration-300 opacity-0 pointer-events-none;
+    }
+    .autosave-indicator.is-saving {
+      @apply bg-amber-950/40 border border-amber-700/50 text-amber-300 opacity-100;
+    }
+    .autosave-indicator.is-saved {
+      @apply bg-emerald-950/40 border border-emerald-700/50 text-emerald-400 opacity-100;
+    }
+    .autosave-indicator.is-error {
+      @apply bg-red-950/40 border border-red-700/50 text-red-400 opacity-100;
+    }
+
+    .shortcut-hint {
+      @apply inline-flex items-center gap-1 rounded border border-workspace-border bg-zinc-900 px-1.5 py-0.5 text-[9px] font-mono font-bold text-zinc-400;
+    }
   }
 </style>
 
-<!-- ================= ARTE DO ENCARTE (Mantido e Otimizado) ================= -->
+<!-- ================= ARTE DO ENCARTE ================= -->
 <style>
   .flyer {
     position: relative; width: 450px; height: 600px; overflow: hidden;
@@ -102,10 +110,56 @@
   }
   .flyer__media { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; object-position: center; display: block; }
   .flyer__scrim { position: absolute; inset: 0; pointer-events: none; }
-  .logo { position: absolute; top: 20px; left: 20%; transform: translateX(-50%); width: 175px; object-fit: contain; z-index: 10; filter: drop-shadow(0 4px 12px rgba(0,0,0,.6)); }
+  
+  /* ===== NOVO: Elementos arrastáveis ===== */
+  .draggable {
+    cursor: grab;
+    transition: outline 0.15s ease, box-shadow 0.15s ease;
+    touch-action: none;
+  }
+  .draggable:hover {
+    outline: 2px dashed rgba(251, 191, 36, 0.5);
+    outline-offset: 2px;
+  }
+  .draggable.is-dragging {
+    cursor: grabbing;
+    outline: 2px solid #fbbf24;
+    outline-offset: 2px;
+    box-shadow: 0 0 0 4px rgba(251, 191, 36, 0.2), 0 20px 40px rgba(0, 0, 0, 0.5);
+    z-index: 100 !important;
+  }
+  .draggable::before {
+    content: '\f7c4';
+    font-family: 'Font Awesome 6 Free';
+    font-weight: 900;
+    position: absolute;
+    top: -24px;
+    right: -4px;
+    background: #fbbf24;
+    color: #18181b;
+    width: 18px;
+    height: 18px;
+    border-radius: 4px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 9px;
+    opacity: 0;
+    transition: opacity 0.15s ease;
+    pointer-events: none;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.4);
+  }
+  .draggable:hover::before {
+    opacity: 1;
+  }
+  .draggable.is-dragging::before {
+    opacity: 0;
+  }
+
+  .logo { position: absolute; width: 175px; object-fit: contain; z-index: 10; filter: drop-shadow(0 4px 12px rgba(0,0,0,.6)); }
   .logo--hidden { display: none; }
   
-  .seal { position: absolute; top: 80px; left: 16px; width: 132px; height: 132px; }
+  .seal { position: absolute; width: 132px; height: 132px; }
   .seal--hidden { display: none; }
   .seal__disc {
     position: absolute; inset: 0; border-radius: 50%;
@@ -130,7 +184,7 @@
   .seal__ribbon-text { font-family: 'Oswald', sans-serif; font-weight: 600; font-size: 13px; letter-spacing: 3px; text-transform: uppercase; color: var(--ribbon-text); }
   
   .pricebox {
-    position: absolute; left: 16px; bottom: 112px; padding: 11px 14px 10px; border-radius: 12px;
+    position: absolute; padding: 11px 14px 10px; border-radius: 12px;
     background: var(--price-bg); border: 1px solid var(--price-border);
     box-shadow: 0 14px 30px rgba(0,0,0,.55); text-align: right;
   }
@@ -141,7 +195,7 @@
   .pricebox__cur { font-size: 18px; font-weight: 600; margin-top: 10px; margin-right: 3px; }
   .pricebox__int { font-size: 62px; font-weight: 700; line-height: .86; letter-spacing: -1.5px; }
   .pricebox__cents { font-size: 24px; font-weight: 600; margin-top: 5px; }
-  . { margin-top: 8px; font-size: 9.5px; font-weight: 800; letter-spacing: 1.6px; text-transform: uppercase; color: var(--price-accent); }
+  .pricebox__terms { margin-top: 8px; font-size: 9.5px; font-weight: 800; letter-spacing: 1.6px; text-transform: uppercase; color: var(--price-accent); }
   .pricebox[data-digits="4"] .pricebox__int { font-size: 52px; }
   .pricebox[data-digits="5"] .pricebox__int { font-size: 44px; }
   .pricebox[data-digits="6"] .pricebox__int { font-size: 38px; }
@@ -158,7 +212,6 @@
   .plate__legal { display: flex; justify-content: space-between; gap: 12px; font-size: 6.6px; font-weight: 700; letter-spacing: .55px; text-transform: uppercase; color: var(--plate-legal); }
   .plate__legal span:last-child { text-align: right; }
 
-  /* Temas */
   .theme-padrao {
     --scrim: linear-gradient(180deg, rgba(0,0,0,.55) 0%, rgba(0,0,0,.04) 30%, rgba(0,0,0,.28) 62%, rgba(0,0,0,.85) 100%);
     --seal-hi: #ff8a7a; --seal-a: #e4231d; --seal-b: #9c0d0d; --seal-c: #5c0505;
@@ -198,7 +251,6 @@
 
   .stage-scaler { width: 450px; height: 600px; transform: scale(var(--ps, 1)); transform-origin: center center; transition: transform 0.2s ease; }
   
-  /* Modais e Overlays */
   dialog { border: none; padding: 0; background: transparent; max-width: none; max-height: none; }
   dialog::backdrop { background: rgba(0,0,0,0.85); backdrop-filter: blur(4px); }
   .modal-content { @apply w-[min(94vw,880px)] overflow-hidden rounded-xl border border-workspace-border bg-workspace-panel shadow-2xl; }
@@ -206,7 +258,6 @@
   .anuncio-item { @apply flex flex-col gap-2 rounded-lg border border-workspace-border bg-zinc-900 p-2 transition hover:border-workspace-accent/50 hover:bg-zinc-800 cursor-pointer; }
   .anuncio-item__thumb { @apply w-full h-20 flex-shrink-0 rounded-md border border-workspace-border bg-zinc-800 object-cover; }
   
-  /* Catálogo (Mantido compatível) */
   .cat-categoria-item { @apply flex items-center justify-between gap-2 rounded-lg border border-workspace-border bg-zinc-900 px-3 py-2.5 text-sm font-semibold text-zinc-200 transition cursor-pointer hover:border-workspace-accent/50 hover:bg-zinc-800; }
   .cat-categoria-item.active { @apply border-workspace-accent bg-workspace-accent/10 text-workspace-accent; }
   .cat-produto-card { @apply flex flex-col gap-2 rounded-lg border border-workspace-border bg-zinc-900 p-3 transition hover:border-workspace-accent/40 hover:bg-zinc-800; }
@@ -222,7 +273,6 @@
   .foto-item__btn.danger { @apply hover:bg-red-500 hover:text-white; }
   .foto-add-btn { @apply flex aspect-square cursor-pointer flex-col items-center justify-center gap-1 rounded-md border-2 border-dashed border-workspace-border bg-zinc-950/60 text-center transition hover:border-workspace-accent/70 hover:bg-zinc-900; }
 
-  /* PDF Host (Oculto) */
   #pdfHost { position: fixed; top: 0; left: -10000px; width: 794px; pointer-events: none; z-index: -1; background: #fff; color: #111; font-family: 'Inter', sans-serif; }
   .pdf-page { width: 794px; min-height: 1123px; padding: 48px 44px; background: #fff; color: #111; box-sizing: border-box; page-break-after: always; }
   .pdf-cover { width: 794px; height: 1123px; background: linear-gradient(160deg, #0a0a0b 0%, #1c1917 55%, #292524 100%); color: #fff; display: flex; flex-direction: column; justify-content: center; align-items: center; text-align: center; padding: 60px; box-sizing: border-box; page-break-after: always; }
@@ -237,29 +287,36 @@
   .pdf-item__body { padding: 14px 16px; }
   .pdf-item__name { font-family: 'Oswald', sans-serif; font-size: 18px; font-weight: 700; text-transform: uppercase; color: #18181b; letter-spacing: .5px; line-height: 1.15; margin-bottom: 6px; }
   .pdf-item__desc { font-size: 11px; color: #52525b; line-height: 1.45; letter-spacing: .2px; }
+
+  .modulo { display: none; }
+  .modulo.active { display: flex; }
 </style>
 </head>
 
 <body class="app-shell">
 
-<!-- ================= 1. BARRA SUPERIOR (AÇÕES GLOBAIS) ================= -->
 <header class="app-header" role="banner">
   <div class="flex items-center gap-3">
     <i class="fa-solid fa-bolt text-workspace-accent text-lg" aria-hidden="true"></i>
     <span class="font-display text-lg uppercase tracking-wide">Encarte<span class="text-workspace-accent">Studio</span></span>
     <span class="mx-2 h-4 w-px bg-workspace-border"></span>
     <input type="text" id="docTitle" value="Novo Encarte" class="bg-transparent text-sm font-medium text-zinc-300 outline-none focus:text-zinc-100 w-40 border-b border-transparent focus:border-workspace-accent transition" aria-label="Título do documento">
+    
+    <span id="autoSaveIndicator" class="autosave-indicator" role="status" aria-live="polite">
+      <i class="fa-solid fa-circle-check text-[10px]"></i>
+      <span id="autoSaveText">Salvo</span>
+    </span>
   </div>
   
   <div class="flex items-center gap-2">
-    <!-- Abas de Módulo -->
     <div class="flex items-center gap-1 bg-zinc-900 rounded-lg p-1 mr-4" role="tablist">
       <button type="button" class="tab-btn active" data-modulo="encarte" role="tab" aria-selected="true">Encarte</button>
       <button type="button" class="tab-btn" data-modulo="catalogo" role="tab" aria-selected="false">Catálogo PDF</button>
     </div>
     
-    <button type="button" id="btnSaveAnuncio" class="btn-secondary">
+    <button type="button" id="btnSaveAnuncio" class="btn-secondary" title="Salvar (Ctrl+S)">
       <i class="fa-solid fa-floppy-disk" aria-hidden="true"></i> <span class="hidden sm:inline">Salvar</span>
+      <span class="shortcut-hint hidden md:inline-flex">⌘S</span>
     </button>
     <button type="button" id="btnDownloadJpg" class="btn-primary">
       <i class="fa-solid fa-download" aria-hidden="true"></i> Exportar JPG
@@ -270,20 +327,16 @@
   </div>
 </header>
 
-<!-- ================= 2. CORPO DO APP (WORKSPACE) ================= -->
 <div class="app-body">
 
-  <!-- MÓDULO ENCARTE -->
-  <div id="moduloEncarte" class="modulo active flex w-full h-full" role="tabpanel">
+  <div id="moduloEncarte" class="modulo active w-full h-full" role="tabpanel">
     
-    <!-- PAINEL ESQUERDO: ATIVOS E BIBLIOTECA -->
     <aside class="sidebar" aria-label="Biblioteca de ativos">
       <div class="sidebar-header">
         <h2 class="text-xs font-bold uppercase tracking-wider text-zinc-400">Ativos</h2>
         <button type="button" id="btnNewAnuncio" class="btn-icon" title="Novo encarte"><i class="fa-solid fa-plus"></i></button>
       </div>
       <div class="sidebar-content custom-scrollbar">
-        <!-- Seção: Meus Encartes -->
         <section class="ui-section">
           <h3 class="ui-label"><i class="fa-solid fa-folder-open text-workspace-accent"></i> Salvos</h3>
           <div id="anunciosList" class="grid grid-cols-2 gap-2">
@@ -291,7 +344,6 @@
           </div>
         </section>
 
-        <!-- Seção: Uploads -->
         <section class="ui-section">
           <h3 class="ui-label"><i class="fa-solid fa-cloud-arrow-up text-workspace-accent"></i> Mídia</h3>
           
@@ -329,18 +381,27 @@
             </div>
           </div>
         </section>
+
+        <!-- ===== NOVO: Dica de Drag & Drop ===== -->
+        <section class="ui-section">
+          <div class="rounded-lg border border-workspace-border bg-zinc-900/60 p-3">
+            <h3 class="ui-label mb-2"><i class="fa-solid fa-hand-pointer text-workspace-accent"></i> Dica</h3>
+            <p class="text-[10px] text-zinc-400 leading-relaxed">
+              <strong class="text-zinc-200">Arraste</strong> a logo, o selo e a caixa de preço diretamente no canvas para reposicioná-los.
+            </p>
+          </div>
+        </section>
       </div>
     </aside>
 
-    <!-- ÁREA CENTRAL: CANVAS -->
     <main class="canvas-area" id="previewArea" aria-label="Área de desenho">
       <div id="stageFrame" class="stage-scaler">
         <article id="flyer" class="flyer theme-padrao" aria-label="Pré-visualização do encarte">
           <img id="flyerImage" class="flyer__media" src="" alt="Foto do produto" crossorigin="anonymous">
           <div class="flyer__scrim" aria-hidden="true"></div>
-          <img id="flyerLogo" class="logo logo--hidden" src="" alt="Logo da loja" crossorigin="anonymous">
+          <img id="flyerLogo" class="logo logo--hidden draggable" data-draggable="logo" src="" alt="Logo da loja" crossorigin="anonymous">
           
-          <section class="seal" aria-label="Selo de desconto">
+          <section class="seal draggable" data-draggable="seal" aria-label="Selo de desconto">
             <div class="seal__disc">
               <span class="seal__top" data-bind="sealTop">OFERTA</span>
               <span class="seal__value"><span data-bind="discount">25</span><span class="seal__pct">%</span></span>
@@ -348,13 +409,14 @@
             <p class="seal__ribbon"><span class="seal__ribbon-text" data-bind="ribbon">DESCONTO</span></p>
           </section>
           
-          <section class="pricebox" id="priceBox" data-digits="3" aria-label="Preços">
+          <section class="pricebox draggable" id="priceBox" data-draggable="pricebox" data-digits="3" aria-label="Preços">
             <p class="pricebox__old">De: <s data-bind="priceBase">R$ 599,90</s></p>
             <p class="pricebox__new">
               <span class="pricebox__cur">R$</span>
               <span class="pricebox__int" data-bind="pricePixInt">449</span>
               <span class="pricebox__cents" data-bind="pricePixCents">,90</span>
-            </p><br>
+            </p>
+            <br>
             <p class="pricebox__terms">- no PIX -</p>
             <div class="pricebox__list">
               <div class="pricebox__row">
@@ -376,20 +438,17 @@
         </article>
       </div>
       
-      <!-- Controles Flutuantes do Canvas -->
       <div class="absolute bottom-6 left-1/2 -translate-x-1/2 flex items-center gap-2 rounded-full border border-workspace-border bg-workspace-panel/90 px-4 py-2 backdrop-blur shadow-xl">
         <span class="text-[10px] font-bold uppercase tracking-widest text-zinc-500">450×600 pt · Export <span class="text-workspace-accent">1350×1800 px</span></span>
       </div>
     </main>
 
-    <!-- PAINEL DIREITO: PROPRIEDADES -->
     <aside class="sidebar sidebar-right" aria-label="Painel de propriedades">
       <div class="sidebar-header">
         <h2 class="text-xs font-bold uppercase tracking-wider text-zinc-400">Propriedades</h2>
       </div>
       <form id="controlForm" class="sidebar-content custom-scrollbar" novalidate>
         
-        <!-- Grupo: Textos Principais -->
         <section class="ui-section">
           <h3 class="ui-label"><i class="fa-solid fa-font text-workspace-accent"></i> Conteúdo</h3>
           <div>
@@ -402,7 +461,6 @@
           </div>
         </section>
 
-        <!-- Grupo: Preços -->
         <section class="ui-section">
           <h3 class="ui-label"><i class="fa-solid fa-tags text-workspace-accent"></i> Preços</h3>
           <div class="grid grid-cols-2 gap-2">
@@ -424,7 +482,6 @@
           </button>
         </section>
 
-        <!-- Grupo: Selo -->
         <section class="ui-section">
           <div class="flex items-center justify-between mb-2">
             <h3 class="ui-label mb-0"><i class="fa-solid fa-certificate text-workspace-accent"></i> Selo de Desconto</h3>
@@ -446,14 +503,12 @@
           </div>
         </section>
 
-        <!-- Grupo: Rodapé Legal -->
         <section class="ui-section">
           <h3 class="ui-label"><i class="fa-solid fa-scale-balanced text-workspace-accent"></i> Rodapé Legal</h3>
           <input class="ui-input mb-2" id="legalLeft" data-field="legalLeft" type="text" maxlength="150" value="Válido enquanto durar o estoque.">
           <input class="ui-input" id="legalRight" data-field="legalRight" type="text" maxlength="150" value="Estoque limitado · Imagem ilustrativa">
         </section>
 
-        <!-- Grupo: Tema -->
         <section class="ui-section">
           <h3 class="ui-label"><i class="fa-solid fa-palette text-workspace-accent"></i> Tema Visual</h3>
           <div class="grid grid-cols-3 gap-2">
@@ -480,12 +535,36 @@
             </div>
           </div>
         </section>
+
+        <!-- ===== NOVO: Controles de Posição ===== -->
+        <section class="ui-section">
+          <div class="flex items-center justify-between mb-2">
+            <h3 class="ui-label mb-0"><i class="fa-solid fa-up-down-left-right text-workspace-accent"></i> Posições</h3>
+            <button type="button" id="btnResetPositions" class="text-[10px] text-zinc-400 hover:text-amber-400 font-bold uppercase tracking-wider">Resetar</button>
+          </div>
+          <p class="text-[10px] text-zinc-500 leading-relaxed">
+            Arraste os elementos no canvas ou use os valores abaixo para ajuste fino.
+          </p>
+          <div class="mt-3 space-y-2 text-[10px] text-zinc-400">
+            <div class="flex justify-between">
+              <span>Logo:</span>
+              <span id="posLogo" class="font-mono text-zinc-300">—</span>
+            </div>
+            <div class="flex justify-between">
+              <span>Selo:</span>
+              <span id="posSeal" class="font-mono text-zinc-300">—</span>
+            </div>
+            <div class="flex justify-between">
+              <span>Preço:</span>
+              <span id="posPrice" class="font-mono text-zinc-300">—</span>
+            </div>
+          </div>
+        </section>
       </form>
     </aside>
   </div>
 
-  <!-- MÓDULO CATÁLOGO (Estrutura mantida, adaptada ao novo layout) -->
-  <div id="moduloCatalogo" class="modulo hidden w-full h-full" role="tabpanel">
+  <div id="moduloCatalogo" class="modulo w-full h-full" role="tabpanel">
     <aside class="sidebar" aria-label="Categorias do catálogo">
       <div class="sidebar-header">
         <h2 class="text-xs font-bold uppercase tracking-wider text-zinc-400">Categorias</h2>
@@ -578,14 +657,13 @@
 
 </div>
 
-<!-- ================= MODAIS (Mantidos e Estilizados) ================= -->
 <dialog id="cropDialog" aria-labelledby="cropTitle">
   <div class="modal-content">
     <header class="flex items-center justify-between border-b border-workspace-border px-5 py-4">
       <h2 id="cropTitle" class="flex items-center gap-2 font-display text-lg uppercase tracking-wide">
         <i class="fa-solid fa-crop-simple text-workspace-accent"></i> Enquadrar foto · 3:4
       </h2>
-      <button type="button" id="btnCropClose" class="btn-icon"><i class="fa-solid fa-xmark"></i></button>
+      <button type="button" id="btnCropClose" class="btn-icon" aria-label="Fechar (Esc)"><i class="fa-solid fa-xmark"></i></button>
     </header>
     <div class="h-[50vh] bg-zinc-950 p-4 flex items-center justify-center">
       <img id="cropImage" src="" alt="Imagem para recorte" class="max-h-full max-w-full block">
@@ -610,7 +688,7 @@
       <h2 id="importarAnuncioTitle" class="flex items-center gap-2 font-display text-lg uppercase tracking-wide">
         <i class="fa-solid fa-recycle text-workspace-accent"></i> Importar de Encarte Salvo
       </h2>
-      <button type="button" id="btnImportarClose" class="btn-icon"><i class="fa-solid fa-xmark"></i></button>
+      <button type="button" id="btnImportarClose" class="btn-icon" aria-label="Fechar (Esc)"><i class="fa-solid fa-xmark"></i></button>
     </header>
     <div class="max-h-[60vh] overflow-y-auto bg-zinc-900/60 p-5 custom-scrollbar">
       <div id="importarAnuncioList" class="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4">
@@ -629,7 +707,7 @@
       <h2 id="pdfPreviewTitle" class="flex items-center gap-2 font-display text-lg uppercase tracking-wide">
         <i class="fa-solid fa-file-pdf text-workspace-accent"></i> Pré-visualização
       </h2>
-      <button type="button" id="btnPdfPreviewClose" class="btn-icon"><i class="fa-solid fa-xmark"></i></button>
+      <button type="button" id="btnPdfPreviewClose" class="btn-icon" aria-label="Fechar (Esc)"><i class="fa-solid fa-xmark"></i></button>
     </header>
     <div class="max-h-[75vh] overflow-y-auto bg-zinc-900 p-5 custom-scrollbar">
       <div id="pdfPreviewContent" class="mx-auto flex flex-col gap-4"></div>
@@ -640,7 +718,6 @@
   </div>
 </dialog>
 
-<!-- OVERLAY DE PROCESSAMENTO -->
 <div id="progressOverlay" class="fixed inset-0 z-50 hidden place-items-center bg-zinc-950/90 p-6 backdrop-blur-sm">
   <div class="w-[min(92vw,420px)] rounded-xl border border-workspace-border bg-workspace-panel p-6 text-center shadow-2xl" role="status" aria-live="polite">
     <i class="fa-solid fa-circle-notch fa-spin text-3xl text-workspace-accent" aria-hidden="true"></i>
@@ -656,7 +733,6 @@
 <div id="pdfHost" aria-hidden="true"></div>
 <div id="toastArea" class="pointer-events-none fixed bottom-5 right-5 z-[60] flex flex-col gap-2" aria-live="polite" aria-atomic="false"></div>
 
-<!-- ================= CDN: SCRIPTS ================= -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.6.2/cropper.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
@@ -674,7 +750,7 @@
   const EXPORT_SCALE = 3;
   const DB_CONFIG = {
     name: 'EncarteStudioDB',
-    version: 2,
+    version: 3, // Incrementado para migração de posições
     stores: { anuncios: 'anuncios', config: 'config', categorias: 'categorias', produtos: 'produtos' }
   };
 
@@ -684,10 +760,27 @@
     { id: 'natal', label: 'Especial de Natal', file: '03-especial-natal' }
   ];
 
+  // ===== NOVO: Posições padrão dos elementos arrastáveis =====
+  const DEFAULT_POSITIONS = {
+    logo: { top: 20, left: 137.5 }, // 20% de 450 = 90, + metade da logo (87.5) = 137.5 (esquerda real)
+    seal: { top: 80, left: 16 },
+    pricebox: { top: 376, left: 16 } // 600 - 112 (bottom original) - ~112 altura = 376
+  };
+
   const sanitize = (value, max = 120) => String(value ?? '').replace(/[\u0000-\u001F\u007F<>]/g, '').slice(0, max);
   const onlyDigits = (value) => String(value ?? '').replace(/\D+/g, '');
   const slugify = (value) => sanitize(value, 60).normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '').slice(0, 40) || 'encarte';
   const yieldToUI = () => new Promise((resolve) => requestAnimationFrame(() => setTimeout(resolve, 0)));
+
+  const debounce = (fn, wait = 300) => {
+    let timeoutId;
+    const debounced = (...args) => {
+      clearTimeout(timeoutId);
+      timeoutId = setTimeout(() => fn(...args), wait);
+    };
+    debounced.cancel = () => clearTimeout(timeoutId);
+    return debounced;
+  };
 
   const formatCurrencyMask = (raw) => {
     const digits = onlyDigits(raw).slice(0, 9);
@@ -746,6 +839,12 @@
   const state = {
     currentAnuncioId: null, createdAt: null, theme: 'padrao', image: DEMO_IMAGE, source: null,
     logo: null, logoName: '', showLogo: true, showSeal: false,
+    // ===== NOVO: Posições dos elementos arrastáveis =====
+    positions: {
+      logo: { ...DEFAULT_POSITIONS.logo },
+      seal: { ...DEFAULT_POSITIONS.seal },
+      pricebox: { ...DEFAULT_POSITIONS.pricebox }
+    },
     fields: {
       sealTop: 'OFERTA', ribbon: 'DESCONTO', discount: '25', priceBase: '599,90', price3x: '479,92', pricePix: '449,90',
       title: 'Perfume Noir Intense', subtitle: 'Eau de Parfum · 100ml · Alta fixação',
@@ -754,7 +853,6 @@
     cat: { categoriaAtivaId: null, produtoImagens: [], editandoProdutoId: null }
   };
 
-  // Atualizado para refletir a nova estrutura DOM
   const dom = {
     form: $('#controlForm'), flyer: $('#flyer'), flyerImage: $('#flyerImage'), flyerLogo: $('#flyerLogo'),
     priceBox: $('#priceBox'), seal: $('.seal'), previewArea: $('#previewArea'), stageFrame: $('#stageFrame'),
@@ -767,15 +865,22 @@
     btnSaveAnuncio: $('#btnSaveAnuncio'), btnNewAnuncio: $('#btnNewAnuncio'), docTitle: $('#docTitle'),
     categoriasList: $('#categoriasList'), novaCategoriaNome: $('#novaCategoriaNome'), btnAddCategoria: $('#btnAddCategoria'),
     produtosArea: $('#produtosArea'), catHeaderSubtitle: $('#catHeaderSubtitle'), catStatusMsg: $('#catStatusMsg'),
-    catProdutoFormHost: $('#catProdutoFormHost'), catProdutoCategoriaLabel: $('#catProdutoCategoriaLabel'), // Nota: removido do HTML novo, mas mantido por segurança se reusado
-    catProdutosCategoriaLabel: $('#catProdutosCategoriaLabel'), catProdutosCount: $('#catProdutosCount'),
+    catProdutoFormHost: $('#catProdutoFormHost'),
+    catProdutosCount: $('#catProdutosCount'),
     produtoFile: $('#produtoFile'), fotosGrid: $('#fotosGrid'), produtoNome: $('#produtoNome'), produtoDescricao: $('#produtoDescricao'),
     btnSalvarProduto: $('#btnSalvarProduto'), btnLimparProduto: $('#btnLimparProduto'), produtosList: $('#produtosList'),
     btnDownloadPdf: $('#btnDownloadPdf'), btnPreviewPdf: $('#btnPreviewPdf'), pdfHost: $('#pdfHost'),
     pdfPreviewDialog: $('#pdfPreviewDialog'), pdfPreviewContent: $('#pdfPreviewContent'),
     btnPdfPreviewClose: $('#btnPdfPreviewClose'), btnPdfPreviewDownload: $('#btnPdfPreviewDownload'),
     btnImportarAnuncio: $('#btnImportarAnuncio'), importarAnuncioDialog: $('#importarAnuncioDialog'),
-    importarAnuncioList: $('#importarAnuncioList'), btnImportarClose: $('#btnImportarClose'), btnImportarCancelar: $('#btnImportarCancelar')
+    importarAnuncioList: $('#importarAnuncioList'), btnImportarClose: $('#btnImportarClose'), btnImportarCancelar: $('#btnImportarCancelar'),
+    autoSaveIndicator: $('#autoSaveIndicator'),
+    autoSaveText: $('#autoSaveText'),
+    // ===== NOVO: Referências para drag & drop =====
+    btnResetPositions: $('#btnResetPositions'),
+    posLogo: $('#posLogo'),
+    posSeal: $('#posSeal'),
+    posPrice: $('#posPrice')
   };
 
   const bindings = new Map();
@@ -820,6 +925,142 @@
   const toggleSeal = (visible) => { state.showSeal = visible; dom.seal.classList.toggle('seal--hidden', !visible); };
   const toggleLogo = (visible) => { state.showLogo = visible; dom.flyerLogo.classList.toggle('logo--hidden', !visible || !state.logo); };
 
+  // ===== NOVO: Aplicar posições no DOM =====
+  const applyPositions = () => {
+    const { positions } = state;
+    
+    // Logo
+    dom.flyerLogo.style.top = `${positions.logo.top}px`;
+    dom.flyerLogo.style.left = `${positions.logo.left}px`;
+    dom.flyerLogo.style.transform = 'none'; // Remove o transform original
+    
+    // Selo
+    dom.seal.style.top = `${positions.seal.top}px`;
+    dom.seal.style.left = `${positions.seal.left}px`;
+    
+    // Pricebox
+    dom.priceBox.style.top = `${positions.pricebox.top}px`;
+    dom.priceBox.style.left = `${positions.pricebox.left}px`;
+    dom.priceBox.style.bottom = 'auto'; // Remove o bottom original
+    
+    // Atualiza indicadores no painel
+    if (dom.posLogo) dom.posLogo.textContent = `${Math.round(positions.logo.left)}, ${Math.round(positions.logo.top)}`;
+    if (dom.posSeal) dom.posSeal.textContent = `${Math.round(positions.seal.left)}, ${Math.round(positions.seal.top)}`;
+    if (dom.posPrice) dom.posPrice.textContent = `${Math.round(positions.pricebox.left)}, ${Math.round(positions.pricebox.top)}`;
+  };
+
+  // ===== NOVO: Sistema de Drag & Drop =====
+  const DragDropManager = {
+    activeElement: null,
+    startX: 0,
+    startY: 0,
+    startTop: 0,
+    startLeft: 0,
+    scale: 1,
+
+    init() {
+      const draggables = $$('[data-draggable]', dom.flyer);
+      draggables.forEach((el) => {
+        el.addEventListener('pointerdown', (e) => this._onPointerDown(e, el));
+      });
+      
+      document.addEventListener('pointermove', (e) => this._onPointerMove(e));
+      document.addEventListener('pointerup', (e) => this._onPointerUp(e));
+      document.addEventListener('pointercancel', (e) => this._onPointerUp(e));
+      
+      // Botão de reset
+      if (dom.btnResetPositions) {
+        dom.btnResetPositions.addEventListener('click', () => this.resetPositions());
+      }
+    },
+
+    _onPointerDown(e, element) {
+      // Só inicia drag com botão principal (esquerdo) ou toque
+      if (e.button !== 0 && e.pointerType !== 'touch') return;
+      
+      e.preventDefault();
+      e.stopPropagation();
+      
+      this.activeElement = element;
+      const key = element.dataset.draggable;
+      
+      // Captura o pointer para receber eventos mesmo fora do elemento
+      element.setPointerCapture(e.pointerId);
+      
+      // Calcula a escala atual do stage
+      const stageStyle = getComputedStyle(dom.stageFrame);
+      this.scale = parseFloat(stageStyle.getPropertyValue('--ps')) || 1;
+      
+      // Posição inicial do pointer (em coordenadas do flyer, considerando escala)
+      this.startX = e.clientX;
+      this.startY = e.clientY;
+      
+      // Posição inicial do elemento
+      this.startTop = state.positions[key].top;
+      this.startLeft = state.positions[key].left;
+      
+      element.classList.add('is-dragging');
+    },
+
+    _onPointerMove(e) {
+      if (!this.activeElement) return;
+      
+      e.preventDefault();
+      
+      const key = this.activeElement.dataset.draggable;
+      
+      // Calcula o delta em pixels do flyer (desconsiderando a escala)
+      const deltaX = (e.clientX - this.startX) / this.scale;
+      const deltaY = (e.clientY - this.startY) / this.scale;
+      
+      let newLeft = this.startLeft + deltaX;
+      let newTop = this.startTop + deltaY;
+      
+      // Limites do canvas (mantém o elemento dentro do flyer)
+      const elRect = this.activeElement.getBoundingClientRect();
+      const elWidth = elRect.width / this.scale;
+      const elHeight = elRect.height / this.scale;
+      
+      newLeft = Math.max(0, Math.min(CANVAS_W - elWidth, newLeft));
+      newTop = Math.max(0, Math.min(CANVAS_H - elHeight, newTop));
+      
+      // Atualiza o state
+      state.positions[key].left = newLeft;
+      state.positions[key].top = newTop;
+      
+      // Aplica no DOM
+      applyPositions();
+    },
+
+    _onPointerUp(e) {
+      if (!this.activeElement) return;
+      
+      this.activeElement.classList.remove('is-dragging');
+      
+      try {
+        this.activeElement.releasePointerCapture(e.pointerId);
+      } catch (err) {
+        // Ignora se o pointer já foi liberado
+      }
+      
+      this.activeElement = null;
+      
+      // Agenda auto-save após reposicionamento
+      AutoSaveManager.schedule();
+    },
+
+    resetPositions() {
+      state.positions = {
+        logo: { ...DEFAULT_POSITIONS.logo },
+        seal: { ...DEFAULT_POSITIONS.seal },
+        pricebox: { ...DEFAULT_POSITIONS.pricebox }
+      };
+      applyPositions();
+      AutoSaveManager.schedule();
+      toast('Posições resetadas para o padrão.', 'info');
+    }
+  };
+
   const initTabs = () => {
     const tabs = $$('.tab-btn');
     tabs.forEach((tab) => {
@@ -831,16 +1072,10 @@
           t.setAttribute('aria-selected', String(isActive));
         });
         
-        $$('.modulo').forEach((m) => {
-            m.classList.add('hidden');
-            m.classList.remove('flex'); // Remove flex do encarte quando oculto
-        });
+        $$('.modulo').forEach((m) => m.classList.remove('active'));
         
         const panel = $(`#modulo${target.charAt(0).toUpperCase() + target.slice(1)}`);
-        if (panel) {
-            panel.classList.remove('hidden');
-            if(target === 'encarte') panel.classList.add('flex'); // Restaura flex para o layout do encarte
-        }
+        if (panel) panel.classList.add('active');
         
         if (target === 'encarte') fitPreview();
       });
@@ -975,7 +1210,13 @@
       return {
         id: state.currentAnuncioId || Date.now(), name: dom.docTitle.value || 'Sem nome',
         createdAt: state.currentAnuncioId ? state.createdAt : new Date().toISOString(),
-        theme: state.theme, fields: { ...state.fields }, image: state.image, showSeal: state.showSeal
+        theme: state.theme, fields: { ...state.fields }, image: state.image, showSeal: state.showSeal,
+        // ===== NOVO: Salva posições =====
+        positions: {
+          logo: { ...state.positions.logo },
+          seal: { ...state.positions.seal },
+          pricebox: { ...state.positions.pricebox }
+        }
       };
     },
     async saveCurrent() {
@@ -997,6 +1238,22 @@
     applyToState(anuncio) {
       state.currentAnuncioId = anuncio.id; state.createdAt = anuncio.createdAt; state.theme = anuncio.theme;
       state.fields = { ...anuncio.fields }; state.image = anuncio.image || DEMO_IMAGE; state.showSeal = anuncio.showSeal ?? false;
+      
+      // ===== NOVO: Restaura posições (com fallback para anúncios antigos) =====
+      if (anuncio.positions) {
+        state.positions = {
+          logo: { ...DEFAULT_POSITIONS.logo, ...(anuncio.positions.logo || {}) },
+          seal: { ...DEFAULT_POSITIONS.seal, ...(anuncio.positions.seal || {}) },
+          pricebox: { ...DEFAULT_POSITIONS.pricebox, ...(anuncio.positions.pricebox || {}) }
+        };
+      } else {
+        state.positions = {
+          logo: { ...DEFAULT_POSITIONS.logo },
+          seal: { ...DEFAULT_POSITIONS.seal },
+          pricebox: { ...DEFAULT_POSITIONS.pricebox }
+        };
+      }
+      
       dom.docTitle.value = anuncio.name || 'Encarte';
       dom.flyerImage.src = state.image;
       if (state.logo) { dom.flyerLogo.src = state.logo; dom.logoName.textContent = state.logoName || 'Logo carregada.'; }
@@ -1005,7 +1262,9 @@
       const themeRadio = $(`input[name="theme"][value="${state.theme}"]`);
       if (themeRadio) themeRadio.checked = true;
       dom.showLogo.checked = state.showLogo; dom.showSeal.checked = state.showSeal;
-      applyTheme(state.theme); toggleLogo(state.showLogo); toggleSeal(state.showSeal); scheduleRender();
+      applyTheme(state.theme); toggleLogo(state.showLogo); toggleSeal(state.showSeal);
+      applyPositions(); // ===== NOVO: Aplica posições =====
+      scheduleRender();
     }
   };
 
@@ -1125,6 +1384,12 @@
     const clone = dom.flyer.cloneNode(true); clone.removeAttribute('id');
     $$('[id]', clone).forEach((node) => node.removeAttribute('id'));
     clone.classList.remove(...THEMES.map((t) => `theme-${t.id}`)); clone.classList.add(`theme-${themeId}`);
+    
+    // ===== NOVO: Remove classe draggable e estados visuais do clone para exportação limpa =====
+    $$('.draggable', clone).forEach((el) => {
+      el.classList.remove('draggable', 'is-dragging');
+    });
+    
     return clone;
   };
 
@@ -1157,6 +1422,12 @@
     return true;
   };
 
+  // ===== CORREÇÃO: Nome do arquivo = nome do produto =====
+  const getExportFilename = () => {
+    const productName = state.fields.title || 'encarte';
+    return slugify(productName);
+  };
+
   const exportSingle = async () => {
     if (!ensureLibs('html2canvas')) return;
     lockActions(true);
@@ -1167,7 +1438,8 @@
       const canvas = await renderThemeToCanvas(state.theme);
       setProgress(80, 'Codificando JPG…');
       const blob = await canvasToBlob(canvas);
-      triggerDownload(blob, `${slugify(dom.docTitle.value || 'encarte')}.jpg`);
+      // ===== CORREÇÃO: Usa nome do produto =====
+      triggerDownload(blob, `${getExportFilename()}.jpg`);
       setProgress(100, 'Concluído!'); toast('Encarte JPG baixado (1350×1800).', 'success');
     } catch (error) { toast('Falha na exportação do encarte.', 'error'); }
     finally { toggleOverlay(false); lockActions(false); }
@@ -1177,7 +1449,9 @@
     if (!ensureLibs('html2canvas', 'JSZip')) return;
     lockActions(true); toggleOverlay(true, 'Iniciando lote…', '3 temas em alta resolução');
     try {
-      await document.fonts.ready; const zip = new JSZip(); const slug = slugify(dom.docTitle.value || 'encarte');
+      await document.fonts.ready; const zip = new JSZip(); 
+      // ===== CORREÇÃO: Usa nome do produto =====
+      const slug = getExportFilename();
       for (const [index, theme] of THEMES.entries()) {
         setProgress((index / THEMES.length) * 75, `Renderizando ${theme.label} (${index + 1}/3)…`);
         await yieldToUI();
@@ -1185,7 +1459,7 @@
         const base64 = canvas.toDataURL('image/jpeg', 0.95).split(',')[1];
         zip.file(`${theme.file}-${slug}.jpg`, base64, { base64: true });
       }
-      zip.file('LEIA-ME.txt', `Encarte Studio — pacote de ofertas\r\nProduto: ${dom.docTitle.value}\r\nGerado em: ${new Date().toLocaleString('pt-BR')}\r\nResolução: ${CANVAS_W * EXPORT_SCALE}x${CANVAS_H * EXPORT_SCALE}px\r\nFormato: JPG qualidade 95%\r\n`);
+      zip.file('LEIA-ME.txt', `Encarte Studio — pacote de ofertas\r\nProduto: ${state.fields.title}\r\nGerado em: ${new Date().toLocaleString('pt-BR')}\r\nResolução: ${CANVAS_W * EXPORT_SCALE}x${CANVAS_H * EXPORT_SCALE}px\r\nFormato: JPG qualidade 95%\r\n`);
       const blob = await zip.generateAsync({ type: 'blob', compression: 'STORE' }, (meta) => setProgress(75 + meta.percent * 0.25, `Compactando ZIP… ${meta.percent.toFixed(0)}%`));
       triggerDownload(blob, `encartes-${slug}-combo.zip`);
       setProgress(100, 'Pacote pronto!'); toast('Combo com 3 temas baixado em .ZIP.', 'success');
@@ -1212,19 +1486,37 @@
     `).join('');
   };
 
-  const saveCurrentAnuncio = async () => {
-    dom.btnSaveAnuncio.disabled = true; dom.btnSaveAnuncio.innerHTML = '<i class="fa-solid fa-circle-notch fa-spin"></i>';
+  const performSave = async (silent = false) => {
+    dom.btnSaveAnuncio.disabled = true;
+    const originalHtml = dom.btnSaveAnuncio.innerHTML;
+    if (!silent) {
+      dom.btnSaveAnuncio.innerHTML = '<i class="fa-solid fa-circle-notch fa-spin"></i>';
+    }
+    
     try {
       const success = await StorageManager.saveCurrent();
-      if (success) { await renderAnunciosList(); toast('Encarte salvo com alta qualidade.', 'success'); }
-    } finally { dom.btnSaveAnuncio.disabled = false; dom.btnSaveAnuncio.innerHTML = '<i class="fa-solid fa-floppy-disk"></i> <span class="hidden sm:inline">Salvar</span>'; }
+      if (success) {
+        await renderAnunciosList();
+        if (!silent) toast('Encarte salvo com alta qualidade.', 'success');
+        AutoSaveManager.markAsSaved();
+        return true;
+      }
+      return false;
+    } finally {
+      dom.btnSaveAnuncio.disabled = false;
+      dom.btnSaveAnuncio.innerHTML = originalHtml;
+    }
   };
+
+  const saveCurrentAnuncio = () => performSave(false);
 
   const loadAnuncio = async (id) => {
     const anuncios = await StorageManager.loadAll();
     const anuncio = anuncios.find((a) => a.id === id);
     if (!anuncio) { toast('Encarte não encontrado.', 'error'); return; }
-    StorageManager.applyToState(anuncio); toast('Encarte carregado.', 'success');
+    StorageManager.applyToState(anuncio); 
+    AutoSaveManager.cancel();
+    toast('Encarte carregado.', 'success');
   };
 
   const deleteAnuncio = async (id) => {
@@ -1237,6 +1529,12 @@
   const newAnuncio = async () => {
     state.currentAnuncioId = null; state.image = DEMO_IMAGE; state.source = null; state.showLogo = true; state.showSeal = false;
     state.fields = { sealTop: 'OFERTA', ribbon: 'DESCONTO', discount: '25', priceBase: '599,90', price3x: '479,92', pricePix: '449,90', title: 'Novo Produto', subtitle: 'Descrição do produto', legalLeft: 'Válido enquanto durar o estoque.', legalRight: 'Imagem ilustrativa' };
+    // ===== NOVO: Reseta posições =====
+    state.positions = {
+      logo: { ...DEFAULT_POSITIONS.logo },
+      seal: { ...DEFAULT_POSITIONS.seal },
+      pricebox: { ...DEFAULT_POSITIONS.pricebox }
+    };
     dom.docTitle.value = 'Novo Encarte';
     dom.flyerImage.src = DEMO_IMAGE;
     if (state.logo) { dom.flyerLogo.src = state.logo; dom.logoName.textContent = state.logoName || 'Logo carregada.'; }
@@ -1244,7 +1542,140 @@
     dom.fileName.textContent = 'Usando arte de demonstração.'; dom.btnRecrop.disabled = true;
     Object.keys(state.fields).forEach((key) => { const input = $(`[data-field="${key}"]`); if (input) input.value = state.fields[key]; });
     dom.showLogo.checked = state.showLogo; dom.showSeal.checked = state.showSeal;
-    toggleLogo(state.showLogo); toggleSeal(state.showSeal); scheduleRender(); toast('Novo encarte criado.', 'info');
+    toggleLogo(state.showLogo); toggleSeal(state.showSeal);
+    applyPositions(); // ===== NOVO: Aplica posições =====
+    scheduleRender();
+    AutoSaveManager.cancel();
+    AutoSaveManager.hide();
+    toast('Novo encarte criado.', 'info');
+  };
+
+  const AutoSaveManager = {
+    DELAY_MS: 3000,
+    MIN_INTERVAL_MS: 5000,
+    _lastSaveTime: 0,
+    _hideTimeout: null,
+    _debouncedSave: null,
+
+    init() {
+      this._debouncedSave = debounce(() => {
+        this._executeAutoSave();
+      }, this.DELAY_MS);
+    },
+
+    schedule() {
+      if (!state.currentAnuncioId) return;
+      this.showSaving();
+      this._debouncedSave();
+    },
+
+    async _executeAutoSave() {
+      const now = Date.now();
+      const timeSinceLastSave = now - this._lastSaveTime;
+      
+      if (timeSinceLastSave < this.MIN_INTERVAL_MS) {
+        this._debouncedSave();
+        return;
+      }
+
+      try {
+        await performSave(true);
+        this._lastSaveTime = Date.now();
+      } catch (error) {
+        console.error('Auto-save falhou:', error);
+        this.markAsError();
+      }
+    },
+
+    showSaving() {
+      if (!dom.autoSaveIndicator) return;
+      clearTimeout(this._hideTimeout);
+      dom.autoSaveIndicator.className = 'autosave-indicator is-saving';
+      dom.autoSaveIndicator.innerHTML = '<i class="fa-solid fa-circle-notch fa-spin text-[10px]"></i><span>Salvando...</span>';
+    },
+
+    markAsSaved() {
+      if (!dom.autoSaveIndicator) return;
+      dom.autoSaveIndicator.className = 'autosave-indicator is-saved';
+      dom.autoSaveIndicator.innerHTML = '<i class="fa-solid fa-circle-check text-[10px]"></i><span>Salvo</span>';
+      clearTimeout(this._hideTimeout);
+      this._hideTimeout = setTimeout(() => this.hide(), 3000);
+    },
+
+    markAsError() {
+      if (!dom.autoSaveIndicator) return;
+      dom.autoSaveIndicator.className = 'autosave-indicator is-error';
+      dom.autoSaveIndicator.innerHTML = '<i class="fa-solid fa-triangle-exclamation text-[10px]"></i><span>Erro ao salvar</span>';
+      clearTimeout(this._hideTimeout);
+      this._hideTimeout = setTimeout(() => this.hide(), 4000);
+    },
+
+    hide() {
+      if (!dom.autoSaveIndicator) return;
+      dom.autoSaveIndicator.className = 'autosave-indicator';
+    },
+
+    cancel() {
+      if (this._debouncedSave && typeof this._debouncedSave.cancel === 'function') {
+        this._debouncedSave.cancel();
+      }
+      clearTimeout(this._hideTimeout);
+    }
+  };
+
+  const KeyboardShortcuts = {
+    init() {
+      document.addEventListener('keydown', (e) => this._handleKeydown(e));
+    },
+
+    _handleKeydown(e) {
+      const isMac = navigator.platform.toUpperCase().indexOf('MAC') >= 0;
+      const modKey = isMac ? e.metaKey : e.ctrlKey;
+
+      if (e.key === 'Escape') {
+        const openDialogs = $$('dialog[open]');
+        if (openDialogs.length > 0) {
+          e.preventDefault();
+          const topDialog = openDialogs[openDialogs.length - 1];
+          topDialog.close();
+          return;
+        }
+        if (document.activeElement && document.activeElement !== document.body) {
+          document.activeElement.blur();
+        }
+        return;
+      }
+
+      if (modKey && (e.key === 's' || e.key === 'S')) {
+        e.preventDefault();
+        const encarteActive = $('#moduloEncarte').classList.contains('active');
+        if (encarteActive && !dom.btnSaveAnuncio.disabled) {
+          saveCurrentAnuncio();
+          toast('Encarte salvo (Ctrl+S)', 'success');
+        }
+        return;
+      }
+
+      if (modKey && (e.key === 'n' || e.key === 'N')) {
+        e.preventDefault();
+        const encarteActive = $('#moduloEncarte').classList.contains('active');
+        if (encarteActive) {
+          if (confirm('Criar novo encarte? Alterações não salvas serão perdidas.')) {
+            newAnuncio();
+          }
+        }
+        return;
+      }
+
+      if (modKey && (e.key === 'e' || e.key === 'E')) {
+        e.preventDefault();
+        const encarteActive = $('#moduloEncarte').classList.contains('active');
+        if (encarteActive && !dom.btnJpg.disabled) {
+          exportSingle();
+        }
+        return;
+      }
+    }
   };
 
   const CatalogoManager = {
@@ -1515,7 +1946,6 @@
     }
   };
 
-  // ================= EVENT LISTENERS =================
   dom.form.addEventListener('input', (event) => {
     const input = event.target.closest('[data-field]'); if (!input) return;
     const key = input.dataset.field;
@@ -1526,9 +1956,16 @@
       input.value = onlyDigits(input.value) ? value : ''; state.fields[key] = input.value;
     } else { state.fields[key] = sanitize(input.value, Number(input.maxLength) > 0 ? input.maxLength : 150); }
     scheduleRender();
+    AutoSaveManager.schedule();
   });
 
-  dom.form.addEventListener('change', (event) => { const radio = event.target.closest('input[name="theme"]'); if (radio) applyTheme(radio.value); });
+  dom.form.addEventListener('change', (event) => { 
+    const radio = event.target.closest('input[name="theme"]'); 
+    if (radio) {
+      applyTheme(radio.value);
+      AutoSaveManager.schedule();
+    }
+  });
   dom.form.addEventListener('submit', (event) => event.preventDefault());
 
   dom.btnCalc.addEventListener('click', () => {
@@ -1537,7 +1974,9 @@
     state.fields.price3x = numberToCurrency(Math.round(base * 0.80 * 100) / 100);
     state.fields.pricePix = numberToCurrency(Math.round(base * 0.75 * 100) / 100);
     $('#price3x').value = state.fields.price3x; $('#pricePix').value = state.fields.pricePix;
-    scheduleRender(); toast(`3x: R$ ${state.fields.price3x} · PIX: R$ ${state.fields.pricePix}`, 'success');
+    scheduleRender(); 
+    AutoSaveManager.schedule();
+    toast(`3x: R$ ${state.fields.price3x} · PIX: R$ ${state.fields.pricePix}`, 'success');
   });
 
   dom.fileInput.addEventListener('change', (event) => { ingestFile(event.target.files[0]); event.target.value = ''; });
@@ -1545,13 +1984,24 @@
   dom.btnResetImg.addEventListener('click', () => {
     state.image = DEMO_IMAGE; state.source = null; dom.flyerImage.src = DEMO_IMAGE;
     dom.fileName.textContent = 'Usando arte de demonstração.'; dom.btnRecrop.disabled = true;
+    AutoSaveManager.schedule();
     toast('Arte de demonstração restaurada.', 'info');
   });
 
   dom.logoInput.addEventListener('change', (event) => { ingestLogo(event.target.files[0]); event.target.value = ''; });
-  dom.showLogo.addEventListener('change', () => toggleLogo(dom.showLogo.checked));
+  dom.showLogo.addEventListener('change', () => { 
+    toggleLogo(dom.showLogo.checked); 
+    AutoSaveManager.schedule();
+  });
   dom.btnRemoveLogo.addEventListener('click', removeLogo);
-  dom.showSeal.addEventListener('change', () => toggleSeal(dom.showSeal.checked));
+  dom.showSeal.addEventListener('change', () => { 
+    toggleSeal(dom.showSeal.checked); 
+    AutoSaveManager.schedule();
+  });
+
+  dom.docTitle.addEventListener('input', () => {
+    AutoSaveManager.schedule();
+  });
 
   $$('[data-crop-action]').forEach((btn) => btn.addEventListener('click', () => handleCropAction(btn.dataset.cropAction)));
   $('#btnCropApply').addEventListener('click', applyCrop);
@@ -1662,18 +2112,50 @@
     CatalogoManager.importarAnuncio(Number(card.dataset.importId));
   });
 
+  const beforeUnloadHandler = (e) => {
+    if (state.currentAnuncioId && AutoSaveManager._debouncedSave) {
+      const isSaving = dom.autoSaveIndicator?.classList.contains('is-saving');
+      if (isSaving) {
+        e.preventDefault();
+        e.returnValue = '';
+        return '';
+      }
+    }
+  };
+  window.addEventListener('beforeunload', beforeUnloadHandler);
+
   const init = async () => {
     try {
-      await DB.init(); await DB.migrateFromLocalStorage(); await loadGlobalLogo();
-      dom.flyerImage.src = state.image; applyTheme(state.theme); toggleLogo(state.showLogo); toggleSeal(state.showSeal);
-      render(); fitPreview(); await renderAnunciosList();
+      await DB.init(); 
+      await DB.migrateFromLocalStorage(); 
+      await loadGlobalLogo();
+      
+      dom.flyerImage.src = state.image; 
+      applyTheme(state.theme); 
+      toggleLogo(state.showLogo); 
+      toggleSeal(state.showSeal);
+      applyPositions(); // ===== NOVO: Aplica posições iniciais =====
+      render(); 
+      fitPreview(); 
+      await renderAnunciosList();
+      
       if ('ResizeObserver' in window) new ResizeObserver(fitPreview).observe(dom.previewArea);
       else window.addEventListener('resize', fitPreview);
       document.fonts?.ready.then(fitPreview);
-      initTabs(); await CatalogoManager.renderCategoriasList();
+      
+      initTabs(); 
+      await CatalogoManager.renderCategoriasList();
       const cats = await CatalogoManager.loadCategorias();
       if (cats.length > 0) await CatalogoManager.selectCategoria(cats[0].id);
       else CatalogoManager.updateUIForNoCategoria();
+      
+      AutoSaveManager.init();
+      KeyboardShortcuts.init();
+      DragDropManager.init(); // ===== NOVO: Inicializa drag & drop =====
+      
+      console.log('%c✓ Encarte Studio inicializado', 'color: #fbbf24; font-weight: bold;');
+      console.log('%cAtalhos: Ctrl+S (Salvar) · Ctrl+N (Novo) · Ctrl+E (Exportar) · Esc (Fechar modal)', 'color: #a1a1aa;');
+      console.log('%cDrag & Drop: Arraste logo, selo e caixa de preço no canvas', 'color: #a1a1aa;');
     } catch (error) {
       console.error('Falha crítica na inicialização:', error);
       toast('Erro ao inicializar o sistema.', 'error');
