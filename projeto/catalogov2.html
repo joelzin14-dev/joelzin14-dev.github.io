@@ -6,16 +6,13 @@
 <title>Encarte Studio · Workspace Profissional</title>
 <meta name="description" content="Gerador client-side de encartes e catálogos em PDF com layout profissional tipo Canva/Photoshop.">
 
-<!-- ================= FONTES ================= -->
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Oswald:wght@400;500;600;700&display=swap" rel="stylesheet">
 
-<!-- ================= CDN: ÍCONES / CROPPER ================= -->
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.6.2/cropper.min.css">
 
-<!-- ================= CDN: TAILWIND ================= -->
 <script src="https://cdn.tailwindcss.com"></script>
 <script>
   tailwind.config = {
@@ -39,7 +36,6 @@
   }
 </script>
 
-<!-- ================= COMPONENTES DE UI ================= -->
 <style type="text/tailwindcss">
   @layer components {
     .app-shell { @apply flex flex-col h-screen bg-workspace-bg text-zinc-100 font-sans overflow-hidden; }
@@ -100,7 +96,6 @@
   }
 </style>
 
-<!-- ================= ARTE DO ENCARTE ================= -->
 <style>
   .flyer {
     position: relative; width: 450px; height: 600px; overflow: hidden;
@@ -111,17 +106,19 @@
   .flyer__media { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; object-position: center; display: block; }
   .flyer__scrim { position: absolute; inset: 0; pointer-events: none; }
   
-  /* ===== NOVO: Elementos arrastáveis ===== */
+  /* Elementos arrastáveis e redimensionáveis */
   .draggable {
     cursor: grab;
     transition: outline 0.15s ease, box-shadow 0.15s ease;
     touch-action: none;
+    position: absolute;
   }
   .draggable:hover {
     outline: 2px dashed rgba(251, 191, 36, 0.5);
     outline-offset: 2px;
   }
-  .draggable.is-dragging {
+  .draggable.is-dragging,
+  .draggable.is-resizing {
     cursor: grabbing;
     outline: 2px solid #fbbf24;
     outline-offset: 2px;
@@ -148,18 +145,52 @@
     transition: opacity 0.15s ease;
     pointer-events: none;
     box-shadow: 0 2px 6px rgba(0,0,0,0.4);
+    z-index: 25;
   }
   .draggable:hover::before {
     opacity: 1;
   }
-  .draggable.is-dragging::before {
+  .draggable.is-dragging::before,
+  .draggable.is-resizing::before {
     opacity: 0;
   }
 
-  .logo { position: absolute; width: 175px; object-fit: contain; z-index: 10; filter: drop-shadow(0 4px 12px rgba(0,0,0,.6)); }
+  /* Handle de redimensionamento */
+  .resize-handle {
+    position: absolute;
+    width: 11px;
+    height: 11px;
+    background: #fbbf24;
+    border: 1.5px solid #18181b;
+    border-radius: 2px;
+    bottom: -6px;
+    right: -6px;
+    cursor: nwse-resize;
+    opacity: 0;
+    transition: opacity 0.15s ease, transform 0.15s ease;
+    z-index: 30;
+    pointer-events: auto;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.4);
+  }
+  .draggable:hover .resize-handle,
+  .draggable.is-dragging .resize-handle,
+  .draggable.is-resizing .resize-handle {
+    opacity: 1;
+  }
+  .draggable.is-resizing .resize-handle {
+    transform: scale(1.2);
+    background: #f59e0b;
+  }
+
+  /* Logo - posições controladas via JS */
+  .logo { 
+    object-fit: contain; 
+    z-index: 10; 
+    filter: drop-shadow(0 4px 12px rgba(0,0,0,.6)); 
+  }
   .logo--hidden { display: none; }
   
-  .seal { position: absolute; width: 132px; height: 132px; }
+  /* Selo - posições controladas via JS */
   .seal--hidden { display: none; }
   .seal__disc {
     position: absolute; inset: 0; border-radius: 50%;
@@ -183,8 +214,9 @@
   .seal__ribbon::after { right: 0; border-width: 7px 0 0 9px; border-color: var(--ribbon-fold) transparent transparent transparent; }
   .seal__ribbon-text { font-family: 'Oswald', sans-serif; font-weight: 600; font-size: 13px; letter-spacing: 3px; text-transform: uppercase; color: var(--ribbon-text); }
   
+  /* Pricebox - posições controladas via JS */
   .pricebox {
-    position: absolute; padding: 11px 14px 10px; border-radius: 12px;
+    padding: 11px 14px 10px; border-radius: 12px;
     background: var(--price-bg); border: 1px solid var(--price-border);
     box-shadow: 0 14px 30px rgba(0,0,0,.55); text-align: right;
   }
@@ -204,7 +236,13 @@
   .pricebox__row-label { color: var(--price-row-label); text-transform: uppercase; letter-spacing: 1px; }
   .pricebox__row-value { color: var(--price-row-value); font-family: 'Oswald', sans-serif; font-weight: 600; font-size: 11px; letter-spacing: .3px; }
   
-  .plate { position: absolute; left: 16px; right: 16px; bottom: 14px; padding: 12px 16px 10px; background: var(--plate-bg); border: 1px solid var(--plate-border); box-shadow: 0 14px 28px rgba(0,0,0,.55); }
+  /* Plate - posições controladas via JS */
+  .plate { 
+    padding: 12px 16px 10px; 
+    background: var(--plate-bg); 
+    border: 1px solid var(--plate-border); 
+    box-shadow: 0 14px 28px rgba(0,0,0,.55); 
+  }
   .plate::before { content: ''; position: absolute; inset: 4px; border: 1px solid var(--plate-inner); pointer-events: none; }
   .plate__title { font-family: 'Oswald', sans-serif; font-weight: 700; font-size: 25px; line-height: 1.06; letter-spacing: .6px; text-transform: uppercase; text-align: center; color: var(--plate-title); word-break: break-word; }
   .plate__subtitle { margin-top: 3px; font-size: 9px; font-weight: 700; letter-spacing: 1.5px; text-transform: uppercase; text-align: center; color: var(--plate-sub); }
@@ -382,12 +420,11 @@
           </div>
         </section>
 
-        <!-- ===== NOVO: Dica de Drag & Drop ===== -->
         <section class="ui-section">
           <div class="rounded-lg border border-workspace-border bg-zinc-900/60 p-3">
             <h3 class="ui-label mb-2"><i class="fa-solid fa-hand-pointer text-workspace-accent"></i> Dica</h3>
             <p class="text-[10px] text-zinc-400 leading-relaxed">
-              <strong class="text-zinc-200">Arraste</strong> a logo, o selo e a caixa de preço diretamente no canvas para reposicioná-los.
+              <strong class="text-zinc-200">Arraste</strong> os elementos no canvas. Use o <strong class="text-zinc-200">handle dourado</strong> no canto para redimensionar.
             </p>
           </div>
         </section>
@@ -400,6 +437,7 @@
           <img id="flyerImage" class="flyer__media" src="" alt="Foto do produto" crossorigin="anonymous">
           <div class="flyer__scrim" aria-hidden="true"></div>
           <img id="flyerLogo" class="logo logo--hidden draggable" data-draggable="logo" src="" alt="Logo da loja" crossorigin="anonymous">
+          <div class="resize-handle" data-resize-handle data-for="logo"></div>
           
           <section class="seal draggable" data-draggable="seal" aria-label="Selo de desconto">
             <div class="seal__disc">
@@ -407,6 +445,7 @@
               <span class="seal__value"><span data-bind="discount">25</span><span class="seal__pct">%</span></span>
             </div>
             <p class="seal__ribbon"><span class="seal__ribbon-text" data-bind="ribbon">DESCONTO</span></p>
+            <div class="resize-handle" data-resize-handle data-for="seal"></div>
           </section>
           
           <section class="pricebox draggable" id="priceBox" data-draggable="pricebox" data-digits="3" aria-label="Preços">
@@ -416,7 +455,6 @@
               <span class="pricebox__int" data-bind="pricePixInt">449</span>
               <span class="pricebox__cents" data-bind="pricePixCents">,90</span>
             </p>
-            <br>
             <p class="pricebox__terms">- no PIX -</p>
             <div class="pricebox__list">
               <div class="pricebox__row">
@@ -424,9 +462,10 @@
                 <span class="pricebox__row-value" data-bind="price3x">R$ 479,92</span>
               </div>
             </div>
+            <div class="resize-handle" data-resize-handle data-for="pricebox"></div>
           </section>
           
-          <footer class="plate">
+          <footer class="plate draggable" id="plate" data-draggable="plate">
             <h2 class="plate__title" data-bind="title">PERFUME NOIR INTENSE</h2>
             <p class="plate__subtitle" data-bind="subtitle">Eau de Parfum · 100ml · Alta fixação</p>
             <div class="plate__rule" aria-hidden="true"></div>
@@ -434,6 +473,7 @@
               <span data-bind="legalLeft">Válido enquanto durar o estoque.</span>
               <span data-bind="legalRight">Imagem ilustrativa</span>
             </p>
+            <div class="resize-handle" data-resize-handle data-for="plate"></div>
           </footer>
         </article>
       </div>
@@ -536,28 +576,19 @@
           </div>
         </section>
 
-        <!-- ===== NOVO: Controles de Posição ===== -->
         <section class="ui-section">
           <div class="flex items-center justify-between mb-2">
-            <h3 class="ui-label mb-0"><i class="fa-solid fa-up-down-left-right text-workspace-accent"></i> Posições</h3>
+            <h3 class="ui-label mb-0"><i class="fa-solid fa-up-down-left-right text-workspace-accent"></i> Layout</h3>
             <button type="button" id="btnResetPositions" class="text-[10px] text-zinc-400 hover:text-amber-400 font-bold uppercase tracking-wider">Resetar</button>
           </div>
           <p class="text-[10px] text-zinc-500 leading-relaxed">
-            Arraste os elementos no canvas ou use os valores abaixo para ajuste fino.
+            Arraste elementos no canvas. Handle dourado = redimensionar.
           </p>
-          <div class="mt-3 space-y-2 text-[10px] text-zinc-400">
-            <div class="flex justify-between">
-              <span>Logo:</span>
-              <span id="posLogo" class="font-mono text-zinc-300">—</span>
-            </div>
-            <div class="flex justify-between">
-              <span>Selo:</span>
-              <span id="posSeal" class="font-mono text-zinc-300">—</span>
-            </div>
-            <div class="flex justify-between">
-              <span>Preço:</span>
-              <span id="posPrice" class="font-mono text-zinc-300">—</span>
-            </div>
+          <div class="mt-3 space-y-1.5 text-[10px] text-zinc-400 font-mono">
+            <div class="flex justify-between"><span>Logo:</span><span id="posLogo" class="text-zinc-300">—</span></div>
+            <div class="flex justify-between"><span>Selo:</span><span id="posSeal" class="text-zinc-300">—</span></div>
+            <div class="flex justify-between"><span>Preço:</span><span id="posPrice" class="text-zinc-300">—</span></div>
+            <div class="flex justify-between"><span>Rodapé:</span><span id="posPlate" class="text-zinc-300">—</span></div>
           </div>
         </section>
       </form>
@@ -750,7 +781,7 @@
   const EXPORT_SCALE = 3;
   const DB_CONFIG = {
     name: 'EncarteStudioDB',
-    version: 3, // Incrementado para migração de posições
+    version: 4,
     stores: { anuncios: 'anuncios', config: 'config', categorias: 'categorias', produtos: 'produtos' }
   };
 
@@ -760,11 +791,28 @@
     { id: 'natal', label: 'Especial de Natal', file: '03-especial-natal' }
   ];
 
-  // ===== NOVO: Posições padrão dos elementos arrastáveis =====
+  // Posições padrão: pricebox ACIMA do plate
   const DEFAULT_POSITIONS = {
-    logo: { top: 20, left: 137.5 }, // 20% de 450 = 90, + metade da logo (87.5) = 137.5 (esquerda real)
+    logo: { top: 20, left: 137.5 },
     seal: { top: 80, left: 16 },
-    pricebox: { top: 376, left: 16 } // 600 - 112 (bottom original) - ~112 altura = 376
+    pricebox: { top: 330, left: 16 },
+    plate: { top: 500, left: 16 }
+  };
+
+  // Tamanhos padrão (width em px; height é auto exceto para seal que é quadrado)
+  const DEFAULT_SIZES = {
+    logo: { width: 175 },
+    seal: { width: 132 },
+    pricebox: { width: 230 },
+    plate: { width: 418 }
+  };
+
+  // Limites de tamanho
+  const SIZE_LIMITS = {
+    logo: { min: 80, max: 350 },
+    seal: { min: 80, max: 220 },
+    pricebox: { min: 160, max: 400 },
+    plate: { min: 200, max: 418 }
   };
 
   const sanitize = (value, max = 120) => String(value ?? '').replace(/[\u0000-\u001F\u007F<>]/g, '').slice(0, max);
@@ -839,11 +887,17 @@
   const state = {
     currentAnuncioId: null, createdAt: null, theme: 'padrao', image: DEMO_IMAGE, source: null,
     logo: null, logoName: '', showLogo: true, showSeal: false,
-    // ===== NOVO: Posições dos elementos arrastáveis =====
     positions: {
       logo: { ...DEFAULT_POSITIONS.logo },
       seal: { ...DEFAULT_POSITIONS.seal },
-      pricebox: { ...DEFAULT_POSITIONS.pricebox }
+      pricebox: { ...DEFAULT_POSITIONS.pricebox },
+      plate: { ...DEFAULT_POSITIONS.plate }
+    },
+    sizes: {
+      logo: { ...DEFAULT_SIZES.logo },
+      seal: { ...DEFAULT_SIZES.seal },
+      pricebox: { ...DEFAULT_SIZES.pricebox },
+      plate: { ...DEFAULT_SIZES.plate }
     },
     fields: {
       sealTop: 'OFERTA', ribbon: 'DESCONTO', discount: '25', priceBase: '599,90', price3x: '479,92', pricePix: '449,90',
@@ -855,7 +909,8 @@
 
   const dom = {
     form: $('#controlForm'), flyer: $('#flyer'), flyerImage: $('#flyerImage'), flyerLogo: $('#flyerLogo'),
-    priceBox: $('#priceBox'), seal: $('.seal'), previewArea: $('#previewArea'), stageFrame: $('#stageFrame'),
+    priceBox: $('#priceBox'), seal: $('.seal'), plate: $('#plate'),
+    previewArea: $('#previewArea'), stageFrame: $('#stageFrame'),
     fileInput: $('#productFile'), fileName: $('#fileName'), btnRecrop: $('#btnRecrop'), btnResetImg: $('#btnResetImage'),
     btnCalc: $('#btnCalcPrices'), btnJpg: $('#btnDownloadJpg'), btnZip: $('#btnDownloadZip'),
     cropDialog: $('#cropDialog'), cropImage: $('#cropImage'), exportHost: $('#exportHost'),
@@ -876,11 +931,11 @@
     importarAnuncioList: $('#importarAnuncioList'), btnImportarClose: $('#btnImportarClose'), btnImportarCancelar: $('#btnImportarCancelar'),
     autoSaveIndicator: $('#autoSaveIndicator'),
     autoSaveText: $('#autoSaveText'),
-    // ===== NOVO: Referências para drag & drop =====
     btnResetPositions: $('#btnResetPositions'),
     posLogo: $('#posLogo'),
     posSeal: $('#posSeal'),
-    posPrice: $('#posPrice')
+    posPrice: $('#posPrice'),
+    posPlate: $('#posPlate')
   };
 
   const bindings = new Map();
@@ -925,98 +980,151 @@
   const toggleSeal = (visible) => { state.showSeal = visible; dom.seal.classList.toggle('seal--hidden', !visible); };
   const toggleLogo = (visible) => { state.showLogo = visible; dom.flyerLogo.classList.toggle('logo--hidden', !visible || !state.logo); };
 
-  // ===== NOVO: Aplicar posições no DOM =====
-  const applyPositions = () => {
-    const { positions } = state;
+  // Aplica posições E tamanhos no DOM
+  const applyLayout = () => {
+    const { positions, sizes } = state;
     
     // Logo
     dom.flyerLogo.style.top = `${positions.logo.top}px`;
     dom.flyerLogo.style.left = `${positions.logo.left}px`;
-    dom.flyerLogo.style.transform = 'none'; // Remove o transform original
+    dom.flyerLogo.style.width = `${sizes.logo.width}px`;
+    dom.flyerLogo.style.height = 'auto';
+    dom.flyerLogo.style.transform = 'none';
     
-    // Selo
+    // Selo (quadrado: width = height)
     dom.seal.style.top = `${positions.seal.top}px`;
     dom.seal.style.left = `${positions.seal.left}px`;
+    dom.seal.style.width = `${sizes.seal.width}px`;
+    dom.seal.style.height = `${sizes.seal.width}px`;
     
     // Pricebox
     dom.priceBox.style.top = `${positions.pricebox.top}px`;
     dom.priceBox.style.left = `${positions.pricebox.left}px`;
-    dom.priceBox.style.bottom = 'auto'; // Remove o bottom original
+    dom.priceBox.style.width = `${sizes.pricebox.width}px`;
+    dom.priceBox.style.bottom = 'auto';
+    dom.priceBox.style.right = 'auto';
+    
+    // Plate
+    dom.plate.style.top = `${positions.plate.top}px`;
+    dom.plate.style.left = `${positions.plate.left}px`;
+    dom.plate.style.width = `${sizes.plate.width}px`;
+    dom.plate.style.bottom = 'auto';
+    dom.plate.style.right = 'auto';
     
     // Atualiza indicadores no painel
-    if (dom.posLogo) dom.posLogo.textContent = `${Math.round(positions.logo.left)}, ${Math.round(positions.logo.top)}`;
-    if (dom.posSeal) dom.posSeal.textContent = `${Math.round(positions.seal.left)}, ${Math.round(positions.seal.top)}`;
-    if (dom.posPrice) dom.posPrice.textContent = `${Math.round(positions.pricebox.left)}, ${Math.round(positions.pricebox.top)}`;
+    if (dom.posLogo) dom.posLogo.textContent = `${Math.round(positions.logo.left)}, ${Math.round(positions.logo.top)} · ${Math.round(sizes.logo.width)}px`;
+    if (dom.posSeal) dom.posSeal.textContent = `${Math.round(positions.seal.left)}, ${Math.round(positions.seal.top)} · ${Math.round(sizes.seal.width)}px`;
+    if (dom.posPrice) dom.posPrice.textContent = `${Math.round(positions.pricebox.left)}, ${Math.round(positions.pricebox.top)} · ${Math.round(sizes.pricebox.width)}px`;
+    if (dom.posPlate) dom.posPlate.textContent = `${Math.round(positions.plate.left)}, ${Math.round(positions.plate.top)} · ${Math.round(sizes.plate.width)}px`;
   };
 
-  // ===== NOVO: Sistema de Drag & Drop =====
+  // Sistema de Drag & Drop + Resize
   const DragDropManager = {
+    mode: null, // 'drag' | 'resize' | null
     activeElement: null,
+    activeKey: null,
+    handle: null,
     startX: 0,
     startY: 0,
     startTop: 0,
     startLeft: 0,
+    startWidth: 0,
     scale: 1,
 
     init() {
       const draggables = $$('[data-draggable]', dom.flyer);
       draggables.forEach((el) => {
-        el.addEventListener('pointerdown', (e) => this._onPointerDown(e, el));
+        el.addEventListener('pointerdown', (e) => {
+          // Ignora se clicou em um handle de resize
+          if (e.target.hasAttribute('data-resize-handle')) return;
+          this._onDragStart(e, el);
+        });
+      });
+      
+      // Handlers de resize
+      $$('[data-resize-handle]', dom.flyer).forEach((handle) => {
+        handle.addEventListener('pointerdown', (e) => {
+          const key = handle.dataset.for;
+          const element = $(`[data-draggable="${key}"]`, dom.flyer);
+          if (element) this._onResizeStart(e, element, handle, key);
+        });
       });
       
       document.addEventListener('pointermove', (e) => this._onPointerMove(e));
       document.addEventListener('pointerup', (e) => this._onPointerUp(e));
       document.addEventListener('pointercancel', (e) => this._onPointerUp(e));
       
-      // Botão de reset
       if (dom.btnResetPositions) {
-        dom.btnResetPositions.addEventListener('click', () => this.resetPositions());
+        dom.btnResetPositions.addEventListener('click', () => this.resetLayout());
       }
     },
 
-    _onPointerDown(e, element) {
-      // Só inicia drag com botão principal (esquerdo) ou toque
+    _onDragStart(e, element) {
       if (e.button !== 0 && e.pointerType !== 'touch') return;
       
       e.preventDefault();
       e.stopPropagation();
       
+      this.mode = 'drag';
       this.activeElement = element;
-      const key = element.dataset.draggable;
+      this.activeKey = element.dataset.draggable;
       
-      // Captura o pointer para receber eventos mesmo fora do elemento
       element.setPointerCapture(e.pointerId);
       
-      // Calcula a escala atual do stage
       const stageStyle = getComputedStyle(dom.stageFrame);
       this.scale = parseFloat(stageStyle.getPropertyValue('--ps')) || 1;
       
-      // Posição inicial do pointer (em coordenadas do flyer, considerando escala)
       this.startX = e.clientX;
       this.startY = e.clientY;
-      
-      // Posição inicial do elemento
-      this.startTop = state.positions[key].top;
-      this.startLeft = state.positions[key].left;
+      this.startTop = state.positions[this.activeKey].top;
+      this.startLeft = state.positions[this.activeKey].left;
       
       element.classList.add('is-dragging');
     },
 
+    _onResizeStart(e, element, handle, key) {
+      if (e.button !== 0 && e.pointerType !== 'touch') return;
+      
+      e.preventDefault();
+      e.stopPropagation();
+      
+      this.mode = 'resize';
+      this.activeElement = element;
+      this.activeKey = key;
+      this.handle = handle;
+      
+      handle.setPointerCapture(e.pointerId);
+      
+      const stageStyle = getComputedStyle(dom.stageFrame);
+      this.scale = parseFloat(stageStyle.getPropertyValue('--ps')) || 1;
+      
+      this.startX = e.clientX;
+      this.startY = e.clientY;
+      this.startWidth = state.sizes[key].width;
+      
+      element.classList.add('is-resizing');
+    },
+
     _onPointerMove(e) {
-      if (!this.activeElement) return;
+      if (!this.activeElement || !this.mode) return;
       
       e.preventDefault();
       
-      const key = this.activeElement.dataset.draggable;
-      
-      // Calcula o delta em pixels do flyer (desconsiderando a escala)
       const deltaX = (e.clientX - this.startX) / this.scale;
       const deltaY = (e.clientY - this.startY) / this.scale;
       
+      if (this.mode === 'drag') {
+        this._onDragMove(deltaX, deltaY);
+      } else if (this.mode === 'resize') {
+        this._onResizeMove(deltaX, deltaY);
+      }
+    },
+
+    _onDragMove(deltaX, deltaY) {
       let newLeft = this.startLeft + deltaX;
       let newTop = this.startTop + deltaY;
       
-      // Limites do canvas (mantém o elemento dentro do flyer)
+      // Calcula dimensões do elemento para limitar
       const elRect = this.activeElement.getBoundingClientRect();
       const elWidth = elRect.width / this.scale;
       const elHeight = elRect.height / this.scale;
@@ -1024,40 +1132,75 @@
       newLeft = Math.max(0, Math.min(CANVAS_W - elWidth, newLeft));
       newTop = Math.max(0, Math.min(CANVAS_H - elHeight, newTop));
       
-      // Atualiza o state
-      state.positions[key].left = newLeft;
-      state.positions[key].top = newTop;
+      state.positions[this.activeKey].left = newLeft;
+      state.positions[this.activeKey].top = newTop;
       
-      // Aplica no DOM
-      applyPositions();
+      applyLayout();
+    },
+
+    _onResizeMove(deltaX, deltaY) {
+      const limits = SIZE_LIMITS[this.activeKey];
+      let newWidth = this.startWidth + deltaX;
+      
+      // Para o selo, usa o maior delta para manter aspect ratio 1:1
+      if (this.activeKey === 'seal') {
+        const maxDelta = Math.max(Math.abs(deltaX), Math.abs(deltaY));
+        const sign = (deltaX + deltaY) >= 0 ? 1 : -1;
+        newWidth = this.startWidth + (maxDelta * sign);
+      }
+      
+      newWidth = Math.max(limits.min, Math.min(limits.max, newWidth));
+      
+      state.sizes[this.activeKey].width = newWidth;
+      
+      // Garante que o elemento não saia do canvas após redimensionar
+      const currentLeft = state.positions[this.activeKey].left;
+      if (currentLeft + newWidth > CANVAS_W) {
+        state.positions[this.activeKey].left = CANVAS_W - newWidth;
+      }
+      
+      applyLayout();
     },
 
     _onPointerUp(e) {
       if (!this.activeElement) return;
       
-      this.activeElement.classList.remove('is-dragging');
+      this.activeElement.classList.remove('is-dragging', 'is-resizing');
       
       try {
-        this.activeElement.releasePointerCapture(e.pointerId);
+        if (this.mode === 'drag') {
+          this.activeElement.releasePointerCapture(e.pointerId);
+        } else if (this.mode === 'resize' && this.handle) {
+          this.handle.releasePointerCapture(e.pointerId);
+        }
       } catch (err) {
-        // Ignora se o pointer já foi liberado
+        // Ignora se já liberado
       }
       
       this.activeElement = null;
+      this.activeKey = null;
+      this.handle = null;
+      this.mode = null;
       
-      // Agenda auto-save após reposicionamento
       AutoSaveManager.schedule();
     },
 
-    resetPositions() {
+    resetLayout() {
       state.positions = {
         logo: { ...DEFAULT_POSITIONS.logo },
         seal: { ...DEFAULT_POSITIONS.seal },
-        pricebox: { ...DEFAULT_POSITIONS.pricebox }
+        pricebox: { ...DEFAULT_POSITIONS.pricebox },
+        plate: { ...DEFAULT_POSITIONS.plate }
       };
-      applyPositions();
+      state.sizes = {
+        logo: { ...DEFAULT_SIZES.logo },
+        seal: { ...DEFAULT_SIZES.seal },
+        pricebox: { ...DEFAULT_SIZES.pricebox },
+        plate: { ...DEFAULT_SIZES.plate }
+      };
+      applyLayout();
       AutoSaveManager.schedule();
-      toast('Posições resetadas para o padrão.', 'info');
+      toast('Layout resetado para o padrão.', 'info');
     }
   };
 
@@ -1208,14 +1351,24 @@
   const StorageManager = {
     getCurrentState() {
       return {
-        id: state.currentAnuncioId || Date.now(), name: dom.docTitle.value || 'Sem nome',
+        id: state.currentAnuncioId || Date.now(), 
+        name: dom.docTitle.value || 'Sem nome',
         createdAt: state.currentAnuncioId ? state.createdAt : new Date().toISOString(),
-        theme: state.theme, fields: { ...state.fields }, image: state.image, showSeal: state.showSeal,
-        // ===== NOVO: Salva posições =====
+        theme: state.theme, 
+        fields: { ...state.fields }, 
+        image: state.image, 
+        showSeal: state.showSeal,
         positions: {
           logo: { ...state.positions.logo },
           seal: { ...state.positions.seal },
-          pricebox: { ...state.positions.pricebox }
+          pricebox: { ...state.positions.pricebox },
+          plate: { ...state.positions.plate }
+        },
+        sizes: {
+          logo: { ...state.sizes.logo },
+          seal: { ...state.sizes.seal },
+          pricebox: { ...state.sizes.pricebox },
+          plate: { ...state.sizes.plate }
         }
       };
     },
@@ -1236,34 +1389,45 @@
     async loadAll() { try { return await DB.getAll(DB_CONFIG.stores.anuncios); } catch (error) { return []; } },
     async deleteRecord(id) { try { return await DB.delete(DB_CONFIG.stores.anuncios, id); } catch (error) { return false; } },
     applyToState(anuncio) {
-      state.currentAnuncioId = anuncio.id; state.createdAt = anuncio.createdAt; state.theme = anuncio.theme;
-      state.fields = { ...anuncio.fields }; state.image = anuncio.image || DEMO_IMAGE; state.showSeal = anuncio.showSeal ?? false;
+      state.currentAnuncioId = anuncio.id; 
+      state.createdAt = anuncio.createdAt; 
+      state.theme = anuncio.theme;
+      state.fields = { ...anuncio.fields }; 
+      state.image = anuncio.image || DEMO_IMAGE; 
+      state.showSeal = anuncio.showSeal ?? false;
       
-      // ===== NOVO: Restaura posições (com fallback para anúncios antigos) =====
-      if (anuncio.positions) {
-        state.positions = {
-          logo: { ...DEFAULT_POSITIONS.logo, ...(anuncio.positions.logo || {}) },
-          seal: { ...DEFAULT_POSITIONS.seal, ...(anuncio.positions.seal || {}) },
-          pricebox: { ...DEFAULT_POSITIONS.pricebox, ...(anuncio.positions.pricebox || {}) }
-        };
-      } else {
-        state.positions = {
-          logo: { ...DEFAULT_POSITIONS.logo },
-          seal: { ...DEFAULT_POSITIONS.seal },
-          pricebox: { ...DEFAULT_POSITIONS.pricebox }
-        };
-      }
+      // Restaura posições (compatibilidade com anúncios antigos)
+      state.positions = {
+        logo: { ...DEFAULT_POSITIONS.logo, ...(anuncio.positions?.logo || {}) },
+        seal: { ...DEFAULT_POSITIONS.seal, ...(anuncio.positions?.seal || {}) },
+        pricebox: { ...DEFAULT_POSITIONS.pricebox, ...(anuncio.positions?.pricebox || {}) },
+        plate: { ...DEFAULT_POSITIONS.plate, ...(anuncio.positions?.plate || {}) }
+      };
+      
+      // Restaura tamanhos (compatibilidade com anúncios antigos)
+      state.sizes = {
+        logo: { ...DEFAULT_SIZES.logo, ...(anuncio.sizes?.logo || {}) },
+        seal: { ...DEFAULT_SIZES.seal, ...(anuncio.sizes?.seal || {}) },
+        pricebox: { ...DEFAULT_SIZES.pricebox, ...(anuncio.sizes?.pricebox || {}) },
+        plate: { ...DEFAULT_SIZES.plate, ...(anuncio.sizes?.plate || {}) }
+      };
       
       dom.docTitle.value = anuncio.name || 'Encarte';
       dom.flyerImage.src = state.image;
       if (state.logo) { dom.flyerLogo.src = state.logo; dom.logoName.textContent = state.logoName || 'Logo carregada.'; }
       else { dom.flyerLogo.src = ''; dom.logoName.textContent = 'Nenhuma logo enviada.'; }
-      Object.keys(state.fields).forEach((key) => { const input = $(`[data-field="${key}"]`); if (input) input.value = state.fields[key]; });
+      Object.keys(state.fields).forEach((key) => { 
+        const input = $(`[data-field="${key}"]`); 
+        if (input) input.value = state.fields[key]; 
+      });
       const themeRadio = $(`input[name="theme"][value="${state.theme}"]`);
       if (themeRadio) themeRadio.checked = true;
-      dom.showLogo.checked = state.showLogo; dom.showSeal.checked = state.showSeal;
-      applyTheme(state.theme); toggleLogo(state.showLogo); toggleSeal(state.showSeal);
-      applyPositions(); // ===== NOVO: Aplica posições =====
+      dom.showLogo.checked = state.showLogo; 
+      dom.showSeal.checked = state.showSeal;
+      applyTheme(state.theme); 
+      toggleLogo(state.showLogo); 
+      toggleSeal(state.showSeal);
+      applyLayout();
       scheduleRender();
     }
   };
@@ -1381,26 +1545,32 @@
   };
 
   const buildExportNode = (themeId) => {
-    const clone = dom.flyer.cloneNode(true); clone.removeAttribute('id');
+    const clone = dom.flyer.cloneNode(true); 
+    clone.removeAttribute('id');
     $$('[id]', clone).forEach((node) => node.removeAttribute('id'));
-    clone.classList.remove(...THEMES.map((t) => `theme-${t.id}`)); clone.classList.add(`theme-${themeId}`);
+    clone.classList.remove(...THEMES.map((t) => `theme-${t.id}`)); 
+    clone.classList.add(`theme-${themeId}`);
     
-    // ===== NOVO: Remove classe draggable e estados visuais do clone para exportação limpa =====
+    // Remove elementos de UI de edição
     $$('.draggable', clone).forEach((el) => {
-      el.classList.remove('draggable', 'is-dragging');
+      el.classList.remove('draggable', 'is-dragging', 'is-resizing');
     });
+    $$('[data-resize-handle]', clone).forEach((el) => el.remove());
     
     return clone;
   };
 
   const renderThemeToCanvas = async (themeId) => {
-    const node = buildExportNode(themeId); dom.exportHost.appendChild(node);
+    const node = buildExportNode(themeId); 
+    dom.exportHost.appendChild(node);
     try {
       const images = $$('img', node);
       await Promise.all(images.map((img) => img.decode?.().catch(() => {})));
       await yieldToUI();
       return await html2canvas(node, { scale: EXPORT_SCALE, width: CANVAS_W, height: CANVAS_H, backgroundColor: '#000000', useCORS: true, allowTaint: false, logging: false, removeContainer: true, imageTimeout: 15000 });
-    } finally { node.remove(); }
+    } finally { 
+      node.remove(); 
+    }
   };
 
   const canvasToBlob = (canvas) => new Promise((resolve, reject) => {
@@ -1408,8 +1578,13 @@
   });
 
   const triggerDownload = (blob, filename) => {
-    const url = URL.createObjectURL(blob); const anchor = document.createElement('a');
-    anchor.href = url; anchor.download = filename; document.body.appendChild(anchor); anchor.click(); anchor.remove();
+    const url = URL.createObjectURL(blob); 
+    const anchor = document.createElement('a');
+    anchor.href = url; 
+    anchor.download = filename; 
+    document.body.appendChild(anchor); 
+    anchor.click(); 
+    anchor.remove();
     setTimeout(() => URL.revokeObjectURL(url), 5000);
   };
 
@@ -1422,9 +1597,9 @@
     return true;
   };
 
-  // ===== CORREÇÃO: Nome do arquivo = nome do produto =====
+  // CORREÇÃO: Nome do arquivo = nome do produto (state.fields.title)
   const getExportFilename = () => {
-    const productName = state.fields.title || 'encarte';
+    const productName = state.fields.title?.trim() || 'encarte';
     return slugify(productName);
   };
 
@@ -1434,23 +1609,30 @@
     const currentTheme = THEMES.find((t) => t.id === state.theme);
     toggleOverlay(true, `Renderizando ${currentTheme.label}…`, 'Alta resolução · scale 3×');
     try {
-      await document.fonts.ready; setProgress(30, 'Compondo camadas em 3×…');
+      await document.fonts.ready; 
+      setProgress(30, 'Compondo camadas em 3×…');
       const canvas = await renderThemeToCanvas(state.theme);
       setProgress(80, 'Codificando JPG…');
       const blob = await canvasToBlob(canvas);
-      // ===== CORREÇÃO: Usa nome do produto =====
-      triggerDownload(blob, `${getExportFilename()}.jpg`);
-      setProgress(100, 'Concluído!'); toast('Encarte JPG baixado (1350×1800).', 'success');
-    } catch (error) { toast('Falha na exportação do encarte.', 'error'); }
-    finally { toggleOverlay(false); lockActions(false); }
+      const filename = `${getExportFilename()}.jpg`;
+      triggerDownload(blob, filename);
+      setProgress(100, 'Concluído!'); 
+      toast(`"${filename}" baixado (1350×1800).`, 'success');
+    } catch (error) { 
+      toast('Falha na exportação do encarte.', 'error'); 
+    } finally { 
+      toggleOverlay(false); 
+      lockActions(false); 
+    }
   };
 
   const exportBatchZip = async () => {
     if (!ensureLibs('html2canvas', 'JSZip')) return;
-    lockActions(true); toggleOverlay(true, 'Iniciando lote…', '3 temas em alta resolução');
+    lockActions(true); 
+    toggleOverlay(true, 'Iniciando lote…', '3 temas em alta resolução');
     try {
-      await document.fonts.ready; const zip = new JSZip(); 
-      // ===== CORREÇÃO: Usa nome do produto =====
+      await document.fonts.ready; 
+      const zip = new JSZip(); 
       const slug = getExportFilename();
       for (const [index, theme] of THEMES.entries()) {
         setProgress((index / THEMES.length) * 75, `Renderizando ${theme.label} (${index + 1}/3)…`);
@@ -1462,14 +1644,22 @@
       zip.file('LEIA-ME.txt', `Encarte Studio — pacote de ofertas\r\nProduto: ${state.fields.title}\r\nGerado em: ${new Date().toLocaleString('pt-BR')}\r\nResolução: ${CANVAS_W * EXPORT_SCALE}x${CANVAS_H * EXPORT_SCALE}px\r\nFormato: JPG qualidade 95%\r\n`);
       const blob = await zip.generateAsync({ type: 'blob', compression: 'STORE' }, (meta) => setProgress(75 + meta.percent * 0.25, `Compactando ZIP… ${meta.percent.toFixed(0)}%`));
       triggerDownload(blob, `encartes-${slug}-combo.zip`);
-      setProgress(100, 'Pacote pronto!'); toast('Combo com 3 temas baixado em .ZIP.', 'success');
-    } catch (error) { toast('Falha ao gerar o pacote ZIP.', 'error'); }
-    finally { toggleOverlay(false); lockActions(false); }
+      setProgress(100, 'Pacote pronto!'); 
+      toast('Combo com 3 temas baixado em .ZIP.', 'success');
+    } catch (error) { 
+      toast('Falha ao gerar o pacote ZIP.', 'error'); 
+    } finally { 
+      toggleOverlay(false); 
+      lockActions(false); 
+    }
   };
 
   const renderAnunciosList = async () => {
     const anuncios = await StorageManager.loadAll();
-    if (anuncios.length === 0) { dom.anunciosList.innerHTML = '<p class="col-span-2 text-center text-[10px] text-zinc-600 py-4">Nenhum encarte salvo.</p>'; return; }
+    if (anuncios.length === 0) { 
+      dom.anunciosList.innerHTML = '<p class="col-span-2 text-center text-[10px] text-zinc-600 py-4">Nenhum encarte salvo.</p>'; 
+      return; 
+    }
     anuncios.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
     dom.anunciosList.innerHTML = anuncios.map((anuncio) => `
       <div class="anuncio-item group" data-anuncio-id="${anuncio.id}">
@@ -1522,28 +1712,60 @@
   const deleteAnuncio = async (id) => {
     if (!confirm('Excluir este encarte permanentemente?')) return;
     const success = await StorageManager.deleteRecord(id);
-    if (success) { await renderAnunciosList(); if (state.currentAnuncioId === id) newAnuncio(); toast('Encarte excluído.', 'info'); }
-    else { toast('Falha ao excluir encarte.', 'error'); }
+    if (success) { 
+      await renderAnunciosList(); 
+      if (state.currentAnuncioId === id) newAnuncio(); 
+      toast('Encarte excluído.', 'info'); 
+    } else { 
+      toast('Falha ao excluir encarte.', 'error'); 
+    }
   };
 
   const newAnuncio = async () => {
-    state.currentAnuncioId = null; state.image = DEMO_IMAGE; state.source = null; state.showLogo = true; state.showSeal = false;
-    state.fields = { sealTop: 'OFERTA', ribbon: 'DESCONTO', discount: '25', priceBase: '599,90', price3x: '479,92', pricePix: '449,90', title: 'Novo Produto', subtitle: 'Descrição do produto', legalLeft: 'Válido enquanto durar o estoque.', legalRight: 'Imagem ilustrativa' };
-    // ===== NOVO: Reseta posições =====
+    state.currentAnuncioId = null; 
+    state.image = DEMO_IMAGE; 
+    state.source = null; 
+    state.showLogo = true; 
+    state.showSeal = false;
+    state.fields = { 
+      sealTop: 'OFERTA', ribbon: 'DESCONTO', discount: '25', 
+      priceBase: '599,90', price3x: '479,92', pricePix: '449,90', 
+      title: 'Novo Produto', subtitle: 'Descrição do produto', 
+      legalLeft: 'Válido enquanto durar o estoque.', 
+      legalRight: 'Imagem ilustrativa' 
+    };
     state.positions = {
       logo: { ...DEFAULT_POSITIONS.logo },
       seal: { ...DEFAULT_POSITIONS.seal },
-      pricebox: { ...DEFAULT_POSITIONS.pricebox }
+      pricebox: { ...DEFAULT_POSITIONS.pricebox },
+      plate: { ...DEFAULT_POSITIONS.plate }
+    };
+    state.sizes = {
+      logo: { ...DEFAULT_SIZES.logo },
+      seal: { ...DEFAULT_SIZES.seal },
+      pricebox: { ...DEFAULT_SIZES.pricebox },
+      plate: { ...DEFAULT_SIZES.plate }
     };
     dom.docTitle.value = 'Novo Encarte';
     dom.flyerImage.src = DEMO_IMAGE;
-    if (state.logo) { dom.flyerLogo.src = state.logo; dom.logoName.textContent = state.logoName || 'Logo carregada.'; }
-    else { dom.flyerLogo.src = ''; dom.logoName.textContent = 'Nenhuma logo enviada.'; }
-    dom.fileName.textContent = 'Usando arte de demonstração.'; dom.btnRecrop.disabled = true;
-    Object.keys(state.fields).forEach((key) => { const input = $(`[data-field="${key}"]`); if (input) input.value = state.fields[key]; });
-    dom.showLogo.checked = state.showLogo; dom.showSeal.checked = state.showSeal;
-    toggleLogo(state.showLogo); toggleSeal(state.showSeal);
-    applyPositions(); // ===== NOVO: Aplica posições =====
+    if (state.logo) { 
+      dom.flyerLogo.src = state.logo; 
+      dom.logoName.textContent = state.logoName || 'Logo carregada.'; 
+    } else { 
+      dom.flyerLogo.src = ''; 
+      dom.logoName.textContent = 'Nenhuma logo enviada.'; 
+    }
+    dom.fileName.textContent = 'Usando arte de demonstração.'; 
+    dom.btnRecrop.disabled = true;
+    Object.keys(state.fields).forEach((key) => { 
+      const input = $(`[data-field="${key}"]`); 
+      if (input) input.value = state.fields[key]; 
+    });
+    dom.showLogo.checked = state.showLogo; 
+    dom.showSeal.checked = state.showSeal;
+    toggleLogo(state.showLogo); 
+    toggleSeal(state.showSeal);
+    applyLayout();
     scheduleRender();
     AutoSaveManager.cancel();
     AutoSaveManager.hide();
@@ -1702,7 +1924,11 @@
     },
     async renderCategoriasList() {
       const cats = await this.loadCategorias();
-      if (cats.length === 0) { dom.categoriasList.innerHTML = '<p class="text-center text-[11px] text-zinc-600 py-3">Nenhuma categoria.</p>'; this.updateUIForNoCategoria(); return; }
+      if (cats.length === 0) { 
+        dom.categoriasList.innerHTML = '<p class="text-center text-[11px] text-zinc-600 py-3">Nenhuma categoria.</p>'; 
+        this.updateUIForNoCategoria(); 
+        return; 
+      }
       dom.categoriasList.innerHTML = cats.map((cat) => `
         <div class="cat-categoria-item ${cat.id === state.cat.categoriaAtivaId ? 'active' : ''}" data-cat-id="${cat.id}" tabindex="0" role="button" aria-pressed="${cat.id === state.cat.categoriaAtivaId}">
           <span class="flex items-center gap-2 min-w-0">
@@ -1714,8 +1940,10 @@
       `).join('');
     },
     updateUIForNoCategoria() {
-      dom.produtosArea.classList.add('hidden'); dom.catHeaderSubtitle.textContent = 'Selecione ou crie uma categoria para começar.';
-      dom.catStatusMsg.textContent = 'Crie uma categoria para habilitar o cadastro de produtos.'; dom.catStatusMsg.parentElement.classList.remove('hidden');
+      dom.produtosArea.classList.add('hidden'); 
+      dom.catHeaderSubtitle.textContent = 'Selecione ou crie uma categoria para começar.';
+      dom.catStatusMsg.textContent = 'Crie uma categoria para habilitar o cadastro de produtos.'; 
+      dom.catStatusMsg.parentElement.classList.remove('hidden');
     },
     updateUIForCategoria(cat) {
       dom.produtosArea.classList.remove('hidden');
@@ -1723,11 +1951,18 @@
       dom.catStatusMsg.parentElement.classList.add('hidden');
     },
     async selectCategoria(id) {
-      state.cat.categoriaAtivaId = id; state.cat.editandoProdutoId = null; this.resetProdutoForm();
+      state.cat.categoriaAtivaId = id; 
+      state.cat.editandoProdutoId = null; 
+      this.resetProdutoForm();
       await this.renderCategoriasList();
-      const cats = await this.loadCategorias(); const cat = cats.find((c) => c.id === id);
-      if (cat) { this.updateUIForCategoria(cat); await this.renderProdutosList(id); }
-      else { this.updateUIForNoCategoria(); }
+      const cats = await this.loadCategorias(); 
+      const cat = cats.find((c) => c.id === id);
+      if (cat) { 
+        this.updateUIForCategoria(cat); 
+        await this.renderProdutosList(id); 
+      } else { 
+        this.updateUIForNoCategoria(); 
+      }
     },
     async loadProdutosByCategoria(categoriaId) {
       try {
@@ -1820,7 +2055,10 @@
     async renderProdutosList(categoriaId) {
       const prods = await this.loadProdutosByCategoria(categoriaId);
       dom.catProdutosCount.textContent = prods.length ? `${prods.length} ${prods.length === 1 ? 'item' : 'itens'}` : '';
-      if (prods.length === 0) { dom.produtosList.innerHTML = '<p class="col-span-full text-center text-[11px] text-zinc-600 py-4">Nenhum produto nesta categoria.</p>'; return; }
+      if (prods.length === 0) { 
+        dom.produtosList.innerHTML = '<p class="col-span-full text-center text-[11px] text-zinc-600 py-4">Nenhum produto nesta categoria.</p>'; 
+        return; 
+      }
       dom.produtosList.innerHTML = prods.map((p) => {
         const fotoPrincipal = p.imagens[0]; const totalFotos = p.imagens.length;
         return `
@@ -2036,7 +2274,11 @@
     if (deleteBtn) {
       event.stopPropagation(); const id = Number(deleteBtn.dataset.id);
       const success = await CatalogoManager.deleteCategoria(id);
-      if (success) { await CatalogoManager.renderCategoriasList(); if (state.cat.categoriaAtivaId) await CatalogoManager.selectCategoria(state.cat.categoriaAtivaId); else CatalogoManager.updateUIForNoCategoria(); }
+      if (success) { 
+        await CatalogoManager.renderCategoriasList(); 
+        if (state.cat.categoriaAtivaId) await CatalogoManager.selectCategoria(state.cat.categoriaAtivaId); 
+        else CatalogoManager.updateUIForNoCategoria(); 
+      }
       return;
     }
     const item = event.target.closest('.cat-categoria-item');
@@ -2134,7 +2376,7 @@
       applyTheme(state.theme); 
       toggleLogo(state.showLogo); 
       toggleSeal(state.showSeal);
-      applyPositions(); // ===== NOVO: Aplica posições iniciais =====
+      applyLayout();
       render(); 
       fitPreview(); 
       await renderAnunciosList();
@@ -2151,11 +2393,11 @@
       
       AutoSaveManager.init();
       KeyboardShortcuts.init();
-      DragDropManager.init(); // ===== NOVO: Inicializa drag & drop =====
+      DragDropManager.init();
       
       console.log('%c✓ Encarte Studio inicializado', 'color: #fbbf24; font-weight: bold;');
       console.log('%cAtalhos: Ctrl+S (Salvar) · Ctrl+N (Novo) · Ctrl+E (Exportar) · Esc (Fechar modal)', 'color: #a1a1aa;');
-      console.log('%cDrag & Drop: Arraste logo, selo e caixa de preço no canvas', 'color: #a1a1aa;');
+      console.log('%cDrag & Drop + Resize: Arraste elementos ou use o handle dourado', 'color: #a1a1aa;');
     } catch (error) {
       console.error('Falha crítica na inicialização:', error);
       toast('Erro ao inicializar o sistema.', 'error');
